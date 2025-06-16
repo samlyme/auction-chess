@@ -1,0 +1,29 @@
+/* src/components/Board.css */
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 60px); /* 8 columns, each 60px wide */
+  grid-template-rows: repeat(8, 60px); /* 8 rows, each 60px tall */
+  width: 480px; /* 8 * 60px */
+  height: 480px; /* 8 * 60px */
+  border: 2px solid #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto; /* Center the board */
+}
+
+.square {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5em; /* For piece placeholders */
+  cursor: pointer; /* Indicates it's interactive */
+}
+
+.light-square {
+  background-color: #f0d9b5; /* Light wood color */
+}
+
+.dark-square {
+  background-color: #b58863; /* Dark wood color */
+}
