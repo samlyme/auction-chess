@@ -8,4 +8,4 @@
 ## Tech used
 - FastAPI, React, TypeScript
   - Websockets, Pydantic data models, advanced custom React hooks
-- Planned: Redis, PostgreSQL, SQLc
+- Planned: Redis, PostgreSQL, SQLc, request caching
