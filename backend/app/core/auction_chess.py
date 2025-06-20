@@ -23,12 +23,8 @@ class Piece(BaseModel):
 
 BoardState = list[list[Optional[Piece]]]
 
-class PublicPiece(BaseModel):
-    position: BoardPosition
-    piece: Piece
-    
-class PublicBoard(BaseModel):
-    pieces: list[PublicPiece]
+class Board(BaseModel):
+    pieces: list[list[Optional[Piece]]]
 
 class AuctionChess:
     board: BoardState
@@ -86,16 +82,15 @@ class AuctionChess:
 
         return json.dumps(serializable_board, indent=2) # indent for pretty printing
     
-    def public_board(self) -> PublicBoard:
-        pieces: list[PublicPiece] = []
-        for ri, row in enumerate(self.board):
-            for ci, col in enumerate(row):
-                if col:
-                    pieces.append(PublicPiece(position=BoardPosition(row=ri, col=ci), piece=col))
-
-        return PublicBoard(pieces=pieces)
+    def public_board(self) -> Board:
+        return Board(pieces=self.board)
                     
     
 if __name__ == "__main__":
     test: AuctionChess = AuctionChess()
-    print(test.get_board_state())
+    move: Move = Move(
+        start=BoardPosition(row=0, col=0),
+        end=BoardPosition(row=1, col=1)
+    )
+    # print(test.get_board_state())
+    print(move.model_dump_json(indent=2))

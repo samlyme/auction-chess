@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from app.core.auction_chess import AuctionChess, Move, PublicBoard
+from app.core.auction_chess import AuctionChess, Move, Board
 
 app = FastAPI()
 
@@ -44,9 +44,9 @@ class GameManager:
         game.move(move)
         print("Make move", move)
         
-        state: PublicBoard = game.public_board();
+        board: Board = game.public_board();
         for connection in connections:
-            await connection.send_json(state.model_dump_json())
+            await connection.send_json(board.model_dump_json())
         
 manager = GameManager()
 
@@ -61,11 +61,12 @@ async def websocket_endpoint(websocket: WebSocket, game_id: int):
     try:
         while True:
             data = await websocket.receive_text()
+            print("received", data)
             move: Move = Move.model_validate_json(data)
-            await manager.move(game_id, move)
+            try:
+                await manager.move(game_id, move)
+            except ValueError as e:
+                print(e)
 
     except WebSocketDisconnect:
         manager.disconnect(game_id, websocket)
-    
-    except ValidationError as e:
-        print("Bad move")
