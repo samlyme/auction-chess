@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 from pydantic import BaseModel, Field
 
 Color = Literal["w", "b"]
@@ -18,7 +18,7 @@ class Piece(BaseModel):
     color: Color
     hasMoved: bool = False  # Useful for castling, initial pawn moves
 
-BoardState = list[list[Optional[Piece]]]
+BoardState = list[list[Piece | None]]
 
 class Game(BaseModel):
     board: BoardState
