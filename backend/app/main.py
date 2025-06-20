@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from app.core.auction_chess import AuctionChess, Move, Board
+from app.core.auction_chess import AuctionChess, Move, Game
 
 app = FastAPI()
 
@@ -44,7 +44,7 @@ class GameManager:
         game.move(move)
         print("Make move", move)
         
-        board: Board = game.public_board();
+        board: Game = game.public_board();
         for connection in connections:
             await connection.send_json(board.model_dump_json())
         

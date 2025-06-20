@@ -1,30 +1,6 @@
-import enum
-from typing import Literal, Optional
-from pydantic import BaseModel, Field
 import json
 
-Color = Literal["w", "b"]
-
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-
-
-class BoardPosition(BaseModel):
-    row: int = Field(..., ge=0, le=7)  # 0-7
-    col: int = Field(..., ge=0, le=7)  # 0-7
-
-class Move(BaseModel):
-    start: BoardPosition
-    end: BoardPosition
-
-class Piece(BaseModel):
-    type: PieceType
-    color: Color
-    hasMoved: bool = False  # Useful for castling, initial pawn moves
-
-BoardState = list[list[Optional[Piece]]]
-
-class Board(BaseModel):
-    pieces: list[list[Optional[Piece]]]
+from app.core.types import Game, BoardPosition, BoardState, Move, Piece, Piece, PieceType, PieceType
 
 class AuctionChess:
     board: BoardState
@@ -82,8 +58,8 @@ class AuctionChess:
 
         return json.dumps(serializable_board, indent=2) # indent for pretty printing
     
-    def public_board(self) -> Board:
-        return Board(pieces=self.board)
+    def public_board(self) -> Game:
+        return Game(board=self.board)
                     
     
 if __name__ == "__main__":

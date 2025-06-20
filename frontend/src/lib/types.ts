@@ -1,22 +1,24 @@
-export type Color = "white" | "black";
-export type PieceType =
-  | "pawn"
-  | "rook"
-  | "nknight"
-  | "bishop"
-  | "queen"
-  | "king";
+export type Color = "w" | "b";
+export type PieceType = "p" | "r" | "n" | "b" | "q" | "k";
 
 export interface BoardPosition {
-  row: number; // 0-7
-  col: number; // 0-7
+  row: number;
+  col: number;
+}
+
+export interface Move {
+  start: BoardPosition;
+  end: BoardPosition;
 }
 
 export interface Piece {
   type: PieceType;
   color: Color;
-  hasMoved: boolean; // Useful for castling, initial pawn moves
-  // Add other properties specific to your pieces if needed
+  hasMoved: boolean;
 }
 
 export type BoardState = (Piece | null)[][];
+
+export interface Game {
+  board: BoardState;
+}

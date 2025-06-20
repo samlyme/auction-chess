@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Define the WebSocket server URL
-const CLIENT_ID: string = Date.now().toString();
-const WS_URL = `ws://localhost:8000/ws/${CLIENT_ID}`; // Adjust this to your WebSocket endpoint
+// const CLIENT_ID: string = Date.now().toString();
+const WS_URL = `ws://localhost:8000/game/1`; // Adjust this to your WebSocket endpoint
 
 interface ChatMessage {
   id: number; // Unique ID for the message (e.g., timestamp from server)
@@ -19,7 +19,7 @@ interface ClientMessage {
 
 interface UseChatReturn {
   messages: ChatMessage[];
-  sendMessage: (message: ClientMessage) => void;
+  sendMessage: (message: string) => void;
   isConnected: boolean;
   error: string | null;
 }
@@ -33,12 +33,12 @@ const useChat = (): UseChatReturn => {
   const ws = useRef<WebSocket | null>(null);
 
   // useCallback to memoize the sendMessage function.
-  const sendMessage = useCallback((message: ClientMessage) => {
+  const sendMessage = useCallback((message: string) => {
     // Ensure ws.current is not null and the connection is open
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       try {
         // Assuming your server expects a JSON string of ClientMessage
-        ws.current.send(JSON.stringify(message));
+        ws.current.send(message);
       } catch (err) {
         console.error('Failed to send message:', err);
         setError('Failed to send message.');
