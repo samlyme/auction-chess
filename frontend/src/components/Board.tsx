@@ -1,5 +1,5 @@
 import useGame from "../hooks/useGame";
-import type { BoardPosition, Piece } from "../lib/types";
+import type { Piece } from "../lib/types";
 import { pieceSVGMap } from "../lib/utils";
 import "./Board.css";
 import useMoves from "../hooks/useMoves";
