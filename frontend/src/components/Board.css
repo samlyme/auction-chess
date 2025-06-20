@@ -1,29 +1,71 @@
-/* src/components/Board.css */
+/* Base styles for the entire board container */
 .board {
-  display: grid;
-  grid-template-columns: repeat(8, 60px); /* 8 columns, each 60px wide */
-  grid-template-rows: repeat(8, 60px); /* 8 rows, each 60px tall */
-  width: 480px; /* 8 * 60px */
-  height: 480px; /* 8 * 60px */
-  border: 2px solid #333;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 20px auto; /* Center the board */
+  display: grid; /* Use CSS Grid for an easy 8x8 layout */
+  grid-template-columns: repeat(
+    8,
+    1fr
+  ); /* 8 columns, each taking equal space */
+  grid-template-rows: repeat(8, 1fr); /* 8 rows, each taking equal space */
+
+  width: 80vmin; /* Example: Make the board 80% of the viewport's smaller dimension */
+  height: 80vmin; /* Ensure it's a perfect square */
+  max-width: 600px; /* Optional: Set a max size for very large screens */
+  max-height: 600px; /* Optional: Set a max size */
+
+  border: 4px solid #333; /* A nice border around the board */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
+  background-color: #333; /* Fallback or outer border color */
 }
 
+/* Styles for individual squares */
 .square {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.5em; /* For piece placeholders */
-  cursor: pointer; /* Indicates it's interactive */
+  width: 100%; /* Take full width of its grid cell */
+  height: 100%; /* Take full height of its grid cell */
+
+  display: flex; /* Use flexbox to center content (the piece) */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+
+  /* Optional: Add some transition for hover effects or future animations */
+  transition: background-color 0.2s ease;
 }
 
 .light-square {
-  background-color: #f0d9b5; /* Light wood color */
+  background-color: #f0d9b5; /* Light square color */
 }
 
 .dark-square {
-  background-color: #b58863; /* Dark wood color */
+  background-color: #b58863; /* Dark square color */
+}
+
+/* Styles for the chess piece images */
+.piece-image {
+  max-width: 90%; /* Ensure piece doesn't touch square edges, leave a small gap */
+  max-height: 90%; /* Maintain aspect ratio and fit within square */
+  display: block; /* Remove extra space below images */
+  pointer-events: none; /* Prevents image drag, allows click-through to square for move logic */
+  user-select: none; /* Prevents text selection behavior on drag */
+}
+
+/* Optional: Hover effect for squares */
+.square:hover {
+  /* This is just an example, you might want more complex hover logic for valid moves */
+  background-color: rgba(
+    255,
+    255,
+    0,
+    0.3
+  ); /* Semi-transparent yellow on hover */
+}
+
+/* Add this to your Board.css */
+.selected-square {
+  background-color: #8c7047; /* A distinct color for selected squares */
+  box-shadow: inset 0 0 0 3px gold; /* An outline to make it really stand out */
+}
+
+/* Optional: Adjust hover for selected squares if needed */
+.selected-square:hover {
+  background-color: #8c7047; /* Keep the selected color on hover, or blend it */
+  box-shadow: inset 0 0 0 3px gold; /* Keep outline */
 }

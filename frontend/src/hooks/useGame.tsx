@@ -20,7 +20,6 @@ function useGame(): UseGameReturn {
   const makeMove = useCallback((move: Move): void => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       try {
-        // Assuming your server expects a JSON string of ClientMessage
         ws.current.send(JSON.stringify(move));
       } catch (err) {
         console.error("Failed to send message:", err);
@@ -41,11 +40,9 @@ function useGame(): UseGameReturn {
     };
 
     ws.current.onmessage = (event: MessageEvent) => {
-      console.log("Received message:", event.data);
       try {
         const newGame: Game = JSON.parse(event.data) as Game;
-        setGame(JSON.parse(JSON.stringify(newGame)));
-        console.log("Set game: ", newGame);
+        setGame(newGame);
       } catch (err) {
         console.error("Failed to parse message:", event.data, err);
         setError("Failed to parse incoming message.");
