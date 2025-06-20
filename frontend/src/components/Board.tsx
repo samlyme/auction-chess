@@ -1,12 +1,12 @@
-import { useState } from "react";
 import useGame from "../hooks/useGame";
 import type { BoardPosition, Piece } from "../lib/types";
 import { pieceSVGMap } from "../lib/utils";
 import "./Board.css";
+import useMoves from "../hooks/useMoves";
 
 function Board() {
   const { game, makeMove, isConnected, error } = useGame();
-  const [selected, setSelected] = useState<BoardPosition | null>(null);
+  const { selectedSquare, handleSquareClick } = useMoves(game, makeMove);
 
   if (error) return <div>Error: {error}</div>;
   if (!isConnected) return <div>Connecting to game...</div>;
@@ -25,8 +25,8 @@ function Board() {
           colorClass={colorClass}
           piece={piece}
           boardPosition={{ row, col }}
-          selected={selected}
-          setSelected={setSelected}
+          selected={selectedSquare}
+          handleClick={handleSquareClick}
         />
       );
     }
@@ -41,19 +41,15 @@ function Square({
   piece,
   boardPosition,
   selected,
-  setSelected,
+  handleClick,
 }: {
   key: string;
   colorClass: string;
   piece: Piece | null;
   boardPosition: BoardPosition;
   selected: BoardPosition | null;
-  setSelected: (p: BoardPosition) => void;
+  handleClick: (p: BoardPosition) => void;
 }) {
-  const handleClick = () => {
-    if (piece) setSelected(boardPosition);
-  };
-
   const isSelected =
     selected &&
     selected.row === boardPosition.row &&
@@ -63,7 +59,9 @@ function Square({
     <div
       key={key}
       className={`square ${colorClass} ${isSelected ? "selected-square" : ""}`}
-      onClick={handleClick}
+      onClick={() => {
+        handleClick(boardPosition);
+      }}
     >
       {piece && (
         <img

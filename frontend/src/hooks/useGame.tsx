@@ -20,6 +20,8 @@ function useGame(): UseGameReturn {
   const makeMove = useCallback((move: Move): void => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       try {
+        console.log("making move: ", move);
+
         ws.current.send(JSON.stringify(move));
       } catch (err) {
         console.error("Failed to send message:", err);
