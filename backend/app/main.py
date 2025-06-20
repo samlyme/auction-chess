@@ -31,7 +31,7 @@ class GameManager:
         await websocket.accept()
         game, connections = self.games.setdefault(game_id, (AuctionChess(), []))
 
-        await websocket.send_json(game.public_board().model_dump_json())
+        await websocket.send_text(game.public_board().model_dump_json())
         connections.append(websocket)
         print("Connected to game", game_id)
     
@@ -46,7 +46,7 @@ class GameManager:
         
         board: Game = game.public_board();
         for connection in connections:
-            await connection.send_json(board.model_dump_json())
+            await connection.send_text(board.model_dump_json())
         
 manager = GameManager()
 
