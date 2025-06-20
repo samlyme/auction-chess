@@ -24,9 +24,12 @@ function Board() {
           key={`${row}-${col}`}
           colorClass={colorClass}
           piece={piece}
-          boardPosition={{ row, col }}
-          selected={selectedSquare}
-          handleClick={handleSquareClick}
+          isSelected={
+            selectedSquare != null &&
+            selectedSquare.row == row &&
+            selectedSquare.col == col
+          }
+          onClick={() => handleSquareClick({ row, col })}
         />
       );
     }
@@ -39,29 +42,20 @@ function Square({
   key,
   colorClass,
   piece,
-  boardPosition,
-  selected,
-  handleClick,
+  isSelected,
+  onClick,
 }: {
   key: string;
   colorClass: string;
   piece: Piece | null;
-  boardPosition: BoardPosition;
-  selected: BoardPosition | null;
-  handleClick: (p: BoardPosition) => void;
+  isSelected: boolean;
+  onClick: () => void;
 }) {
-  const isSelected =
-    selected &&
-    selected.row === boardPosition.row &&
-    selected.col == boardPosition.col;
-
   return (
     <div
       key={key}
       className={`square ${colorClass} ${isSelected ? "selected-square" : ""}`}
-      onClick={() => {
-        handleClick(boardPosition);
-      }}
+      onClick={onClick}
     >
       {piece && (
         <img
