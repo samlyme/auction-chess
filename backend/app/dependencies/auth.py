@@ -7,7 +7,7 @@ from sqlalchemy import select
 from app.core.types import UserOut
 from app.dependencies.db import DBDep
 from app.models.models import User
-from app.utils.auth import decode_jwt_token
+from app.utils.auth import decode_jwt
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -21,10 +21,11 @@ async def get_current_user(db: DBDep, token: AuthDep) -> UserOut:
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        payload = decode_jwt(token)
         print("get_current_user token", token)
-        payload = decode_jwt_token(token)
+        print("get_current_user payload", payload)
 
-        username = payload.get("sub")
+        username = payload.sub
         if username is None:
             raise credentials_exception
     except jwt.InvalidTokenError:

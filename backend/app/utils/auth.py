@@ -4,6 +4,9 @@ import jwt
 from dotenv import load_dotenv
 import os
 
+from app.core.types import JWTPayload
+from app.models.models import User
+
 load_dotenv()
 SECRET_KEY = os.environ["JWT_SECRET"]
 if not SECRET_KEY:
@@ -20,15 +23,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
-def create_jwt_token(data: dict, expires_delta: timedelta | None = None) -> str:
-    to_encode = data.copy()
+def encode_jwt(data: User, expires_delta: timedelta | None = None) -> str:
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+    payload = JWTPayload(exp=expire, sub=data.username)
+    encoded_jwt = jwt.encode(payload.model_dump(), SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
     
-def decode_jwt_token(token: str):
-    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+def decode_jwt(token: str) -> JWTPayload:
+    return JWTPayload(**jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]))
