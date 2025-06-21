@@ -19,6 +19,6 @@ export interface Piece {
 
 export type BoardState = (Piece | null)[][];
 
-export interface Game {
+export interface GamePacket {
   board: BoardState;
 }

@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { Game, Move } from "../schemas/types";
+import type { GamePacket, Move } from "../schemas/types";
 
 const WS_URL = `ws://localhost:8000/game/1`;
 
 interface UseGameReturn {
-  game: Game | undefined;
+  game: GamePacket | undefined;
   makeMove: (move: Move) => void;
   isConnected: boolean;
   error: string | null;
 }
 
 function useGame(): UseGameReturn {
-  const [game, setGame] = useState<Game>();
+  const [game, setGame] = useState<GamePacket>();
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +43,7 @@ function useGame(): UseGameReturn {
 
     ws.current.onmessage = (event: MessageEvent) => {
       try {
-        const newGame: Game = JSON.parse(event.data) as Game;
+        const newGame: GamePacket = JSON.parse(event.data) as GamePacket;
         setGame(newGame);
       } catch (err) {
         console.error("Failed to parse message:", event.data, err);
