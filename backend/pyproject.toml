@@ -4,7 +4,13 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["fastapi[standard]"]
+dependencies = [
+    "bcrypt>=4.3.0",
+    "fastapi[standard]",
+    "pyjwt>=2.10.1",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.41",
+]
 
 [dependency-groups]
 dev = ["ruff"]
