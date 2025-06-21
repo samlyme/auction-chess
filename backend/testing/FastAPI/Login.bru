@@ -1,0 +1,20 @@
+meta {
+  name: Login
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: 
+  username: 
+  password: 
+  scope: 
+  client_id: 
+  client_secret: 
+}
