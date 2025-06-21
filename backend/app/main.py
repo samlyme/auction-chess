@@ -5,24 +5,6 @@ from app.core.auction_chess import AuctionChess, Move, Game
 
 app = FastAPI()
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
 class GameManager:
     def __init__(self):
         self.games : dict[int, tuple[AuctionChess, list[WebSocket]]]= {}
@@ -44,7 +26,7 @@ class GameManager:
         game.move(move)
         print("Make move", move)
         
-        board: Game = game.public_board();
+        board: Game = game.public_board()
         for connection in connections:
             await connection.send_text(board.model_dump_json())
         
