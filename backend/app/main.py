@@ -2,6 +2,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
 from app.core.auction_chess import AuctionChess, Move, Game
+from app.routers import users
+from app.dependencies.db import init_db
 
 app = FastAPI()
 
@@ -32,10 +34,15 @@ class GameManager:
         
 manager = GameManager()
 
+app.include_router(users.router)
+
+@app.on_event("startup")
+def start_server():
+    init_db()
+
 @app.get("/")
 async def get():
     return "hi"
-
 
 @app.websocket("/game/{game_id}")
 async def websocket_endpoint(websocket: WebSocket, game_id: int):

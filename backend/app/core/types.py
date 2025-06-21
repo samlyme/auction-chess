@@ -22,3 +22,12 @@ BoardState = list[list[Piece | None]]
 
 class Game(BaseModel):
     board: BoardState
+
+
+# Users and such
+class UserIn(BaseModel):
+    username: str
+    password: str
+
+class UserOut(BaseModel):
+    username: str
