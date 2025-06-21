@@ -35,7 +35,7 @@ async def get_current_user(db: DBDep, token: AuthDep) -> UserProfile:
     user = db.scalar(stmt)
     if user is None:
         raise credentials_exception
-    return UserProfile(username=user.username, createdAt=user.createdAt)
+    return user.profile()
 
 
 CurrentUserDep = Annotated[UserProfile, Depends(get_current_user)]
