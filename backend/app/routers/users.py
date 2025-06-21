@@ -2,7 +2,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
-from app.dependencies.db import SessionDep
+from app.dependencies.auth import CurrentUserDep
+from app.dependencies.db import DBDep
 from app.models.models import User
 from app.core.types import UserIn, UserOut
 from app.utils.auth import get_password_hash
@@ -12,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 router = APIRouter(prefix="/users")
 
 @router.post("/")
-def add_user(db: SessionDep, user_in: UserIn) -> UserOut:
+def add_user(db: DBDep, user_in: UserIn) -> UserOut:
     try:
         password_hash = get_password_hash(user_in.password)
         db.add(User(username=user_in.username, passwordHash=password_hash))
@@ -22,7 +23,7 @@ def add_user(db: SessionDep, user_in: UserIn) -> UserOut:
         raise HTTPException(status_code=400, detail="User already exists.")
 
 @router.get("/")
-def get_user(db: SessionDep, username: str | None = None) -> UserOut | list[UserOut]:
+def get_user(db: DBDep, username: str | None = None) -> UserOut | list[UserOut]:
     if not username: return get_users(db)
 
     stmt = select(User).where(User.username == username)
@@ -33,7 +34,7 @@ def get_user(db: SessionDep, username: str | None = None) -> UserOut | list[User
     else:
         raise HTTPException(status_code=400, detail="User does not exist.")
 
-def get_users(db: SessionDep) -> list[UserOut]:
+def get_users(db: DBDep) -> list[UserOut]:
     out: list[UserOut] = []
 
     for user in db.scalars(select(User)):
@@ -41,7 +42,11 @@ def get_users(db: SessionDep) -> list[UserOut]:
         print(user)
     
     return out
-    
+
+# TODO: Proper "get me" route
+@router.get("/me")
+def get_current_user(current_user: CurrentUserDep) -> UserOut:
+    return current_user
 
 # @router.put("/")
 # def update_user(db: SessionDep, user_in: UserIn) -> UserOut:

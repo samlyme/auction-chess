@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from app.core.auction_chess import AuctionChess, Move, Game
 from app.routers import users
 from app.dependencies.db import init_db
+from app.routers import auth
 
 app = FastAPI()
 
@@ -35,6 +36,7 @@ class GameManager:
 manager = GameManager()
 
 app.include_router(users.router)
+app.include_router(auth.router)
 
 @app.on_event("startup")
 def start_server():
