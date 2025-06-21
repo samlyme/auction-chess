@@ -2,38 +2,12 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
 from app.core.auction_chess import AuctionChess, Move, Game
+from app.dependencies.games import GamesDep
 from app.routers import users
 from app.dependencies.db import init_db
 from app.routers import auth
 
 app = FastAPI()
-
-class GameManager:
-    def __init__(self):
-        self.games : dict[int, tuple[AuctionChess, list[WebSocket]]]= {}
-
-    async def connect(self, game_id: int, websocket: WebSocket):
-        await websocket.accept()
-        game, connections = self.games.setdefault(game_id, (AuctionChess(), []))
-
-        await websocket.send_text(game.public_board().model_dump_json())
-        connections.append(websocket)
-        print("Connected to game", game_id)
-    
-    def disconnect(self, game_id: int, websocket: WebSocket):
-        self.games[game_id][1].remove(websocket)
-        print("Disconnected from game", game_id)
-
-    async def move(self, game_id: int, move: Move):
-        game, connections = self.games.setdefault(game_id, (AuctionChess(), []))
-        game.move(move)
-        print("Make move", move)
-        
-        board: Game = game.public_board()
-        for connection in connections:
-            await connection.send_text(board.model_dump_json())
-        
-manager = GameManager()
 
 app.include_router(users.router)
 app.include_router(auth.router)
@@ -47,17 +21,17 @@ async def get():
     return "hi"
 
 @app.websocket("/game/{game_id}")
-async def websocket_endpoint(websocket: WebSocket, game_id: int):
-    await manager.connect(game_id, websocket)
+async def websocket_endpoint(games: GamesDep, websocket: WebSocket, game_id: int):
+    await games.connect(game_id, websocket)
     try:
         while True:
             data = await websocket.receive_text()
             print("received", data)
             move: Move = Move.model_validate_json(data)
             try:
-                await manager.move(game_id, move)
+                await games.move(game_id, move)
             except ValueError as e:
                 print(e)
 
     except WebSocketDisconnect:
-        manager.disconnect(game_id, websocket)
+        games.disconnect(game_id, websocket)
