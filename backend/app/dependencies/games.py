@@ -1,7 +1,7 @@
 from typing import Annotated, Generator
 from fastapi import Depends, WebSocket
 from app.core.auction_chess import AuctionChess
-from app.schemas.types import Game, Move
+from app.schemas.types import GamePacket, Move
 
 class InMemoryGameManager:
     def __init__(self):
@@ -24,7 +24,7 @@ class InMemoryGameManager:
         game.move(move)
         print("Make move", move)
         
-        board: Game = game.public_board()
+        board: GamePacket = game.public_board()
         for connection in connections:
             await connection.send_text(board.model_dump_json())
 

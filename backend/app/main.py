@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from app.core.auction_chess import AuctionChess, Move, Game
+from app.core.auction_chess import AuctionChess, Move, GamePacket
 from app.dependencies.games import GamesDep
 from app.routers import users
 from app.dependencies.db import init_db

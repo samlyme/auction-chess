@@ -1,6 +1,6 @@
 import json
 
-from app.schemas.types import Game, BoardPosition, BoardState, Move, Piece, Piece, PieceType, PieceType
+from app.schemas.types import GamePacket, BoardPosition, BoardState, Move, Piece, Piece, PieceType, PieceType
 
 class AuctionChess:
     board: BoardState
@@ -58,8 +58,8 @@ class AuctionChess:
 
         return json.dumps(serializable_board, indent=2) # indent for pretty printing
     
-    def public_board(self) -> Game:
-        return Game(board=self.board)
+    def public_board(self) -> GamePacket:
+        return GamePacket(board=self.board)
                     
     
 if __name__ == "__main__":

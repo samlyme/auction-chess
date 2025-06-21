@@ -21,7 +21,7 @@ class Piece(BaseModel):
 
 BoardState = list[list[Piece | None]]
 
-class Game(BaseModel):
+class GamePacket(BaseModel):
     board: BoardState
 
 
