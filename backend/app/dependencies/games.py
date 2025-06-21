@@ -1,7 +1,7 @@
 from typing import Annotated, Generator
 from fastapi import Depends, WebSocket
 from app.core.auction_chess import AuctionChess
-from app.core.types import Game, Move
+from app.schemas.types import Game, Move
 
 class InMemoryGameManager:
     def __init__(self):

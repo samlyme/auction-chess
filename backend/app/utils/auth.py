@@ -4,7 +4,7 @@ import jwt
 from dotenv import load_dotenv
 import os
 
-from app.core.types import JWTPayload
+from app.schemas.types import JWTPayload
 from app.models.models import User
 
 load_dotenv()

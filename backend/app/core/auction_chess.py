@@ -1,6 +1,6 @@
 import json
 
-from app.core.types import Game, BoardPosition, BoardState, Move, Piece, Piece, PieceType, PieceType
+from app.schemas.types import Game, BoardPosition, BoardState, Move, Piece, Piece, PieceType, PieceType
 
 class AuctionChess:
     board: BoardState

@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from sqlalchemy import select
 
-from app.core.types import UserProfile
+from app.schemas.types import UserProfile
 from app.dependencies.db import DBDep
 from app.models.models import User
 from app.utils.auth import decode_jwt

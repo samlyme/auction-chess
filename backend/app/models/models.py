@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from app.core.types import UserProfile
+from app.schemas.types import UserProfile
 from app.dependencies.db import Base
 
 class User(Base):

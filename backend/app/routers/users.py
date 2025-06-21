@@ -3,7 +3,7 @@ from sqlalchemy import select
 from app.dependencies.auth import CurrentUserDep
 from app.dependencies.db import DBDep
 from app.models.models import User
-from app.core.types import UserCredentials, UserProfile
+from app.schemas.types import UserCredentials, UserProfile
 from app.utils.auth import get_password_hash
 
 from sqlalchemy.exc import IntegrityError
