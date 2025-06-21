@@ -17,7 +17,8 @@ def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
         new_user = User(username=user_in.username, passwordHash=password_hash)
         db.add(new_user)
         db.commit()
-        return UserProfile(username=new_user.username, createdAt=new_user.createdAt)
+        return new_user.profile()
+
     except IntegrityError:
         raise HTTPException(status_code=400, detail="User already exists.")
 
@@ -29,18 +30,12 @@ def get_user(db: DBDep, username: str | None = None) -> UserProfile | list[UserP
     user = db.scalar(stmt)
     
     if user:
-        return UserProfile(username=user.username, createdAt=user.createdAt)
+        return user.profile()
     else:
         raise HTTPException(status_code=400, detail="User does not exist.")
 
 def get_users(db: DBDep) -> list[UserProfile]:
-    out: list[UserProfile] = []
-
-    for user in db.scalars(select(User)):
-        out.append(UserProfile(username=user.username, createdAt=user.createdAt))
-        print(user)
-    
-    return out
+    return [user.profile() for user in db.scalars(select(User))]
 
 # TODO: Proper "get me" route
 @router.get("/me")
