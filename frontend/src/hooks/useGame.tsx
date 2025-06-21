@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { Game, Move } from "../lib/types";
+import type { Game, Move } from "../schemas/types";
 
 const WS_URL = `ws://localhost:8000/game/1`;
 

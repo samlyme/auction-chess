@@ -1,6 +1,6 @@
 // src/hooks/useChessMoves.ts
 import { useState, useCallback } from "react";
-import type { Game, BoardPosition, Move, Piece } from "../lib/types"; // Import your types
+import type { Game, BoardPosition, Move, Piece } from "../schemas/types"; // Import your types
 
 interface UseMovesReturn {
   selectedSquare: BoardPosition | null;
