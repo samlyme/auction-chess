@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from sqlalchemy import select
 
-from app.core.types import UserOut
+from app.core.types import UserProfile
 from app.dependencies.db import DBDep
 from app.models.models import User
 from app.utils.auth import decode_jwt
@@ -14,7 +14,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 AuthDep = Annotated[str, Depends(oauth2_scheme)]
 
-async def get_current_user(db: DBDep, token: AuthDep) -> UserOut:
+async def get_current_user(db: DBDep, token: AuthDep) -> UserProfile:
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -35,7 +35,7 @@ async def get_current_user(db: DBDep, token: AuthDep) -> UserOut:
     user = db.scalar(stmt)
     if user is None:
         raise credentials_exception
-    return UserOut(username=user.username)
+    return UserProfile(username=user.username, createdAt=user.createdAt)
 
 
-CurrentUserDep = Annotated[UserOut, Depends(get_current_user)]
+CurrentUserDep = Annotated[UserProfile, Depends(get_current_user)]

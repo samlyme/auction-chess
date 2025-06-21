@@ -1,11 +1,9 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 from app.dependencies.auth import CurrentUserDep
 from app.dependencies.db import DBDep
 from app.models.models import User
-from app.core.types import UserIn, UserOut
+from app.core.types import UserCredentials, UserProfile
 from app.utils.auth import get_password_hash
 
 from sqlalchemy.exc import IntegrityError
@@ -13,41 +11,38 @@ from sqlalchemy.exc import IntegrityError
 router = APIRouter(prefix="/users")
 
 @router.post("/")
-def add_user(db: DBDep, user_in: UserIn) -> UserOut:
+def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
     try:
         password_hash = get_password_hash(user_in.password)
-        db.add(User(username=user_in.username, passwordHash=password_hash))
+        new_user = User(username=user_in.username, passwordHash=password_hash)
+        db.add(new_user)
         db.commit()
-        return UserOut(username=user_in.username)
+        return UserProfile(username=new_user.username, createdAt=new_user.createdAt)
     except IntegrityError:
         raise HTTPException(status_code=400, detail="User already exists.")
 
 @router.get("/")
-def get_user(db: DBDep, username: str | None = None) -> UserOut | list[UserOut]:
+def get_user(db: DBDep, username: str | None = None) -> UserProfile | list[UserProfile]:
     if not username: return get_users(db)
 
     stmt = select(User).where(User.username == username)
     user = db.scalar(stmt)
     
     if user:
-        return UserOut(username=user.username)
+        return UserProfile(username=user.username, createdAt=user.createdAt)
     else:
         raise HTTPException(status_code=400, detail="User does not exist.")
 
-def get_users(db: DBDep) -> list[UserOut]:
-    out: list[UserOut] = []
+def get_users(db: DBDep) -> list[UserProfile]:
+    out: list[UserProfile] = []
 
     for user in db.scalars(select(User)):
-        out.append(UserOut(username=user.username))
+        out.append(UserProfile(username=user.username, createdAt=user.createdAt))
         print(user)
     
     return out
 
 # TODO: Proper "get me" route
 @router.get("/me")
-def get_current_user(current_user: CurrentUserDep) -> UserOut:
+def get_current_user(current_user: CurrentUserDep) -> UserProfile:
     return current_user
-
-# @router.put("/")
-# def update_user(db: SessionDep, user_in: UserIn) -> UserOut:
-    

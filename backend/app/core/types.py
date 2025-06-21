@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Literal
-from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 Color = Literal["w", "b"]
@@ -27,12 +26,17 @@ class Game(BaseModel):
 
 
 # Users and such
-class UserIn(BaseModel):
+class UserCredentials(BaseModel):
     username: str
     password: str
 
-class UserOut(BaseModel):
+class UserProfile(BaseModel):
     username: str
+    createdAt: datetime
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
 
 # Can add more JWT fields later
 class JWTPayload(BaseModel):
