@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 from app.dependencies.auth import CurrentUserDep
@@ -23,10 +24,11 @@ def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
         raise HTTPException(status_code=400, detail="User already exists.")
 
 @router.get("/")
-def get_user(db: DBDep, username: str | None = None) -> UserProfile | list[UserProfile]:
-    if not username: return get_users(db)
+def get_user_by_username(db: DBDep, username: str | None = None, uuid: UUID | None = None) -> UserProfile | list[UserProfile]:
+    # NOTE: If a uuid is provided, the username is ignored.
+    if (not username) and (not uuid): return get_users(db)
 
-    stmt = select(User).where(User.username == username)
+    stmt = select(User).where(User.uuid == uuid) if uuid else select(User).where(User.username == username)
     user = db.scalar(stmt)
     
     if user:
@@ -35,7 +37,7 @@ def get_user(db: DBDep, username: str | None = None) -> UserProfile | list[UserP
         raise HTTPException(status_code=400, detail="User does not exist.")
 
 def get_users(db: DBDep) -> list[UserProfile]:
-    return [user.profile() for user in db.scalars(select(User))]
+    return [user.profile() for user in db.scalars(select(User).limit(50))]
 
 # TODO: Proper "get me" route
 @router.get("/me")
