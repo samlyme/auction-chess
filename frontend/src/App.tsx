@@ -1,9 +1,26 @@
+import type { ReactNode } from "react";
 import "./App.css"; // Optional: for basic styling
 import Board from "./components/Board";
 import Login from "./components/Login";
-import { useAuthContext } from "./contexts/Auth";
+import { AuthProvider, useAuthContext } from "./contexts/Auth";
 
 function App() {
+  return (
+    <Context>
+      <Content/>
+    </Context>
+  )
+}
+
+function Context({ children }: { children: ReactNode}) {
+  return (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  )
+}
+
+function Content() {
   const { token, logout } = useAuthContext()
 
   return (
@@ -12,6 +29,7 @@ function App() {
         {token ? <Board /> : <Login />}
       </div>
   );
+
 }
 
 export default App;
