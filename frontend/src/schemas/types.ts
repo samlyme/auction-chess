@@ -1,3 +1,5 @@
+import type { UUIDTypes } from "uuid";
+
 export type Color = "w" | "b";
 export type PieceType = "p" | "r" | "n" | "b" | "q" | "k";
 
@@ -30,6 +32,7 @@ export interface UserCredentials {
 }
 
 export interface UserProfile {
+  uuid: UUIDTypes;
   username: string;
   createAt: Date;
 }
@@ -43,7 +46,7 @@ export interface UserCreate {
 // Don't technically need this in frontend.
 export interface JWTPayload {
   exp: Date;
-  sub: string;
+  sub: UUIDTypes;
 }
 
 export interface TokenResponse {
