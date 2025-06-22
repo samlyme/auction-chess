@@ -16,3 +16,5 @@
 - FastAPI dependency injection
 - Seperation of concerns in backend
 - Global type safety and validation 
+- Proxies via Nginx
+- CI/CD with configuration as code on Railway
