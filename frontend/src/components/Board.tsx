@@ -1,12 +1,14 @@
 import useGame from "../hooks/useGame";
-import type { Piece } from "../schemas/types";
+import type { Piece, UserProfile } from "../schemas/types";
 import { pieceSVGMap } from "../utils/chess";
 import "./Board.css";
 import useMoves from "../hooks/useMoves";
+import useUser from "../hooks/useUser";
 
 function Board() {
   const { game, makeMove, isConnected, error } = useGame();
   const { selectedSquare, handleSquareClick } = useMoves(game, makeMove);
+  const user: UserProfile | null = useUser();
 
   if (error) return <div>Error: {error}</div>;
   if (!isConnected) return <div>Connecting to game...</div>;
@@ -35,7 +37,13 @@ function Board() {
     }
   }
 
-  return <div className="board">{squares}</div>;
+  // TODO: Fix game board component
+  return (
+    <div className="game">
+      <div className="board">{squares}</div>
+      <p>Playing as {user?.username}</p>
+    </div>
+  );
 }
 
 function Square({
