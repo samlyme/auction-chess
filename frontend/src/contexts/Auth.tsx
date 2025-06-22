@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import type { UserCredentials } from "../schemas/types";
+import type { UserCreate, UserCredentials, UserProfile } from "../schemas/types";
 import { usernamePasswordLogin } from "../services/auth";
+import { createUser } from "../services/users";
 
 interface AuthContextType {
     token: string | null;
     login: (credentials: UserCredentials) => void;
+    signup: (newUser: UserCreate) => void;
     logout: () => void;
 }
 
@@ -25,12 +27,22 @@ export function AuthProvider({ children }: { children: ReactNode}) {
         }
     }, [])
 
+    const signup = (newUser: UserCreate) => {
+        createUser(newUser)
+        .then((_: UserProfile) => {
+            login({
+                username: newUser.username,
+                password: newUser.password,
+            })
+        })
+    }
+
     const logout = () => {
         setToken(null);
         localStorage.removeItem("access_token");
     }
 
-    const context: AuthContextType = { token, login, logout }
+    const context: AuthContextType = { token, login, signup, logout }
 
     return (
         <AuthContext value={context}>

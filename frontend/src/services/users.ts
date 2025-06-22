@@ -1,6 +1,6 @@
 import type { UserCreate, UserProfile } from "../schemas/types";
 
-const URL = `${import.meta.env.BASE_URL}/users`
+const URL = `${import.meta.env. VITE_BACKEND_URL}/users`
 
 export function createUser(user: UserCreate): Promise<UserProfile> {
     return fetch(URL, {

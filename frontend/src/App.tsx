@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import "./App.css"; // Optional: for basic styling
 import Board from "./components/Board";
-import Login from "./components/Login";
+import Auth from "./components/Auth";
 import { AuthProvider, useAuthContext } from "./contexts/Auth";
 
 function App() {
@@ -26,7 +26,7 @@ function Content() {
   return (
       <div className="app">
         <button onClick={logout}>Logout</button>
-        {token ? <Board /> : <Login />}
+        {token ? <Board /> : <Auth />}
       </div>
   );
 
