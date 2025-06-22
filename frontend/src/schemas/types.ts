@@ -22,3 +22,31 @@ export type BoardState = (Piece | null)[][];
 export interface GamePacket {
   board: BoardState;
 }
+
+// Users and such
+export interface UserCredentials {
+  username: string;
+  password: string;
+}
+
+export interface UserProfile {
+  username: string;
+  createAt: Date;
+}
+
+export interface UserCreate {
+  username: string;
+  password: string;
+}
+
+// Can add more JWT fields later
+// Don't technically need this in frontend.
+export interface JWTPayload {
+  exp: Date;
+  sub: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+}
