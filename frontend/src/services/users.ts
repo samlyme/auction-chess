@@ -4,7 +4,7 @@ import type { UserCreate, UserProfile } from "../schemas/types";
 const URL = "/api/users"
 
 export function createUser(user: UserCreate): Promise<UserProfile> {
-    return fetch(URL, {
+    return fetch("http://localhost:3000/api/users", {
         method: 'POST',
         headers: {'content-type': 'application/json'},
         body: JSON.stringify(user),

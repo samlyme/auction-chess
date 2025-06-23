@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/Auth";
+import { useNavigate } from "react-router";
 
 function Auth() {
+    const { token } = useAuthContext();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (token) navigate("/game")
+    })
+
     return (
         <div className="auth-page">
             <h1>Login</h1>

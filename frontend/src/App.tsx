@@ -28,6 +28,7 @@ function Content() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />}/>
+          <Route path="/home" element={<Home />}/>
           <Route path="/auth" element={<Auth />}/>
           <Route path="/game" element={<Game />}/>
           <Route path="/profile" element={<Profile />}/>
