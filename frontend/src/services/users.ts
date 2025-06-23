@@ -1,7 +1,7 @@
 import type { UUIDTypes } from "uuid";
 import type { UserCreate, UserProfile } from "../schemas/types";
 
-const URL = `${import.meta.env.VITE_BACKEND_URL}/users`
+const URL = "/api/users"
 
 export function createUser(user: UserCreate): Promise<UserProfile> {
     return fetch(URL, {

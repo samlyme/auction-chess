@@ -1,6 +1,6 @@
 import type { TokenResponse, UserCredentials } from "../schemas/types";
 
-const URL = `${import.meta.env.VITE_BACKEND_URL}`
+const URL = "/api"
 
 
 // OAuth spec, kinda ugly
