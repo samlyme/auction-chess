@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
 import "./App.css"; // Optional: for basic styling
-import Board from "./components/Board";
-import Auth from "./components/Auth";
-import { AuthProvider, useAuthContext } from "./contexts/Auth";
+import Auth from "./pages/Auth";
+import { AuthProvider } from "./contexts/Auth";
+import { BrowserRouter, Route, Routes } from "react-router";
+import Game from "./pages/Game";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -21,13 +24,15 @@ function Context({ children }: { children: ReactNode}) {
 }
 
 function Content() {
-  const { token, logout } = useAuthContext()
-
   return (
-      <div className="app">
-        <button onClick={logout}>Logout</button>
-        {token ? <Board /> : <Auth />}
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />}/>
+          <Route path="/auth" element={<Auth />}/>
+          <Route path="/game" element={<Game />}/>
+          <Route path="/profile" element={<Profile />}/>
+        </Routes>
+      </BrowserRouter>
   );
 
 }

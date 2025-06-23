@@ -8,12 +8,13 @@ function useUser(): UserProfile | null {
     const { token } = useAuthContext();
     const [user, setUser] = useState<UserProfile | null>(null);
 
-    if (!token) throw new Error("useUser must be called in a valid Auth context")
-    
-    const payload: JWTPayload= jwtDecode(token);
-    if (!payload) throw new Error("Invalid token")
 
     useEffect(() => {
+        if (!token) return;
+
+        const payload: JWTPayload= jwtDecode(token);
+        if (!payload) throw new Error("Invalid token")
+
         getUserByUUID(payload.sub)
         .then((res: UserProfile) => {
             setUser(res);
