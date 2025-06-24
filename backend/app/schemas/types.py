@@ -22,6 +22,8 @@ class Piece(BaseModel):
 
 BoardState = list[list[Piece | None]]
 
+LegalMoves = list[list[list[BoardPosition]]]
+
 class GamePacket(BaseModel):
     board: BoardState
 
