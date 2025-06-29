@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.auction_chess import Move
+from app.core.auction_chess.game import Move
 from app.dependencies.games import GamesDep
 from app.routers import users
 from app.dependencies.db import init_db

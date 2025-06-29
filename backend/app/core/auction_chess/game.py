@@ -1,12 +1,20 @@
 import json
+from uuid import uuid1
 
-from app.schemas.types import GamePacket, BoardPosition, BoardState, Move, Piece, Piece, PieceType, PieceType
+from app.schemas.types import Color, GamePacket, BoardPosition, BoardState, GamePhase, LegalMoves, Move, Piece, PieceType, Player
 
-class AuctionChess:
+class Game:
+    phase: GamePhase = "bid"
+    turn: Color = "w"
     board: BoardState
+    players: dict[Color, Player]
+    moves: LegalMoves
 
-    def __init__(self):
+    def __init__(self, white: Player, black: Player):
+        self.players["w"] = white
+        self.players["b"] = black
         self.board = self._initialize_board()
+        # self.moves = self._update_legal_moves()
 
     def _initialize_board(self) -> BoardState:
         board: BoardState = [[None for _ in range(8)] for _ in range(8)]
@@ -24,11 +32,23 @@ class AuctionChess:
 
         return board
 
-    def move(self, move: Move):
+
+    def move(self, move: Move, player: Player):
+        if player != self.players[self.turn]:
+            raise Exception("Invalid turn")
+
         start = move.start 
+        start_piece: Piece | None = self.board[start.row][start.col]
+        if not start_piece:
+            raise Exception("Invalid move")
+        if start_piece.color != player.color:
+            raise Exception("Invalid move")
+
         end = move.end
-        if not self.board[start.row][start.col]:
-            raise ValueError("Start has no piece.")
+        end_piece: Piece | None = self.board[end.row][end.col]
+        if end_piece and end_piece.color == player.color:
+            raise Exception("Invalid move")
+        
 
         p: Piece = self.board[start.row][start.col] # type: ignore
         self.board[end.row][end.col] = Piece(type=p.type, color=p.color, hasMoved=True)
@@ -63,7 +83,9 @@ class AuctionChess:
                     
     
 if __name__ == "__main__":
-    test: AuctionChess = AuctionChess()
+    white=Player(color="w", uuid=uuid1())
+    black=Player(color="b", uuid=uuid1())
+    test: Game = Game(white=white, black=black)
     move: Move = Move(
         start=BoardPosition(row=0, col=0),
         end=BoardPosition(row=1, col=1)

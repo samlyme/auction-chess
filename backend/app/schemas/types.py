@@ -1,15 +1,18 @@
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
 
 Color = Literal["w", "b"]
 PieceType = Literal["p", "r", "n", "b", "q", "k"]
+GamePhase = Literal["bid", "move"]
 
+class Player(BaseModel):
+    color: Color
+    uuid: UUID
 
-class BoardPosition(BaseModel):
-    row: int = Field(..., ge=0, le=7)  # 0-7
-    col: int = Field(..., ge=0, le=7)  # 0-7
+BoardPosition = tuple[int, int]
 
 class Move(BaseModel):
     start: BoardPosition
