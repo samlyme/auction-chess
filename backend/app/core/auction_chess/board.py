@@ -24,10 +24,12 @@ MarkerEffect = Callable[[], None]
 class Marker:
     target: MarkerTarget
     effect: MarkerEffect
+    duration: int
 
-    def __init__(self, target: MarkerTarget, effect: MarkerEffect) -> None:
+    def __init__(self, target: MarkerTarget, effect: MarkerEffect, duration: int = -1) -> None:
         self.target = target
         self.effect = effect
+        self.duration = -1
 
 class Square:
     piece: Piece | None
@@ -55,15 +57,20 @@ def standard_board_factory() -> BoardState:
 
     return board
 
+MakerPlacer = Callable[[BoardState], None]
 class Board:
     board_state: BoardState
     rows: int
     cols: int
+    marked: list[Square]
 
-    def __init__(self, board_factory: BoardFactory = standard_board_factory) -> None:
+    def __init__(self, board_factory: BoardFactory = standard_board_factory, marker_placers: list[MakerPlacer] = []) -> None:
         self.board_state = board_factory()
         self.rows = len(self.board_state)
         self.cols = len(self.board_state[0])
+
+        for placer in marker_placers:
+            placer(self.board_state)
 
     def validate_position(self, position: BoardPosition):
         row, col = position
