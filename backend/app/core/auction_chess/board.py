@@ -26,12 +26,12 @@ def none_effect():
 class Marker:
     target: MarkerTarget
     effect: Effect
-    duration: int
+    expires: int
 
-    def __init__(self, target: MarkerTarget, effect: Effect, duration: int = -1) -> None:
+    def __init__(self, target: MarkerTarget, effect: Effect, expires: int = -1) -> None:
         self.target = target
         self.effect = effect
-        self.duration = -1
+        self.expires = expires
 
 class Move:
     start: BoardPosition
@@ -75,6 +75,7 @@ class Board:
     rows: int
     cols: int
     marked: list[Square]
+    turns: int = 0
 
     def __init__(self, board_factory: BoardFactory = standard_board_factory, marker_placers: list[MakerPlacer] = []) -> None:
         self.board_state = board_factory()
@@ -96,6 +97,8 @@ class Board:
         return self.board_state[row][col]
     
     def move(self, move: Move):
+        self.turns += 1
+
         start, end = move.start, move.end
 
         start_square: Square = self.get(start)
@@ -110,8 +113,13 @@ class Board:
         move.effect()
 
         marker: Marker | None = end_square.marker
-        if marker and marker.target(piece):
-            marker.effect()
+        if marker:
+            if (marker.expires >= self.turns or marker.expires == -1):
+                if marker.target(piece):
+                    marker.effect()
+            else:
+                end_square.marker = None
+            
             
 
         
