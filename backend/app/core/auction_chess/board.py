@@ -5,7 +5,6 @@ PieceType = Literal["p", "r", "n", "b", "q", "k"]
 GamePhase = Literal["bid", "move"]
 
 BoardPosition = tuple[int, int]
-Move = tuple[BoardPosition, BoardPosition]
 
 class Piece:
     type: PieceType
@@ -20,16 +19,29 @@ class Piece:
 
 # This is for "special" rules like en passent, promotion, and castling
 MarkerTarget = Callable[[Piece], bool]
-MarkerEffect = Callable[[], None]
+Effect = Callable[[], None]
+def none_effect():
+    pass
+
 class Marker:
     target: MarkerTarget
-    effect: MarkerEffect
+    effect: Effect
     duration: int
 
-    def __init__(self, target: MarkerTarget, effect: MarkerEffect, duration: int = -1) -> None:
+    def __init__(self, target: MarkerTarget, effect: Effect, duration: int = -1) -> None:
         self.target = target
         self.effect = effect
         self.duration = -1
+
+class Move:
+    start: BoardPosition
+    end: BoardPosition
+    effect: Effect
+
+    def __init__(self, start: BoardPosition, end: BoardPosition, effect: Effect = none_effect) -> None:
+        self.start = start
+        self.end = end
+        self.effect = effect
 
 class Square:
     piece: Piece | None
@@ -84,7 +96,7 @@ class Board:
         return self.board_state[row][col]
     
     def move(self, move: Move):
-        start, end = move
+        start, end = move.start, move.end
 
         start_square: Square = self.get(start)
         piece: Piece | None = start_square.piece
@@ -94,6 +106,8 @@ class Board:
         
         end_square.piece = start_square.piece
         start_square.piece = None
+
+        move.effect()
 
         marker: Marker | None = end_square.marker
         if marker and marker.target(piece):
