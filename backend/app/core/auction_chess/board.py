@@ -24,12 +24,18 @@ Effect = Callable[[], None]
 class Marker:
     target: MarkerTarget
     effect: Effect
+    duration: int
     expires: int
 
-    def __init__(self, target: MarkerTarget, effect: Effect, expires: int = -1) -> None:
+    def __init__(self, target: MarkerTarget, effect: Effect, duration: int = -1) -> None:
         self.target = target
         self.effect = effect
-        self.expires = expires
+        self.expires = duration
+    
+    # Marker and board are tightly coupled to manage expiration
+    # This method should only be called within the board class
+    def set_expire(self, i: int) -> None:
+        self.expires = i
 
 class Move:
     start: Position
@@ -57,7 +63,6 @@ class Board:
     board_state: BoardState
     rows: int
     cols: int
-    marked: list[Square]
     turns: int = 0
 
     def __init__(self, board_factory: BoardFactory, marker_placers: list[MarkerPlacer] = []) -> None:
@@ -76,6 +81,13 @@ class Board:
         if not square.piece:
             raise Exception("No piece there.")
         return square.piece
+
+    def add_marker(self, position: Position, marker: Marker) -> None:
+        if marker.duration == -1:
+            marker.set_expire(-1)
+        else:
+            marker.set_expire(self.turns + marker.duration)
+        self.square_at(position).marker = marker
 
     def validate_position(self, position: Position):
         row, col = position

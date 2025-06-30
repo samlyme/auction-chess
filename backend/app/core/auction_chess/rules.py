@@ -38,9 +38,9 @@ def set_has_moved_effect(piece: Piece) -> Effect:
         piece.hasMoved = True
     return f
 
-def effects(**effects: Effect) -> Effect:
+def effects(*effects: Effect) -> Effect:
     def f():
-        for effect in effects.values():
+        for effect in effects:
             effect()
     return f
 

@@ -28,10 +28,10 @@ class Game:
         end: Position = (3, 0)
         self.moves[(start, end)] = Move(start=start, 
                                         end=end, 
-                                        effect=effects(place_en_passant_marker=pawn_double_move_effect(self.board.square_at(skipped), 
+                                        effect=effects(pawn_double_move_effect(self.board.square_at(skipped), 
                                                                                 self.board.square_at(end), 
                                                                                 "w"),
-                                                       default=set_has_moved_effect(self.board.piece_at(start)))
+                                                       set_has_moved_effect(self.board.piece_at(start)))
                                         )
 
         # Allow taking en passant
