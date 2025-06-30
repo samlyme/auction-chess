@@ -1,8 +1,7 @@
 from uuid import uuid1
 
-from app.core.auction_chess import board
 from app.core.auction_chess.board import Board, Color, GamePhase, Move, Position
-from app.core.auction_chess.rules import effects, en_passant_test_board_factory, pawn_double_move_effect, set_has_moved_effect, standard_board_factory
+from app.core.auction_chess.rules import effects, en_passant_test_board_factory, pawn_double_move_effect, set_has_moved_effect
 
 # All the types defined here are for the interface between BE and FE
 import app.schemas.types as api
