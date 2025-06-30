@@ -1,9 +1,10 @@
 from uuid import uuid1
 
-from app.core.auction_chess.board import Board, Color, GamePhase, Move, Position
+from app.core.auction_chess.board import Board, Color, GamePhase, Marker, Move, Position
 from app.core.auction_chess.rules import effects, en_passant_test_board_factory, pawn_double_move_effect, set_has_moved_effect
 
 # All the types defined here are for the interface between BE and FE
+from app.core.utils import PriorityQueue
 import app.schemas.types as api
 
 class Game:
@@ -14,6 +15,9 @@ class Game:
     # later for when we need to convert API sent moves to game logic moves
     moves: dict[tuple[tuple[int, int], tuple[int, int]], Move] = {}
     board: Board
+
+    turns: int = 0
+    marker_queue: PriorityQueue[Marker] = PriorityQueue()
 
     def __init__(self, white: api.Player, black: api.Player):
         self.players["w"] = white
@@ -40,7 +44,18 @@ class Game:
                                         end=end,
                                         effect=set_has_moved_effect(self.board.piece_at(start)))
         
-        # self.moves = self._update_legal_moves()
+    def add_marker(self, position: Position, marker: Marker, expires: int = -1):
+        self.board.add_marker(position, marker)
+        if expires != -1:
+            self.marker_queue.push(expires+self.turns, marker)
+    
+    def _increment_turn(self):
+        while self.marker_queue.peek()[0] <= self.turns:
+            _, marker = self.marker_queue.pop()
+            # Work around to disable a marker
+            marker.effect = lambda: None
+            marker.target = lambda _: False
+        self.turns += 1
 
     
     def public_board(self) -> api.GamePacket:
@@ -54,6 +69,7 @@ class Game:
 
         game_move: Move = self.moves[(start, end)]
         self.board.move(game_move)
+        self._increment_turn()
     
     def __repr__(self) -> str:
         board_pieces: api.BoardPieces = [[square.piece for square in row] for row in self.board.board_state] # type: ignore
