@@ -4,7 +4,7 @@ Color = Literal["w", "b"]
 PieceType = Literal["p", "r", "n", "b", "q", "k"]
 GamePhase = Literal["bid", "move"]
 
-BoardPosition = tuple[int, int]
+Position = tuple[int, int]
 
 class Piece:
     type: PieceType
@@ -32,11 +32,11 @@ class Marker:
         self.expires = expires
 
 class Move:
-    start: BoardPosition
-    end: BoardPosition
+    start: Position
+    end: Position
     effect: Effect
 
-    def __init__(self, start: BoardPosition, end: BoardPosition, effect: Effect = lambda: None) -> None:
+    def __init__(self, start: Position, end: Position, effect: Effect = lambda: None) -> None:
         self.start = start
         self.end = end
         self.effect = effect
@@ -68,12 +68,21 @@ class Board:
         for placer in marker_placers:
             placer(self.board_state)
 
-    def validate_position(self, position: BoardPosition):
+    def square_at(self, position: Position) -> Square:
+        return self.board_state[position[0]][position[1]]
+    
+    def piece_at(self, position: Position) -> Piece:
+        square = self.square_at(position)
+        if not square.piece:
+            raise Exception("No piece there.")
+        return square.piece
+
+    def validate_position(self, position: Position):
         row, col = position
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
             raise Exception("Invalid Position")
     
-    def get(self, position: BoardPosition) -> Square:
+    def get(self, position: Position) -> Square:
         self.validate_position(position)
 
         row, col = position
@@ -93,6 +102,7 @@ class Board:
         end_square.piece = start_square.piece
         start_square.piece = None
 
+        # ALL MOVE EFFECTS HAPPEN AFTER THE BOARD MOVES
         move.effect()
 
         marker: Marker | None = end_square.marker
