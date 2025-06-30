@@ -1,18 +1,17 @@
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-
-Color = Literal["w", "b"]
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-GamePhase = Literal["bid", "move"]
+from app.core.auction_chess.board import Color, PieceType, GamePhase
 
 class Player(BaseModel):
     color: Color
     uuid: UUID
 
-BoardPosition = tuple[int, int]
+class BoardPosition(BaseModel):
+    row: int = Field(..., ge=0, le=7)  # 0-7
+    col: int = Field(..., ge=0, le=7)  # 0-7
 
 class Move(BaseModel):
     start: BoardPosition
@@ -23,12 +22,12 @@ class Piece(BaseModel):
     color: Color
     hasMoved: bool = False  # Useful for castling, initial pawn moves
 
-BoardState = list[list[Piece | None]]
+BoardPieces = list[list[Piece | None]]
 
 LegalMoves = list[list[list[BoardPosition]]]
 
 class GamePacket(BaseModel):
-    board: BoardState
+    board: BoardPieces
 
 
 # Users and such
