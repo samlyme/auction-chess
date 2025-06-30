@@ -20,8 +20,6 @@ class Piece:
 # This is for "special" rules like en passent, promotion, and castling
 MarkerTarget = Callable[[Piece], bool]
 Effect = Callable[[], None]
-def none_effect():
-    pass
 
 class Marker:
     target: MarkerTarget
@@ -38,7 +36,7 @@ class Move:
     end: BoardPosition
     effect: Effect
 
-    def __init__(self, start: BoardPosition, end: BoardPosition, effect: Effect = none_effect) -> None:
+    def __init__(self, start: BoardPosition, end: BoardPosition, effect: Effect = lambda: None) -> None:
         self.start = start
         self.end = end
         self.effect = effect
@@ -53,23 +51,8 @@ class Square:
 
 BoardState = list[list[Square]]
 BoardFactory = Callable[[], BoardState]
-def standard_board_factory() -> BoardState:
-    board: BoardState = [[Square() for _ in range(8)] for _ in range(8)]
 
-    piece_order: list[PieceType]= ["r", "n", "b", "q", "k", "b", "n", "r"]
-    for index, piece in enumerate(piece_order):
-        board[0][index].piece = Piece(type=piece, color="w", hasMoved=False)
-        board[7][index].piece = Piece(type=piece, color="b", hasMoved=False)
-
-    for i in range(8):
-        board[1][i].piece = Piece(type="p", color="w", hasMoved=False)
-
-    for i in range(8):
-        board[6][i].piece = Piece(type="p", color="b", hasMoved=False)
-
-    return board
-
-MakerPlacer = Callable[[BoardState], None]
+MarkerPlacer = Callable[[BoardState], None]
 class Board:
     board_state: BoardState
     rows: int
@@ -77,7 +60,7 @@ class Board:
     marked: list[Square]
     turns: int = 0
 
-    def __init__(self, board_factory: BoardFactory = standard_board_factory, marker_placers: list[MakerPlacer] = []) -> None:
+    def __init__(self, board_factory: BoardFactory, marker_placers: list[MarkerPlacer] = []) -> None:
         self.board_state = board_factory()
         self.rows = len(self.board_state)
         self.cols = len(self.board_state[0])
