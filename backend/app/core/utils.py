@@ -23,3 +23,12 @@ class PriorityQueue(Generic[V]):
     def peek(self) -> tuple[int, V]:
         p, _, v = self.arr[0]
         return p, v
+
+    def is_empty(self):
+        return self.count == 0
+
+    def __bool__(self):
+        return self.is_empty()
+
+    def __len__(self):
+        return self.count
