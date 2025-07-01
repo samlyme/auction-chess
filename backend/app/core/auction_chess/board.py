@@ -21,9 +21,6 @@ class Piece:
 MarkerTarget = Callable[[Piece], bool]
 Effect = Callable[[], None]
 
-# TODO: make marker a subclass of Board
-# - Board should be in control of how markers are created and used
-# - Board should not be responsible for managing the expiration of markers
 class Marker:
     target: MarkerTarget
     effect: Effect
