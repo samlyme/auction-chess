@@ -1,4 +1,4 @@
-from app.core.auction_chess.board import BoardState, Color, Effect, Marker, MarkerTarget, Piece, PieceType, Position, Square
+from app.core.auction_chess.board import BoardState, Color, Effect, Marker, MarkerTarget, Piece, PieceType, Square
 
 
 def standard_board_factory() -> BoardState:
