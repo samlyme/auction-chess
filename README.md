@@ -13,8 +13,16 @@
 ## Skills
 - Advanced React Hooks
 - React contexts
+
 - FastAPI dependency injection
 - Seperation of concerns in backend
 - Global type safety and validation 
-- Proxies via Nginx
+
+- Reverse proxy for Frontend
 - CI/CD with configuration as code on Railway
+
+- Python effect sequencing pattern
+- Closures
+
+## Challenges
+- Circular imports
