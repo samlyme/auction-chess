@@ -1,11 +1,11 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.auction_chess.game import Move
 from app.dependencies.games import GamesDep
 from app.routers import users
 from app.dependencies.db import init_db
 from app.routers import auth
+import app.schemas.types as api
 
 app = FastAPI()
 
@@ -39,7 +39,7 @@ async def websocket_endpoint(games: GamesDep, websocket: WebSocket, game_id: int
         while True:
             data = await websocket.receive_text()
             print("received", data)
-            move: Move = Move.model_validate_json(data)
+            move: api.Move = api.Move.model_validate_json(data)
             try:
                 await games.move(game_id, move)
             except ValueError as e:
