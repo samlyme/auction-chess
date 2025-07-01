@@ -1,7 +1,9 @@
 from typing import Annotated, Generator
 from fastapi import Depends, WebSocket
 from app.core.auction_chess.game import Game
-from app.schemas.types import GamePacket, Move
+
+from app.core.auction_chess.main import AuctionChess
+import app.schemas.types as api
 
 class InMemoryGameManager:
     def __init__(self):
@@ -9,7 +11,7 @@ class InMemoryGameManager:
 
     async def connect(self, game_id: int, websocket: WebSocket):
         await websocket.accept()
-        game, connections = self.games.setdefault(game_id, (Game(), []))
+        game, connections = self.games.setdefault(game_id, (AuctionChess(), []))
 
         await websocket.send_text(game.public_board().model_dump_json())
         connections.append(websocket)
@@ -19,12 +21,12 @@ class InMemoryGameManager:
         self.games[game_id][1].remove(websocket)
         print("Disconnected from game", game_id)
 
-    async def move(self, game_id: int, move: Move):
-        game, connections = self.games.setdefault(game_id, (Game(), []))
+    async def move(self, game_id: int, move: api.Move):
+        game, connections = self.games.setdefault(game_id, (AuctionChess(), []))
         game.move(move)
         print("Make move", move)
         
-        board: GamePacket = game.public_board()
+        board: api.GamePacket = game.public_board()
         for connection in connections:
             await connection.send_text(board.model_dump_json())
 
@@ -33,4 +35,5 @@ games = InMemoryGameManager()
 def get_games() -> Generator[InMemoryGameManager]:
     yield games
 
+# TODO: Games dep requires current user dep
 GamesDep = Annotated[InMemoryGameManager, Depends(get_games)]
