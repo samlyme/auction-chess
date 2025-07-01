@@ -1,4 +1,4 @@
-from typing import Callable, Literal
+from typing import Callable, Iterable, Literal
 
 Color = Literal["w", "b"]
 PieceType = Literal["p", "r", "n", "b", "q", "k"]
@@ -59,13 +59,13 @@ class Board:
     rows: int
     cols: int
 
-    def __init__(self, board_factory: BoardFactory, marker_placers: list[MarkerPlacer] = []) -> None:
+    def __init__(self, board_factory: BoardFactory, markers: Iterable[tuple[Position, Marker]] = []) -> None:
         self.board_state = board_factory()
         self.rows = len(self.board_state)
         self.cols = len(self.board_state[0])
 
-        for placer in marker_placers:
-            placer(self.board_state)
+        for pos, marker in markers:
+            self.add_marker(pos, marker)
 
     def square_at(self, position: Position) -> Square:
         return self.board_state[position[0]][position[1]]
