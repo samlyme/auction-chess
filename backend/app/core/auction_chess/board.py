@@ -20,6 +20,8 @@ class Piece:
 
 # This is for "special" rules like en passent, promotion, and castling
 MarkerTarget = Callable[[Piece], bool]
+
+# TODO: Refactor effect to be Callable[[Game], None]
 Effect = Callable[[], None]
 
 
