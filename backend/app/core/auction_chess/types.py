@@ -37,6 +37,7 @@ class Move:
         self.effect = effect
 
 
+# TODO: implement on capture
 class Piece(ABC):
     hasMoved: bool = False  # Useful for castling, initial pawn moves
     color: api.Color
@@ -63,8 +64,9 @@ class Piece(ABC):
     def __repr__(self) -> str:
         return self.initial if self.color == "b" else self.initial.upper()
 
+# TODO: refactor this to take in a Board object
     @abstractmethod
-    def moves(self, board_state: "BoardState") -> Iterable[Move]:
+    def moves(self, board: "BoardState") -> Iterable[Move]:
         pass
 
 
