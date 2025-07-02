@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable
 
-from app.schemas.types import Color, PieceType
-
+import app.schemas.types as api
 
 Position = tuple[int, int]
 
@@ -40,17 +39,17 @@ class Move:
 
 class Piece(ABC):
     hasMoved: bool = False  # Useful for castling, initial pawn moves
-    color: Color
+    color: api.Color
     name: str
-    initial: PieceType
+    initial: api.PieceType
     # Trust that board class sets this properly
     position: Position
 
     def __init__(
         self, 
-        color: Color, 
+        color: api.Color, 
         name: str, 
-        initial: PieceType, 
+        initial: api.PieceType, 
         position: Position, 
         hasMoved: bool = False
     ):
@@ -84,3 +83,19 @@ class Square:
 BoardState = list[list[Square]]
 BoardFactory = Callable[[], BoardState]
 MarkerPlacer = Callable[[BoardState], None]
+
+
+
+class Game(ABC):
+
+    @abstractmethod
+    def __init__(self, white: api.Player, black: api.Player):
+       pass 
+
+    @abstractmethod
+    def add_marker(self, position: Position, marker: Marker, expires: int = -1):
+        pass
+    
+    @abstractmethod
+    def move(self, move: api.Move) -> None:
+        pass

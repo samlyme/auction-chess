@@ -1,7 +1,6 @@
 from uuid import uuid1
 
 from app.core.auction_chess.board import Board, Marker, Move, Position
-from app.core.auction_chess.game import Game
 from app.core.auction_chess.rules.effects import (
     effects,
     pawn_double_move_effect,
@@ -10,6 +9,7 @@ from app.core.auction_chess.rules.effects import (
 
 # All the types defined here are for the interface between BE and FE
 from app.core.auction_chess.rules.factories import en_passant_test_board_factory
+from app.core.auction_chess.types import Game
 from app.core.utils import PriorityQueue
 import app.schemas.types as api
 
