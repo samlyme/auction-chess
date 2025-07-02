@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Iterable
 
 from app.schemas.types import Color, PieceType
 
@@ -45,20 +45,33 @@ class Piece(ABC):
     # Trust that board class sets this properly
     position: Position
 
-    def __init__(self, hasMoved: bool = False):
+    def __init__(
+        self, 
+        color: Color, 
+        name: str, 
+        initial: PieceType, 
+        position: Position, 
+        hasMoved: bool = False
+    ):
         self.hasMoved = hasMoved
+        self.color = color
+        self.name = name
+        self.initial = initial
+        self.position = position
+        
 
     def __repr__(self) -> str:
         return self.initial if self.color == "b" else self.initial.upper()
 
     @abstractmethod
-    def moves(self) -> Move:
+    def moves(self, board_state: "BoardState") -> Iterable[Move]:
         pass
 
 
 class Square:
     piece: Piece | None
     marker: Marker | None
+    attacked_by: list[Piece] = []
 
     def __init__(
         self, piece: Piece | None = None, marker: Marker | None = None
