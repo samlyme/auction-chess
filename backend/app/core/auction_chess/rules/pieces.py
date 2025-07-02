@@ -1,5 +1,5 @@
 from typing import Iterable
-from app.core.auction_chess.rules.effects import move_effect
+from app.core.auction_chess.rules.effects import move_effect, pawn_double_move_effect
 from app.core.auction_chess.types import Board, BoardState, Move, Piece, Position
 from app.schemas.types import Color
 
@@ -20,6 +20,13 @@ def sliding_moves(
         yield Move(start, (nr, nc))
         nr, nc = nr + dr, nc + dc
 
+def in_bounds(board: Board, position: Position) -> bool:
+    try:
+        board.validate_position(position)
+        return True
+    except Exception:
+        return False
+        
 # TODO: rewrite using board.square_at()
 
 class Pawn(Piece):
@@ -32,30 +39,37 @@ class Pawn(Piece):
         r, c = self.position
 
         nr, nc = r + dir, c
-        if nr < len(board_state) and nc < len(board_state[0]):
+        if in_bounds(board, (nr, nc)):
             if not board_state[nr][nc].piece:
                 yield Move(self.position, (nr, nc))
 
                 nr, nc = r + dir * 2, c
                 if (
                     not self.hasMoved
-                    and nr < len(board_state)
-                    and nc < len(board_state[0])
+                    and in_bounds(board, (nr, nc))
                 ):
-                    if not board_state[nr][nc]:
-                        yield Move(self.position, (nr, nc))
+                    if not board_state[nr][nc].piece:
+                        yield Move(
+                            start=self.position, 
+                            end=(nr, nc),
+                            effect=pawn_double_move_effect(
+                                skipped=board.square_at((r+dir, c)),
+                                end=board.square_at((nr, nc)),
+                                color=self.color
+                            )
+                            )
 
         # Only these moves are considered attacking
         nr, nc = r + dir, c + 1
-        if nr < len(board_state) and nc < len(board_state[0]):
+        if in_bounds(board, (nr, nc)):
             board_state[nr][nc].attacked_by.append(self)
-            if board_state[nr][nc].piece:
+            if board_state[nr][nc].piece or board.square_at((nr, nc)).marker and board.square_at((nr, nc)).marker.target(self): # type: ignore
                 yield Move(self.position, (nr, nc))
 
         nr, nc = r + dir, c - 1
-        if nr < len(board_state) and nc < len(board_state[0]):
+        if in_bounds(board, (nr, nc)):
             board_state[nr][nc].attacked_by.append(self)
-            if board_state[nr][nc].piece:
+            if board_state[nr][nc].piece or board.square_at((nr, nc)).marker and board.square_at((nr, nc)).marker.target(self): # type: ignore
                 yield Move(self.position, (nr, nc))
 
 

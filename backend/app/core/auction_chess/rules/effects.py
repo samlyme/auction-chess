@@ -1,11 +1,11 @@
-from app.core.auction_chess.rules.pieces import Pawn
 from app.core.auction_chess.types import Board, Effect, Marker, MarkerTarget, Move, Piece, Square
 from app.schemas.types import Color
 
 
 def any_opposite_pawn(color: Color) -> MarkerTarget:
     def f(piece: Piece):
-        return isinstance(piece, Pawn) and piece.color != color
+        # TODO: workaround with isinstance somehow avoiding circular imports
+        return piece.initial == "p" and piece.color != color
 
     return f
 

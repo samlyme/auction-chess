@@ -3,19 +3,19 @@ from app.core.auction_chess.types import BoardState, Piece, Position, Square
 from app.schemas.types import Color, PieceType
 
 
-def piece_factory(type: PieceType, color: Color, position: Position) -> Piece:
+def piece_factory(type: PieceType, color: Color, position: Position, has_moved: bool = False) -> Piece:
     if type == "p":
-        return Pawn(color, position)
+        return Pawn(color, position, has_moved)
     elif type == "r":
-        return Rook(color, position)
+        return Rook(color, position, has_moved)
     elif type == "n":
-        return Knight(color, position)
+        return Knight(color, position, has_moved)
     elif type == "b":
-        return Bishop(color, position)
+        return Bishop(color, position, has_moved)
     elif type == "q":
-        return Queen(color, position)
+        return Queen(color, position, has_moved)
     elif type == "k":
-        return King(color, position)
+        return King(color, position, has_moved)
     else:
         raise Exception("Piece not defined")
 
@@ -41,5 +41,6 @@ def en_passant_test_board_factory() -> BoardState:
     board: BoardState = [[Square() for _ in range(8)] for _ in range(8)]
     board[1][0].piece = piece_factory("p", "w", (1,0))
 
-    board[3][1].piece = piece_factory("p", "b", (3,1))
+    board[3][1].piece = piece_factory("p", "b", (3,1), True)
+    board[3][2].piece = piece_factory("p", "b", (3,1), True)
     return board

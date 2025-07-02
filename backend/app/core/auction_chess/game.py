@@ -1,12 +1,8 @@
 from uuid import uuid1
 
 from app.core.auction_chess.board import ChessBoard
+from app.core.auction_chess.rules.pieces import King
 from app.core.auction_chess.types import Marker, Move, Position
-from app.core.auction_chess.rules.effects import (
-    effects,
-    pawn_double_move_effect,
-    set_has_moved_effect,
-)
 
 # All the types defined here are for the interface between BE and FE
 from app.core.auction_chess.rules.factories import en_passant_test_board_factory
@@ -22,7 +18,6 @@ class AuctionChess(Game):
 
     # later for when we need to convert API sent moves to game logic moves
     moves: dict[Piece, list[Move]] = {}
-    pieces: list[Piece] = []
     board: ChessBoard
 
     turns: int = 0
@@ -36,37 +31,9 @@ class AuctionChess(Game):
         for row in self.board.board_state:
             for square in row:
                 if square.piece:
-                    self.pieces.append(square.piece)
-        for piece in self.pieces:
-            self.moves.setdefault(piece, [])
+                    self.moves.setdefault(square.piece, [])
 
-        # Allow double move
-        start: Position = (1, 0)
-        skipped: Position = (2, 0)
-        end: Position = (3, 0)
-        self.moves[self.board.piece_at(start)].append(
-            Move(
-                start=start,
-                end=end,
-                effect=effects(
-                    pawn_double_move_effect(
-                        self.board.square_at(skipped), self.board.square_at(end), "w"
-                    ),
-                    set_has_moved_effect(self.board.piece_at(start)),
-                ),
-            )
-        )
-
-        # Allow taking en passant
-        start: Position = (3, 1)
-        end: Position = (2, 0)
-        self.moves[self.board.piece_at(start)].append(
-            Move(
-                start=start,
-                end=end,
-                effect=set_has_moved_effect(self.board.piece_at(start)),
-            )
-        )
+        self._update_all_moves()
 
     def add_marker(self, position: Position, marker: Marker, expires: int = -1):
         self.board.add_marker(position, marker)
@@ -80,7 +47,7 @@ class AuctionChess(Game):
         piece = self.board.piece_at(start)
         moves = self.moves[piece]
 
-        game_move: Move
+        game_move: Move | None = None
         for m in moves:
             if m.end == end:
                 game_move = m
@@ -93,9 +60,21 @@ class AuctionChess(Game):
             self._remove_piece(captured)
 
         self._increment_turn()
-    
+        self._update_all_moves()
+
+    # TODO: Optimize this
+    def _update_all_moves(self):
+        kings = []
+        for piece in self.moves.keys():
+            if isinstance(piece, King):
+                kings.append(piece)
+            else:
+                self.moves[piece] = [move for move in piece.moves(self.board)]
+
+        for king in kings:
+            self.moves[king] = [move for move in king.moves(self.board)]
+
     def _remove_piece(self, piece: Piece):
-        self.pieces.remove(piece)
         del self.moves[piece]
 
     def _increment_turn(self):
@@ -117,13 +96,14 @@ class AuctionChess(Game):
         return api.GamePacket(board=board_pieces)
 
     def __repr__(self) -> str:
-        
         out = ""
         for row in reversed(self.board.board_state):
             for square in row:
                 piece = square.piece
                 if piece:
-                    out += piece.initial.upper() if piece.color == "w" else piece.initial
+                    out += (
+                        piece.initial.upper() if piece.color == "w" else piece.initial
+                    )
                 else:
                     out += "-"
                 out += " "
@@ -137,6 +117,7 @@ if __name__ == "__main__":
     test: Game = AuctionChess(white=white, black=black)
     while True:
         print(test)
+        print(test.moves)
         sr = int(input("start row: "))
         sc = int(input("start col: "))
         er = int(input("end row: "))

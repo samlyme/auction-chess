@@ -36,6 +36,9 @@ class Move:
         self.end = end
         self.effect = effect
 
+    def __repr__(self) -> str:
+        return f"<Move (start={self.start} end={self.end})"
+
 
 # TODO: implement on capture
 class Piece(ABC):
@@ -121,6 +124,10 @@ class Board(ABC):
     
     @abstractmethod
     def remove_marker(self, position: Position) -> None:
+        pass
+
+    @abstractmethod
+    def validate_position(self, position: Position) -> None:
         pass
     
     @abstractmethod
