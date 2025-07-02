@@ -24,6 +24,7 @@ def move_effect(board: Board, move: Move) -> Effect:
     
 
 # Puts a marker at the skipped square for en passent
+# TODO: make this take in a game object so the game can properly manage the marker
 def pawn_double_move_effect(skipped: Square, end: Square, color: Color) -> Effect:
     def f():
         skipped.marker = Marker(

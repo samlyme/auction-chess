@@ -20,14 +20,17 @@ def sliding_moves(
         yield Move(start, (nr, nc))
         nr, nc = nr + dr, nc + dc
 
+
 def in_bounds(board: Board, position: Position) -> bool:
     try:
         board.validate_position(position)
         return True
     except Exception:
         return False
-        
+
+
 # TODO: rewrite using board.square_at()
+
 
 class Pawn(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
@@ -44,32 +47,37 @@ class Pawn(Piece):
                 yield Move(self.position, (nr, nc))
 
                 nr, nc = r + dir * 2, c
-                if (
-                    not self.hasMoved
-                    and in_bounds(board, (nr, nc))
-                ):
+                if not self.hasMoved and in_bounds(board, (nr, nc)):
                     if not board_state[nr][nc].piece:
                         yield Move(
-                            start=self.position, 
+                            start=self.position,
                             end=(nr, nc),
                             effect=pawn_double_move_effect(
-                                skipped=board.square_at((r+dir, c)),
+                                skipped=board.square_at((r + dir, c)),
                                 end=board.square_at((nr, nc)),
-                                color=self.color
-                            )
-                            )
+                                color=self.color,
+                            ),
+                        )
 
         # Only these moves are considered attacking
         nr, nc = r + dir, c + 1
         if in_bounds(board, (nr, nc)):
             board_state[nr][nc].attacked_by.append(self)
-            if board_state[nr][nc].piece or board.square_at((nr, nc)).marker and board.square_at((nr, nc)).marker.target(self): # type: ignore
+            if (
+                board_state[nr][nc].piece
+                or board.square_at((nr, nc)).marker
+                and board.square_at((nr, nc)).marker.target(self)
+            ):  # type: ignore
                 yield Move(self.position, (nr, nc))
 
         nr, nc = r + dir, c - 1
         if in_bounds(board, (nr, nc)):
             board_state[nr][nc].attacked_by.append(self)
-            if board_state[nr][nc].piece or board.square_at((nr, nc)).marker and board.square_at((nr, nc)).marker.target(self): # type: ignore
+            if (
+                board_state[nr][nc].piece
+                or board.square_at((nr, nc)).marker
+                and board.square_at((nr, nc)).marker.target(self)
+            ):  # type: ignore
                 yield Move(self.position, (nr, nc))
 
 
@@ -212,4 +220,3 @@ class King(Piece):
                     end=(r, c + 2),
                     effect=move_effect(board, Move((r, 7), (r, c + 1))),
                 )
-        

@@ -78,6 +78,7 @@ class AuctionChess(Game):
         del self.moves[piece]
 
     def _increment_turn(self):
+        print(self.marker_queue)
         while (
             not self.marker_queue.is_empty()
             and self.marker_queue.peek()[0] <= self.turns

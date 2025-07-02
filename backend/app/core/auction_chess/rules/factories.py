@@ -42,5 +42,5 @@ def en_passant_test_board_factory() -> BoardState:
     board[1][0].piece = piece_factory("p", "w", (1,0))
 
     board[3][1].piece = piece_factory("p", "b", (3,1), True)
-    board[3][2].piece = piece_factory("p", "b", (3,1), True)
+    board[3][2].piece = piece_factory("p", "b", (3,2), True)
     return board

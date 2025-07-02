@@ -33,3 +33,6 @@ class PriorityQueue(Generic[V]):
 
     def __len__(self):
         return self.count
+
+    def __repr__(self) -> str:
+        return str(self.arr)
