@@ -1,6 +1,6 @@
 from uuid import uuid1
 
-from app.core.auction_chess.board import Board, Color, GamePhase, Marker, Move, Position
+from app.core.auction_chess.board import Board, Marker, Move, Position
 from app.core.auction_chess.game import Game
 from app.core.auction_chess.rules import (
     effects,
@@ -15,9 +15,9 @@ import app.schemas.types as api
 
 
 class AuctionChess(Game):
-    phase: GamePhase = "bid"
-    turn: Color = "w"
-    players: dict[Color, api.Player] = {}
+    phase: api.GamePhase = "bid"
+    turn: api.Color = "w"
+    players: dict[api.Color, api.Player] = {}
 
     # later for when we need to convert API sent moves to game logic moves
     moves: dict[tuple[tuple[int, int], tuple[int, int]], Move] = {}

@@ -1,67 +1,6 @@
-from typing import Callable, Iterable, Literal
+from typing import Iterable
 
-Color = Literal["w", "b"]
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-GamePhase = Literal["bid", "move"]
-
-Position = tuple[int, int]
-
-
-class Piece:
-    type: PieceType
-    color: Color
-    hasMoved: bool = False  # Useful for castling, initial pawn moves
-
-    def __init__(self, type: PieceType, color: Color, hasMoved: bool = False):
-        self.type = type
-        self.color = color
-        self.hasMoved = hasMoved
-
-
-# This is for "special" rules like en passent, promotion, and castling
-MarkerTarget = Callable[[Piece], bool]
-
-# TODO: Refactor effect to be Callable[[Game], None]
-Effect = Callable[[], None]
-
-
-class Marker:
-    target: MarkerTarget
-    effect: Effect
-
-    def __init__(self, target: MarkerTarget, effect: Effect) -> None:
-        self.target = target
-        self.effect = effect
-
-
-class Move:
-    start: Position
-    end: Position
-    effect: Effect
-
-    def __init__(
-        self, start: Position, end: Position, effect: Effect = lambda: None
-    ) -> None:
-        self.start = start
-        self.end = end
-        self.effect = effect
-
-
-class Square:
-    piece: Piece | None
-    marker: Marker | None
-
-    def __init__(
-        self, piece: Piece | None = None, marker: Marker | None = None
-    ) -> None:
-        self.piece = piece
-        self.marker = marker
-
-
-BoardState = list[list[Square]]
-BoardFactory = Callable[[], BoardState]
-
-MarkerPlacer = Callable[[BoardState], None]
+from app.core.auction_chess.types import BoardFactory, BoardState, Marker, Move, Piece, Position, Square
 
 
 class Board:
