@@ -88,8 +88,15 @@ class AuctionChess(Game):
         if not game_move:
             raise Exception("Bad move")
 
-        self.board.move(game_move)
+        captured = self.board.move(game_move)
+        if captured:
+            self._remove_piece(captured)
+
         self._increment_turn()
+    
+    def _remove_piece(self, piece: Piece):
+        self.pieces.remove(piece)
+        del self.moves[piece]
 
     def _increment_turn(self):
         while (

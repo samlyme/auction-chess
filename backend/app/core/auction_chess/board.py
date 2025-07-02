@@ -50,7 +50,7 @@ class ChessBoard(Board):
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
             raise Exception("Invalid Position")
 
-    def move(self, move: Move) -> None:
+    def move(self, move: Move) -> Piece | None:
         start, end = move.start, move.end
 
         start_square: Square = self.square_at(start)
@@ -58,6 +58,7 @@ class ChessBoard(Board):
         if not piece:
             raise Exception("Bad Move: start had no piece")
         end_square: Square = self.square_at(end)
+        captured: Piece | None = end_square.piece
 
         end_square.piece = start_square.piece
         start_square.piece = None
@@ -68,3 +69,5 @@ class ChessBoard(Board):
         marker: Marker | None = end_square.marker
         if marker and marker.target(piece):
             marker.effect()
+
+        return captured

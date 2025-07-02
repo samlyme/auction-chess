@@ -119,5 +119,6 @@ class Board(ABC):
         pass
     
     @abstractmethod
-    def move(self, move: Move) -> None:
+    def move(self, move: Move) -> Piece | None:
+        # Returns the piece captured
         pass
