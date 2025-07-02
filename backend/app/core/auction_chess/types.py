@@ -66,7 +66,7 @@ class Piece(ABC):
 
 # TODO: refactor this to take in a Board object
     @abstractmethod
-    def moves(self, board: "BoardState") -> Iterable[Move]:
+    def moves(self, board: "Board") -> Iterable[Move]:
         pass
 
 
@@ -103,6 +103,9 @@ class Game(ABC):
         pass
 
 class Board(ABC):
+    board_state: BoardState
+    rows: int
+    cols: int
 
     @abstractmethod
     def square_at(self, position: Position) -> Square:

@@ -1,5 +1,6 @@
 from typing import Iterable
-from app.core.auction_chess.types import BoardState, Move, Piece, Position
+from app.core.auction_chess.rules.effects import move_effect
+from app.core.auction_chess.types import Board, BoardState, Move, Piece, Position
 from app.schemas.types import Color
 
 
@@ -19,12 +20,14 @@ def sliding_moves(
         yield Move(start, (nr, nc))
         nr, nc = nr + dr, nc + dc
 
+# TODO: rewrite using board.square_at()
 
 class Pawn(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(color, "Pawn", "p", position, hasMoved)
 
-    def moves(self, board_state: BoardState) -> Iterable[Move]:
+    def moves(self, board: Board) -> Iterable[Move]:
+        board_state = board.board_state
         dir: int = 1 if self.color == "w" else -1
         r, c = self.position
 
@@ -60,7 +63,8 @@ class Rook(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(color, "Rook", "r", position, hasMoved)
 
-    def moves(self, board_state: BoardState) -> Iterable[Move]:
+    def moves(self, board: Board) -> Iterable[Move]:
+        board_state = board.board_state
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         for direction in directions:
             for move in sliding_moves(
@@ -75,7 +79,8 @@ class Knight(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(color, "Knight", "n", position, hasMoved)
 
-    def moves(self, board_state: BoardState) -> Iterable[Move]:
+    def moves(self, board: Board) -> Iterable[Move]:
+        board_state = board.board_state
         r, c = self.position
         signs = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         long, short = 2, 1
@@ -98,7 +103,8 @@ class Bishop(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(color, "Bishop", "b", position, hasMoved)
 
-    def moves(self, board_state: BoardState) -> Iterable[Move]:
+    def moves(self, board: Board) -> Iterable[Move]:
+        board_state = board.board_state
         directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         for direction in directions:
             for move in sliding_moves(
@@ -113,7 +119,8 @@ class Queen(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(color, "Queen", "q", position, hasMoved)
 
-    def moves(self, board_state: BoardState) -> Iterable[Move]:
+    def moves(self, board: Board) -> Iterable[Move]:
+        board_state = board.board_state
         directions = [
             (1, 0),
             (-1, 0),
@@ -137,7 +144,8 @@ class King(Piece):
     def __init__(self, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(color, "King", "k", position, hasMoved)
 
-    def moves(self, board_state: BoardState) -> Iterable[Move]:
+    def moves(self, board: Board) -> Iterable[Move]:
+        board_state = board.board_state
         directions = [
             (1, 0),
             (-1, 0),
@@ -164,10 +172,30 @@ class King(Piece):
         square = board_state[r][c]
         if square.attacked_by:
             return
-        
+
         # Long castle
         piece = board_state[r][0].piece
         if isinstance(piece, Rook) and not piece.hasMoved:
-            if not board_state[r][c-1].attacked_by and board_state[r][c-2].attacked_by:
-                yield Move(self.position, (r, c-2))
-                # TODO: Piece objects must know what game they are in
+            if (
+                not board_state[r][c - 1].attacked_by
+                and board_state[r][c - 2].attacked_by
+            ):
+                yield Move(
+                    start=self.position,
+                    end=(r, c - 2),
+                    effect=move_effect(board, Move((r, 0), (r, c - 1))),
+                )
+
+        # Short castle
+        piece = board.square_at((r, 7)).piece
+        if isinstance(piece, Rook) and not piece.hasMoved:
+            if (
+                not board_state[r][c + 1].attacked_by
+                and board_state[r][c + 2].attacked_by
+            ):
+                yield Move(
+                    start=self.position,
+                    end=(r, c + 2),
+                    effect=move_effect(board, Move((r, 7), (r, c + 1))),
+                )
+        

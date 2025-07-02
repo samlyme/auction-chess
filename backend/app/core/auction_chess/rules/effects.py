@@ -1,5 +1,5 @@
 from app.core.auction_chess.rules.pieces import Pawn
-from app.core.auction_chess.types import Effect, Marker, MarkerTarget, Piece, Square
+from app.core.auction_chess.types import Board, Effect, Marker, MarkerTarget, Move, Piece, Square
 from app.schemas.types import Color
 
 
@@ -16,6 +16,12 @@ def capture_effect(target: Square) -> Effect:
 
     return f
 
+
+def move_effect(board: Board, move: Move) -> Effect:
+    def f():
+        board.move(move)
+    return f
+    
 
 # Puts a marker at the skipped square for en passent
 def pawn_double_move_effect(skipped: Square, end: Square, color: Color) -> Effect:
