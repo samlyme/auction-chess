@@ -42,13 +42,16 @@ class Pawn(Piece):
                     if not board_state[nr][nc]:
                         yield Move(self.position, (nr, nc))
 
+        # Only these moves are considered attacking
         nr, nc = r + dir, c + 1
         if nr < len(board_state) and nc < len(board_state[0]):
+            board_state[nr][nc].attacked_by.append(self)
             if board_state[nr][nc].piece:
                 yield Move(self.position, (nr, nc))
 
         nr, nc = r + dir, c - 1
         if nr < len(board_state) and nc < len(board_state[0]):
+            board_state[nr][nc].attacked_by.append(self)
             if board_state[nr][nc].piece:
                 yield Move(self.position, (nr, nc))
 
@@ -63,6 +66,8 @@ class Rook(Piece):
             for move in sliding_moves(
                 board_state, self.color, self.position, direction
             ):
+                square = board_state[move.end[0]][move.end[1]]
+                square.attacked_by.append(self)
                 yield move
 
 
@@ -79,14 +84,14 @@ class Knight(Piece):
             nr, nc = long * sr + r, short * sc + c
             if nr < len(board_state) and nc < len(board_state[0]):
                 square = board_state[nr][nc]
-                if not square.piece:
-                    yield Move(self.position, (nr, nc))
+                square.attacked_by.append(self)
+                yield Move(self.position, (nr, nc))
 
             nr, nc = short * sr + r, long * sc + c
             if nr < len(board_state) and nc < len(board_state[0]):
                 square = board_state[nr][nc]
-                if not square.piece:
-                    yield Move(self.position, (nr, nc))
+                square.attacked_by.append(self)
+                yield Move(self.position, (nr, nc))
 
 
 class Bishop(Piece):
@@ -99,6 +104,8 @@ class Bishop(Piece):
             for move in sliding_moves(
                 board_state, self.color, self.position, direction
             ):
+                square = board_state[move.end[0]][move.end[1]]
+                square.attacked_by.append(self)
                 yield move
 
 
@@ -121,6 +128,8 @@ class Queen(Piece):
             for move in sliding_moves(
                 board_state, self.color, self.position, direction
             ):
+                square = board_state[move.end[0]][move.end[1]]
+                square.attacked_by.append(self)
                 yield move
 
 
@@ -144,7 +153,21 @@ class King(Piece):
             nr, nc = r + dr, c + dc
             if nr < len(board_state) and nc < len(board_state[0]):
                 square = board_state[nr][nc]
-                if not square.piece:
-                    yield Move(self.position, (nr, nc))
+                square.attacked_by.append(self)
+                yield Move(self.position, (nr, nc))
 
         # TODO: implement castling
+
+        if self.hasMoved:
+            return
+
+        square = board_state[r][c]
+        if square.attacked_by:
+            return
+        
+        # Long castle
+        piece = board_state[r][0].piece
+        if isinstance(piece, Rook) and not piece.hasMoved:
+            if not board_state[r][c-1].attacked_by and board_state[r][c-2].attacked_by:
+                yield Move(self.position, (r, c-2))
+                # TODO: Piece objects must know what game they are in
