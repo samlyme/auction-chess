@@ -99,3 +99,25 @@ class Game(ABC):
     @abstractmethod
     def move(self, move: api.Move) -> None:
         pass
+
+class Board(ABC):
+
+    @abstractmethod
+    def square_at(self, position: Position) -> Square:
+        pass
+    
+    @abstractmethod
+    def piece_at(self, position: Position) -> Piece:
+        pass
+    
+    @abstractmethod
+    def add_marker(self, position: Position, marker: Marker) -> None:
+        pass
+    
+    @abstractmethod
+    def remove_marker(self, position: Position) -> None:
+        pass
+    
+    @abstractmethod
+    def move(self, move: Move) -> None:
+        pass

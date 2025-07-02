@@ -2,7 +2,7 @@ from typing import Annotated, Generator
 from fastapi import Depends, WebSocket
 from app.core.auction_chess.game import Game
 
-from app.core.auction_chess.main import AuctionChess
+from app.core.auction_chess.game import AuctionChess
 import app.schemas.types as api
 
 class InMemoryGameManager:

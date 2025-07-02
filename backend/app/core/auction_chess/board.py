@@ -1,9 +1,18 @@
 from typing import Iterable
 
-from app.core.auction_chess.types import BoardFactory, BoardState, Marker, Move, Piece, Position, Square
+from app.core.auction_chess.types import (
+    Board,
+    BoardFactory,
+    BoardState,
+    Marker,
+    Move,
+    Piece,
+    Position,
+    Square,
+)
 
 
-class Board:
+class ChessBoard(Board):
     board_state: BoardState
     rows: int
     cols: int
@@ -21,6 +30,7 @@ class Board:
             self.add_marker(pos, marker)
 
     def square_at(self, position: Position) -> Square:
+        self.validate_position(position)
         return self.board_state[position[0]][position[1]]
 
     def piece_at(self, position: Position) -> Piece:
@@ -32,28 +42,22 @@ class Board:
     def add_marker(self, position: Position, marker: Marker) -> None:
         self.square_at(position).marker = marker
 
-    def remove_marker(self, position: Position, marker: Marker) -> None:
+    def remove_marker(self, position: Position) -> None:
         self.square_at(position).marker = None
 
-    def validate_position(self, position: Position):
+    def validate_position(self, position: Position) -> None:
         row, col = position
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
             raise Exception("Invalid Position")
 
-    def get(self, position: Position) -> Square:
-        self.validate_position(position)
-
-        row, col = position
-        return self.board_state[row][col]
-
-    def move(self, move: Move):
+    def move(self, move: Move) -> None:
         start, end = move.start, move.end
 
-        start_square: Square = self.get(start)
+        start_square: Square = self.square_at(start)
         piece: Piece | None = start_square.piece
         if not piece:
             raise Exception("Bad Move: start had no piece")
-        end_square: Square = self.get(end)
+        end_square: Square = self.square_at(end)
 
         end_square.piece = start_square.piece
         start_square.piece = None

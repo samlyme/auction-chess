@@ -1,6 +1,6 @@
 from uuid import uuid1
 
-from app.core.auction_chess.board import Board, Marker, Move, Position
+from app.core.auction_chess.board import ChessBoard, Marker, Move, Position
 from app.core.auction_chess.rules.effects import (
     effects,
     pawn_double_move_effect,
@@ -21,7 +21,7 @@ class AuctionChess(Game):
 
     # later for when we need to convert API sent moves to game logic moves
     moves: dict[tuple[tuple[int, int], tuple[int, int]], Move] = {}
-    board: Board
+    board: ChessBoard
 
     turns: int = 0
     marker_queue: PriorityQueue[Marker] = PriorityQueue()
@@ -30,7 +30,7 @@ class AuctionChess(Game):
         self.players["w"] = white
         self.players["b"] = black
         # for testing
-        self.board = Board(board_factory=en_passant_test_board_factory)
+        self.board = ChessBoard(board_factory=en_passant_test_board_factory)
 
         # Allow double move
         start: Position = (1, 0)
