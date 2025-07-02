@@ -6,6 +6,7 @@ from app.schemas.types import Color, PieceType
 
 Position = tuple[int, int]
 
+# TODO: write board and game abstract classes
 
 # Effect should NOT be changed from this type because it can be called from board.
 # Effects should be able to change anything in the game.
