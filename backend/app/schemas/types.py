@@ -1,8 +1,12 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-from app.core.auction_chess.board import Color, PieceType
+
+Color = Literal["w", "b"]
+PieceType = Literal["p", "r", "n", "b", "q", "k"]
+GamePhase = Literal["bid", "move"]
 
 
 class Player(BaseModel):
