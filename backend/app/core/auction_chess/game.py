@@ -127,6 +127,7 @@ if __name__ == "__main__":
     while True:
         print(test)
         print(test.moves)
+        print("markers", test.marker_queue)
         sr = int(input("start row: "))
         sc = int(input("start col: "))
         er = int(input("end row: "))

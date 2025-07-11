@@ -5,11 +5,12 @@ V = TypeVar("V")
 
 
 class PriorityQueue(Generic[V]):
-    arr: list[tuple[int, int, V]] = []
+    arr: list[tuple[int, int, V]]
     _n: int = 0
     count: int = 0
 
     def __init__(self) -> None:
+        self.arr = []
         pass
 
     def push(self, priority: int, value: V):
@@ -19,6 +20,7 @@ class PriorityQueue(Generic[V]):
 
     def pop(self) -> tuple[int, V]:
         p, _, v = heapq.heappop(self.arr)
+        self.count -= 1
         return p, v
 
     def peek(self) -> tuple[int, V]:
