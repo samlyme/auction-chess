@@ -5,8 +5,6 @@ import app.schemas.types as api
 
 Position = tuple[int, int]
 
-# TODO: write board and game abstract classes
-
 # Effect should NOT be changed from this type because it can be called from board.
 # Effects should be able to change anything in the game.
 # The variables that effects have access to should defined in the effect factory
@@ -48,15 +46,18 @@ class Piece(ABC):
     initial: api.PieceType
     # Trust that board class sets this properly
     position: Position
+    game: "Game"
 
     def __init__(
         self, 
+        game: "Game",
         color: api.Color, 
         name: str, 
         initial: api.PieceType, 
         position: Position, 
         hasMoved: bool = False
     ):
+        self.game = game
         self.hasMoved = hasMoved
         self.color = color
         self.name = name

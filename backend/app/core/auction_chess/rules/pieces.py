@@ -1,6 +1,6 @@
 from typing import Iterable
 from app.core.auction_chess.rules.effects import move_effect, pawn_double_move_effect
-from app.core.auction_chess.types import Board, BoardState, Move, Piece, Position
+from app.core.auction_chess.types import Board, BoardState, Game, Move, Piece, Position
 from app.schemas.types import Color
 
 
@@ -33,8 +33,8 @@ def in_bounds(board: Board, position: Position) -> bool:
 
 
 class Pawn(Piece):
-    def __init__(self, color: Color, position: Position, hasMoved: bool = False):
-        super().__init__(color, "Pawn", "p", position, hasMoved)
+    def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
+        super().__init__(game, color, "Pawn", "p", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
         board_state = board.board_state
@@ -66,7 +66,7 @@ class Pawn(Piece):
             if (
                 board_state[nr][nc].piece
                 or board.square_at((nr, nc)).marker
-                and board.square_at((nr, nc)).marker.target(self)
+                and board.square_at((nr, nc)).marker.target(self) # type: ignore
             ):  # type: ignore
                 yield Move(self.position, (nr, nc))
 
@@ -76,14 +76,14 @@ class Pawn(Piece):
             if (
                 board_state[nr][nc].piece
                 or board.square_at((nr, nc)).marker
-                and board.square_at((nr, nc)).marker.target(self)
+                and board.square_at((nr, nc)).marker.target(self) # type: ignore
             ):  # type: ignore
                 yield Move(self.position, (nr, nc))
 
 
 class Rook(Piece):
-    def __init__(self, color: Color, position: Position, hasMoved: bool = False):
-        super().__init__(color, "Rook", "r", position, hasMoved)
+    def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
+        super().__init__(game, color, "Rook", "r", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
         board_state = board.board_state
@@ -98,8 +98,8 @@ class Rook(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, color: Color, position: Position, hasMoved: bool = False):
-        super().__init__(color, "Knight", "n", position, hasMoved)
+    def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
+        super().__init__(game, color, "Knight", "n", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
         board_state = board.board_state
@@ -122,8 +122,8 @@ class Knight(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, color: Color, position: Position, hasMoved: bool = False):
-        super().__init__(color, "Bishop", "b", position, hasMoved)
+    def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
+        super().__init__(game, color, "Bishop", "b", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
         board_state = board.board_state
@@ -138,8 +138,8 @@ class Bishop(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, color: Color, position: Position, hasMoved: bool = False):
-        super().__init__(color, "Queen", "q", position, hasMoved)
+    def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
+        super().__init__(game, color, "Queen", "q", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
         board_state = board.board_state
@@ -163,8 +163,8 @@ class Queen(Piece):
 
 
 class King(Piece):
-    def __init__(self, color: Color, position: Position, hasMoved: bool = False):
-        super().__init__(color, "King", "k", position, hasMoved)
+    def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
+        super().__init__(game, color, "King", "k", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
         board_state = board.board_state

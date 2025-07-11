@@ -27,7 +27,7 @@ class AuctionChess(Game):
         self.players["w"] = white
         self.players["b"] = black
         # for testing
-        self.board = ChessBoard(board_factory=en_passant_test_board_factory)
+        self.board = ChessBoard(board_factory=en_passant_test_board_factory(self))
         for row in self.board.board_state:
             for square in row:
                 if square.piece:
@@ -55,7 +55,7 @@ class AuctionChess(Game):
         if not game_move:
             raise Exception("Bad move")
 
-        captured = self.board.move(game_move)
+        captured: Piece | None = self.board.move(game_move)
         if captured:
             self._remove_piece(captured)
 
