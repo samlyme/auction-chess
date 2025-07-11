@@ -106,6 +106,10 @@ class Game(ABC):
     def move(self, move: api.Move) -> None:
         pass
 
+    @abstractmethod
+    def capture(self, position: Position):
+        pass
+
 class Board(ABC):
     board_state: BoardState
     rows: int

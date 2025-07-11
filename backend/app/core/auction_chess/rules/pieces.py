@@ -1,7 +1,8 @@
 from typing import Iterable
-from app.core.auction_chess.rules.effects import move_effect, pawn_double_move_effect
+from app.core.auction_chess.rules.effects import move_effect, place_en_passent_marker
 from app.core.auction_chess.types import Board, BoardState, Game, Move, Piece, Position
-from app.schemas.types import Color
+from app.schemas.types import BoardPosition, Color
+import app.schemas.types as api
 
 
 def sliding_moves(
@@ -52,9 +53,10 @@ class Pawn(Piece):
                         yield Move(
                             start=self.position,
                             end=(nr, nc),
-                            effect=pawn_double_move_effect(
-                                skipped=board.square_at((r + dir, c)),
-                                end=board.square_at((nr, nc)),
+                            effect=place_en_passent_marker(
+                                game=self.game,
+                                skipped=(r + dir, c),
+                                end=(nr, nc),
                                 color=self.color,
                             ),
                         )
@@ -205,7 +207,10 @@ class King(Piece):
                 yield Move(
                     start=self.position,
                     end=(r, c - 2),
-                    effect=move_effect(board, Move((r, 0), (r, c - 1))),
+                    effect=move_effect(self.game, api.Move(
+                        start=BoardPosition(row=r, col=0),
+                        end=BoardPosition(row=r, col=c-1)
+                    ))
                 )
 
         # Short castle
@@ -218,5 +223,8 @@ class King(Piece):
                 yield Move(
                     start=self.position,
                     end=(r, c + 2),
-                    effect=move_effect(board, Move((r, 7), (r, c + 1))),
+                    effect=move_effect(self.game, api.Move(
+                        start=BoardPosition(row=r, col=7),
+                        end=BoardPosition(row=r, col=c+1)
+                    ))
                 )

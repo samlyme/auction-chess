@@ -61,6 +61,14 @@ class AuctionChess(Game):
 
         self._increment_turn()
         self._update_all_moves()
+    
+    def capture(self, position: Position):
+        try:
+            piece = self.board.piece_at(position)
+            self.board.square_at(position).piece = None
+            self._remove_piece(piece)
+        except Exception:
+            pass
 
     # TODO: Optimize this
     def _update_all_moves(self):
