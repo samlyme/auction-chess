@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.dependencies.auth import AuthDep, CurrentUserDep
-from app.dependencies.games import LobbyDep
+from app.dependencies.lobbies import LobbyDep
 
 import app.schemas.types as api
 from app.utils.exceptions import LobbyNotFoundError, LobbyPermissionError
