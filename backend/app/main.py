@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import games, users, websocket
+from app.routers import lobbies, users, websocket
 from app.dependencies.db import init_db
 from app.routers import auth
 
@@ -21,7 +21,7 @@ app.add_middleware(
 
 app.include_router(users.router)
 app.include_router(auth.router)
-app.include_router(games.router)
+app.include_router(lobbies.router)
 app.include_router(websocket.router)
 
 @app.on_event("startup")

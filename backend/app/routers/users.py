@@ -15,7 +15,7 @@ router = APIRouter(prefix="/users")
 def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
     try:
         password_hash = get_password_hash(user_in.password)
-        new_user = User(username=user_in.username, passwordHash=password_hash)
+        new_user = User(username=user_in.username, password_hash=password_hash)
         db.add(new_user)
         db.commit()
         return new_user.profile()

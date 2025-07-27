@@ -18,4 +18,4 @@ class User(Base):
         return UserProfile(uuid=self.uuid, username=self.username, created_at=self.created_at)
 
     def __repr__(self):
-        return f"<User(id={self.id}, username='{self.username}', passwordHash='{self.password_hash}')>"
+        return f"<User(id={self.id}, username='{self.username}', password_hash='{self.password_hash}')>"

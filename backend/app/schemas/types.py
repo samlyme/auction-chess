@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
 
@@ -61,3 +62,13 @@ class JWTPayload(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
+
+
+LobbyId = int
+LobbyStatus = Literal["active", "pending"]
+
+class LobbyProfile(BaseModel):
+    id: LobbyId
+    status: LobbyStatus
+    host: UserProfile
+    guest: UserProfile | None
