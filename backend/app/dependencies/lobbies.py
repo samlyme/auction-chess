@@ -5,7 +5,7 @@ from app.core.auction_chess.game import Game
 
 from app.core.auction_chess.game import AuctionChess
 import app.schemas.types as api
-from app.utils.exceptions import LobbyNotFoundError, LobbyPermissionError
+from app.utils.exceptions import LobbyAlreadyHostedError, LobbyNotFoundError, LobbyPermissionError
 
 class Lobby(TypedDict):
     status: api.LobbyStatus
@@ -30,7 +30,11 @@ class LobbyManager:
 
     async def create(self, host: api.UserProfile) -> api.LobbyId:
         if host.uuid in self.hosts:
-            raise Exception("Player can not host multiple games")
+            # TODO: optimize this lol
+            for id, lobby in self.lobbies.items():
+                if lobby["host"] == host:
+                    raise LobbyAlreadyHostedError(host, id)
+            raise LobbyAlreadyHostedError(host, -1) # This is an edge case
         self.hosts.add(host.uuid)
 
         lobby_id = len(self.lobbies)

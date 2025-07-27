@@ -19,5 +19,14 @@ class LobbyPermissionError(LobbyError):
         super().__init__(f"User {user} does not have permission to manage Lobby '{lobby_id}'")
         self.detail = {
             "lobby_id": lobby_id,
-            "user": user,
+            "user": user.model_dump(mode="json"),
+        }
+
+class LobbyAlreadyHostedError(LobbyError):
+    """Raised when a user that is already hosting a lobby tries creating a new lobby."""
+    def __init__(self, user: api.UserProfile, lobby_id: api.LobbyId):
+        super().__init__(f"User {user} already hosting Lobby '{lobby_id}'")
+        self.detail = {
+            "lobby_id": lobby_id,
+            "user": user.model_dump(mode="json"),
         }
