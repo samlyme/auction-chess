@@ -30,3 +30,23 @@ class LobbyAlreadyHostedError(LobbyError):
             "lobby_id": lobby_id,
             "user": user.model_dump(mode="json"),
         }
+
+class LobbyJoinError(LobbyError):
+    """Raised when a user can not join their requested lobby."""
+    def __init__(self, user: api.UserProfile, lobby_id: api.LobbyId, reason: str = ""):
+        super().__init__(f"User {user} can't join Lobby '{lobby_id}' because '{reason}'.")
+        self.detail = {
+            "lobby_id": lobby_id,
+            "user": user.model_dump(mode="json"),
+            "reason": reason,
+        }
+
+class LobbyStartError(LobbyError):
+    """Raised when a user a lobby can't be started"""
+    def __init__(self, user: api.UserProfile, lobby_id: api.LobbyId, reason: str = ""):
+        super().__init__(f"User {user} can't start Lobby '{lobby_id}' because '{reason}'.")
+        self.detail = {
+            "lobby_id": lobby_id,
+            "user": user.model_dump(mode="json"),
+            "reason": reason,
+        }

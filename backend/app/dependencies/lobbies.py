@@ -5,7 +5,7 @@ from app.core.auction_chess.game import Game
 
 from app.core.auction_chess.game import AuctionChess
 import app.schemas.types as api
-from app.utils.exceptions import LobbyAlreadyHostedError, LobbyNotFoundError, LobbyPermissionError
+from app.utils.exceptions import LobbyAlreadyHostedError, LobbyJoinError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
 
 class Lobby(TypedDict):
     status: api.LobbyStatus
@@ -20,10 +20,12 @@ class Lobby(TypedDict):
 class LobbyManager:
     lobbies: dict[api.LobbyId, Lobby]
     hosts: set[UUID]
+    guests: set[UUID]
 
     def __init__(self) -> None:
         self.lobbies = {}
         self.hosts = set()
+        self.guests = set()
 
     async def get(self, lobby_id: api.LobbyId) -> Lobby | None:
         return self.lobbies.get(lobby_id)
@@ -78,33 +80,37 @@ class LobbyManager:
 
     async def join(self, lobby_id: api.LobbyId, guest: api.UserProfile):
         if lobby_id not in self.lobbies:
-            raise Exception("This lobby does not exist")
+            raise LobbyNotFoundError(lobby_id)
 
         lobby = self.lobbies[lobby_id]
 
+        if guest.uuid in self.guests:
+            raise LobbyJoinError(guest, lobby_id, "user already in lobby")
+
         if lobby["guest"] is not None:
-            raise Exception("Lobby already full")
+            raise LobbyJoinError(guest, lobby_id, "lobby is full")
 
         if lobby["host"] == guest:
-            raise Exception("Host can not join their own lobby as guest.")
+            raise LobbyJoinError(guest, lobby_id, "host can't join own lobby")
         
+        self.guests.add(guest.uuid)
         self.lobbies[lobby_id]["guest"] = guest
 
     # Assume that this method is called from a reputatble source
-    async def start(self, host: api.UserProfile, lobby_id: api.LobbyId):
+    async def start(self, user: api.UserProfile, lobby_id: api.LobbyId):
         if lobby_id not in self.lobbies:
-            raise Exception("This lobby does not exist")
+            raise LobbyNotFoundError(lobby_id)
 
         lobby = self.lobbies[lobby_id]
 
-        if lobby["status"] == "active":
-            raise Exception("This lobby is already active")
+        if lobby["host"] != user:
+            raise LobbyPermissionError(user, lobby_id)
 
-        if lobby["host"] != host:
-            raise Exception("You are not the host of this lobby")
+        if lobby["status"] == "active":
+            raise LobbyStartError(user, lobby_id, "lobby already active")
 
         if not lobby["guest"]:
-            raise Exception("This lobby is not full")
+            raise LobbyStartError(user, lobby_id, "lobby not full")
         
         lobby["status"] = "active"
         lobby["game"] = AuctionChess(
@@ -114,7 +120,7 @@ class LobbyManager:
     
     def to_profile(self, lobby_id: api.LobbyId):
         if lobby_id not in self.lobbies:
-            raise Exception("This lobby does not exist")
+            raise LobbyNotFoundError(lobby_id)
         
         lobby = self.lobbies[lobby_id]
 
