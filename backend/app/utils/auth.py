@@ -27,7 +27,7 @@ def encode_jwt(data: User, expires_delta: timedelta | None = None) -> str:
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(hours=24)
 
     # NOTE: jwt.encode does not support UUID Objects, so this is a workaround.
     payload = JWTPayload(exp=expire, sub=data.uuid)
