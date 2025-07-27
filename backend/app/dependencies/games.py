@@ -5,6 +5,7 @@ from app.core.auction_chess.game import Game
 
 from app.core.auction_chess.game import AuctionChess
 import app.schemas.types as api
+from app.utils.exceptions import LobbyNotFoundError, LobbyPermissionError
 
 class Lobby(TypedDict):
     status: api.LobbyStatus
@@ -47,11 +48,11 @@ class LobbyManager:
     # Assume that this delete comes from a trusted source
     async def delete(self, user: api.UserProfile, lobby_id: api.LobbyId):
         if lobby_id not in self.lobbies:
-            raise Exception("This lobby does not exist")
+            raise LobbyNotFoundError(lobby_id)
         lobby = self.lobbies[lobby_id]
 
         if user != lobby["host"]:
-            raise Exception("You are not the host of this lobby")
+            raise LobbyPermissionError(user, lobby_id)
 
         self.hosts.remove(lobby["host"].uuid)
 

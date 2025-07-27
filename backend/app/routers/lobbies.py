@@ -1,9 +1,10 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.dependencies.auth import AuthDep, CurrentUserDep
 from app.dependencies.games import LobbyDep
 
 import app.schemas.types as api
+from app.utils.exceptions import LobbyNotFoundError, LobbyPermissionError
 router = APIRouter(prefix="/lobbies")
 
 
@@ -36,4 +37,9 @@ async def get_lobby(_: AuthDep, lobby_manger: LobbyDep, lobby_id: api.LobbyId) -
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_lobby(user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId) -> None:
-    await lobby_manager.delete(user, lobby_id)
+    try:
+        await lobby_manager.delete(user, lobby_id)
+    except LobbyNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    except LobbyPermissionError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
