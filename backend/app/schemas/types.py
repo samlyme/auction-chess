@@ -47,6 +47,13 @@ class UserProfile(BaseModel):
     username: str
     created_at: datetime
 
+    # Required because user can change username
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, UserProfile):
+            return NotImplemented
+        
+        return self.uuid == value.uuid
+
 
 class UserCreate(BaseModel):
     username: str
