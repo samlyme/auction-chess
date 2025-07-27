@@ -1,20 +1,21 @@
-from uuid import uuid1
+from uuid import UUID, uuid1
 
 from app.core.auction_chess.board import ChessBoard
 from app.core.auction_chess.rules.pieces import King
-from app.core.auction_chess.types import Marker, Move, Position
+from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Position
 
 # All the types defined here are for the interface between BE and FE
 from app.core.auction_chess.rules.factories import en_passant_test_board_factory
 from app.core.auction_chess.types import Game, Piece
 from app.core.utils import PriorityQueue
+
 import app.schemas.types as api
 
 
 class AuctionChess(Game):
-    phase: api.GamePhase = "bid"
-    turn: api.Color = "w"
-    players: dict[api.Color, api.Player] = {}
+    phase: GamePhase = "bid"
+    turn: Color = "w"
+    players: dict[Color, UUID] = {}
 
     # later for when we need to convert API sent moves to game logic moves
     moves: dict[Piece, list[Move]] = {}
@@ -23,7 +24,7 @@ class AuctionChess(Game):
     turns: int = 0
     marker_queue: PriorityQueue[Marker] = PriorityQueue()
 
-    def __init__(self, white: api.Player, black: api.Player):
+    def __init__(self, white: UUID, black: UUID):
         self.players["w"] = white
         self.players["b"] = black
         # for testing
@@ -36,13 +37,20 @@ class AuctionChess(Game):
         self._update_all_moves()
 
     def add_marker(self, position: Position, marker: Marker, expires: int = -1):
+        """
+        Places a marker down at the specified position. If "expires" is set to 
+        -1, the marker doesn't expire.
+        """
         self.board.add_marker(position, marker)
         if expires != -1:
             self.marker_queue.push(expires + self.turns, marker)
 
-    def move(self, move: api.Move) -> None:
-        start: Position = (move.start.row, move.start.col)
-        end: Position = (move.end.row, move.end.col)
+    def move(self, move: Move) -> None:
+        """
+        Executes a standard move from client.
+        """
+        start: Position = (move.start[0], move.start[1])
+        end: Position = (move.end[0], move.end[1])
 
         piece = self.board.piece_at(start)
         moves = self.moves[piece]
@@ -63,6 +71,9 @@ class AuctionChess(Game):
         self._update_all_moves()
     
     def capture(self, position: Position):
+        """
+        Captures a piece without question. Only really used for en passent.
+        """
         try:
             piece = self.board.piece_at(position)
             self.board.square_at(position).piece = None
@@ -86,7 +97,6 @@ class AuctionChess(Game):
         del self.moves[piece]
 
     def _increment_turn(self):
-        print(self.marker_queue)
         while (
             not self.marker_queue.is_empty()
             and self.marker_queue.peek()[0] <= self.turns
@@ -123,7 +133,7 @@ class AuctionChess(Game):
 if __name__ == "__main__":
     white = api.Player(color="w", uuid=uuid1())
     black = api.Player(color="b", uuid=uuid1())
-    test: Game = AuctionChess(white=white, black=black)
+    test: Game = AuctionChess(white=white.uuid, black=black.uuid)
     while True:
         print(test)
         print(test.moves)
@@ -133,8 +143,8 @@ if __name__ == "__main__":
         er = int(input("end row: "))
         ec = int(input("end col: "))
         test.move(
-            api.Move(
-                start=api.BoardPosition(row=sr, col=sc),
-                end=api.BoardPosition(row=er, col=ec),
+            Move(
+                start=(sr, sc),
+                end=(er, ec)
             )
         )

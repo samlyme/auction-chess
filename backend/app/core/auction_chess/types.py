@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable
-
-import app.schemas.types as api
+from typing import Callable, Iterable, Literal
+from uuid import UUID
 
 Position = tuple[int, int]
 
@@ -11,6 +10,10 @@ Position = tuple[int, int]
 # function.
 Effect = Callable[[], None]
 MarkerTarget = Callable[["Piece"], bool]
+
+Color = Literal["w", "b"]
+PieceType = Literal["p", "r", "n", "b", "q", "k"]
+GamePhase = Literal["bid", "move"]
 
 
 class Marker:
@@ -35,15 +38,15 @@ class Move:
         self.effect = effect
 
     def __repr__(self) -> str:
-        return f"<Move (start={self.start} end={self.end})"
+        return f"<Move (start={self.start} end={self.end})>"
 
 
 # TODO: implement on capture
 class Piece(ABC):
     hasMoved: bool = False  # Useful for castling, initial pawn moves
-    color: api.Color
+    color: Color
     name: str
-    initial: api.PieceType
+    initial: PieceType
     # Trust that board class sets this properly
     position: Position
     game: "Game"
@@ -51,9 +54,9 @@ class Piece(ABC):
     def __init__(
         self, 
         game: "Game",
-        color: api.Color, 
+        color: Color, 
         name: str, 
-        initial: api.PieceType, 
+        initial: PieceType, 
         position: Position, 
         hasMoved: bool = False
     ):
@@ -95,7 +98,7 @@ MarkerPlacer = Callable[[BoardState], None]
 class Game(ABC):
 
     @abstractmethod
-    def __init__(self, white: api.Player, black: api.Player):
+    def __init__(self, white: UUID, black: UUID):
        pass 
 
     @abstractmethod
@@ -103,7 +106,7 @@ class Game(ABC):
         pass
     
     @abstractmethod
-    def move(self, move: api.Move) -> None:
+    def move(self, move: Move) -> None:
         pass
 
     @abstractmethod

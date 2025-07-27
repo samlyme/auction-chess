@@ -20,7 +20,7 @@ async def login(db_session: DBDep, form_data: Annotated[OAuth2PasswordRequestFor
     stmt = select(User).where(User.username == form_data.username)
     user: User | None = db_session.scalar(stmt)
 
-    if not user or not verify_password(form_data.password, user.passwordHash):
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=400, detail="Incorrect username or password") 
     
     # OAuth spec

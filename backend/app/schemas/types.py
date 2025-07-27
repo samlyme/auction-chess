@@ -1,12 +1,8 @@
 from datetime import datetime
-from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-
-Color = Literal["w", "b"]
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-GamePhase = Literal["bid", "move"]
+from app.core.auction_chess.types import Color, PieceType
 
 
 class Player(BaseModel):
@@ -27,7 +23,7 @@ class Move(BaseModel):
 class Piece(BaseModel):
     type: PieceType
     color: Color
-    hasMoved: bool = False  # Useful for castling, initial pawn moves
+    has_moved: bool = False  # Useful for castling, initial pawn moves
 
 
 BoardPieces = list[list[Piece | None]]
@@ -48,7 +44,7 @@ class UserCredentials(BaseModel):
 class UserProfile(BaseModel):
     uuid: UUID
     username: str
-    createdAt: datetime
+    created_at: datetime
 
 
 class UserCreate(BaseModel):
