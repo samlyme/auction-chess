@@ -5,8 +5,9 @@ from app.dependencies.lobbies import LobbyDep
 
 import app.schemas.types as api
 from app.utils.exceptions import (
-    LobbyAlreadyHostedError,
+    LobbyCreateError,
     LobbyJoinError,
+    LobbyLeaveError,
     LobbyNotFoundError,
     LobbyPermissionError,
 )
@@ -22,7 +23,7 @@ async def create_lobby(
     try:
         lobby_id: api.LobbyId = await lobby_manager.create(user)
         return lobby_manager.to_profile(lobby_id)
-    except LobbyAlreadyHostedError as e:
+    except LobbyCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
@@ -41,18 +42,33 @@ async def join_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
 ) -> api.LobbyProfile:
     try:
-        await lobby_manager.join(lobby_id, user)
+        await lobby_manager.join(user, lobby_id)
         return lobby_manager.to_profile(lobby_id)
     except LobbyJoinError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
+# TODO: implement lobby start errors
 @router.post("/{lobby_id}/start")
 async def start_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
 ) -> api.LobbyProfile:
-    await lobby_manager.start(user, lobby_id)
-    return lobby_manager.to_profile(lobby_id)
+    try:
+        await lobby_manager.start(user, lobby_id)
+        return lobby_manager.to_profile(lobby_id)
+    except LobbyPermissionError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
+
+# TODO: implement lobby leave
+@router.post("/{lobby_id}/leave")
+async def leave_lobby(
+    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
+) -> api.LobbyProfile:
+    try:
+        await lobby_manager.leave(user, lobby_id)
+        return lobby_manager.to_profile(lobby_id)
+    except LobbyLeaveError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
 @router.delete("/{lobby_id}", status_code=status.HTTP_204_NO_CONTENT)

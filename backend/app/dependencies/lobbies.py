@@ -1,11 +1,11 @@
-from typing import Annotated, Generator, Literal, TypedDict
+from typing import Annotated, Generator, TypedDict
 from uuid import UUID
 from fastapi import Depends, WebSocket, status
 from app.core.auction_chess.game import Game
 
 from app.core.auction_chess.game import AuctionChess
 import app.schemas.types as api
-from app.utils.exceptions import LobbyAlreadyHostedError, LobbyJoinError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
+from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
 
 class Lobby(TypedDict):
     status: api.LobbyStatus
@@ -18,28 +18,23 @@ class Lobby(TypedDict):
 
 # NOTE: In future, this should be in redis
 class LobbyManager:
-    lobbies: dict[api.LobbyId, Lobby]
-    hosts: set[UUID]
-    guests: set[UUID]
-
     def __init__(self) -> None:
-        self.lobbies = {}
-        self.hosts = set()
-        self.guests = set()
+        self.lobbies: dict[api.LobbyId, Lobby] = {}
+        self.active_users: dict[UUID, api.LobbyId] = {}
 
     async def get(self, lobby_id: api.LobbyId) -> Lobby | None:
         return self.lobbies.get(lobby_id)
 
     async def create(self, host: api.UserProfile) -> api.LobbyId:
-        if host.uuid in self.hosts:
-            # TODO: optimize this lol
-            for id, lobby in self.lobbies.items():
-                if lobby["host"] == host:
-                    raise LobbyAlreadyHostedError(host, id)
-            raise LobbyAlreadyHostedError(host, -1) # This is an edge case
-        self.hosts.add(host.uuid)
+        if host.uuid in self.active_users:
+            raise LobbyCreateError(
+                user=host, 
+                lobby_id=self.active_users[host.uuid]
+            )
 
         lobby_id = len(self.lobbies)
+
+        self.active_users[host.uuid] = lobby_id
         self.lobbies[lobby_id] = {
             "status": "pending",
             "host": host,
@@ -60,8 +55,6 @@ class LobbyManager:
         if user != lobby["host"]:
             raise LobbyPermissionError(user, lobby_id)
 
-        self.hosts.remove(lobby["host"].uuid)
-
         if lobby["host_ws"]:
             try:
                 await lobby["host_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
@@ -76,25 +69,61 @@ class LobbyManager:
             except RuntimeError as e:
                 print(f"Error closing host WS for lobby {lobby_id}: {e}")
 
+        del self.active_users[lobby["host"].uuid]
+        try:
+            del self.active_users[lobby["guest"].uuid] # type: ignore
+        except Exception:
+            pass
+
         del self.lobbies[lobby_id]
 
-    async def join(self, lobby_id: api.LobbyId, guest: api.UserProfile):
+    async def join(self, guest: api.UserProfile, lobby_id: api.LobbyId):
         if lobby_id not in self.lobbies:
             raise LobbyNotFoundError(lobby_id)
 
         lobby = self.lobbies[lobby_id]
 
-        if guest.uuid in self.guests:
-            raise LobbyJoinError(guest, lobby_id, "user already in lobby")
+        if guest == lobby["host"]:
+            raise LobbyJoinError(guest, lobby_id, "host can't join own lobby")
+
+        if guest.uuid in self.active_users:
+            raise LobbyJoinError(guest, lobby_id, f"user already in Lobby '{self.active_users[guest.uuid]}'")
 
         if lobby["guest"] is not None:
             raise LobbyJoinError(guest, lobby_id, "lobby is full")
-
-        if lobby["host"] == guest:
-            raise LobbyJoinError(guest, lobby_id, "host can't join own lobby")
         
-        self.guests.add(guest.uuid)
-        self.lobbies[lobby_id]["guest"] = guest
+        self.active_users[guest.uuid] = lobby_id
+        lobby["guest"] = guest
+
+    async def leave(self, user: api.UserProfile, lobby_id: api.LobbyId):
+        if lobby_id not in self.lobbies:
+            raise LobbyNotFoundError(lobby_id)
+
+        lobby = self.lobbies[lobby_id]
+
+        if user.uuid not in self.active_users:
+            raise LobbyLeaveError(
+                user=user,
+                lobby_id=lobby_id,
+                reason="user not in any lobby"
+            )
+        
+        if user != lobby["host"] and user != lobby["guest"]:
+            raise LobbyLeaveError(
+                user=user,
+                lobby_id=lobby_id,
+                reason="user not in this lobby"
+            )
+        
+        if user == lobby["guest"]:
+            lobby["guest"] = None
+        elif user == lobby["host"]: # good redundancy
+            if not lobby["guest"]:
+                await self.delete(user, lobby_id)
+            else:
+                lobby["host"] = lobby["guest"]
+                lobby["guest"] = None
+        del self.active_users[user.uuid]
 
     # Assume that this method is called from a reputatble source
     async def start(self, user: api.UserProfile, lobby_id: api.LobbyId):
@@ -131,22 +160,22 @@ class LobbyManager:
             guest=lobby["guest"]
         )
 
-    async def set_websocket(self, member: Literal["host", "guest"], lobby_id: api.LobbyId, websocket: WebSocket):
-        if lobby_id not in self.lobbies:
-            raise Exception("This lobby does not exist")
-        lobby = self.lobbies[lobby_id]
+    # async def set_websocket(self, member: Literal["host", "guest"], lobby_id: api.LobbyId, websocket: WebSocket):
+    #     if lobby_id not in self.lobbies:
+    #         raise Exception("This lobby does not exist")
+    #     lobby = self.lobbies[lobby_id]
 
-        if member == "host":
-            lobby["host_ws"] = websocket
-        else:
-            lobby["guest_ws"] = websocket
+    #     if member == "host":
+    #         lobby["host_ws"] = websocket
+    #     else:
+    #         lobby["guest_ws"] = websocket
 
-    async def remove_websocket(self, member: Literal["host", "guest"], lobby_id: api.LobbyId):
-        lobby = self.lobbies[lobby_id]
-        if member == "host":
-            lobby["host_ws"] = None
-        else:
-            lobby["guest_ws"] = None
+    # async def remove_websocket(self, member: Literal["host", "guest"], lobby_id: api.LobbyId):
+    #     lobby = self.lobbies[lobby_id]
+    #     if member == "host":
+    #         lobby["host_ws"] = None
+    #     else:
+    #         lobby["guest_ws"] = None
 
 lobby_manager = LobbyManager()
 

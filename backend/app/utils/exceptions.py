@@ -22,10 +22,10 @@ class LobbyPermissionError(LobbyError):
             "user": user.model_dump(mode="json"),
         }
 
-class LobbyAlreadyHostedError(LobbyError):
-    """Raised when a user that is already hosting a lobby tries creating a new lobby."""
+class LobbyCreateError(LobbyError):
+    """Raised when Lobby creation fails because user is in existing lobby."""
     def __init__(self, user: api.UserProfile, lobby_id: api.LobbyId):
-        super().__init__(f"User {user} already hosting Lobby '{lobby_id}'")
+        super().__init__(f"User {user} can't create new Lobby because user is already in Lobby '{lobby_id}'")
         self.detail = {
             "lobby_id": lobby_id,
             "user": user.model_dump(mode="json"),
@@ -35,6 +35,16 @@ class LobbyJoinError(LobbyError):
     """Raised when a user can not join their requested lobby."""
     def __init__(self, user: api.UserProfile, lobby_id: api.LobbyId, reason: str = ""):
         super().__init__(f"User {user} can't join Lobby '{lobby_id}' because '{reason}'.")
+        self.detail = {
+            "lobby_id": lobby_id,
+            "user": user.model_dump(mode="json"),
+            "reason": reason,
+        }
+
+class LobbyLeaveError(LobbyError):
+    """Raised when a user can not leave their requested lobby."""
+    def __init__(self, user: api.UserProfile, lobby_id: api.LobbyId, reason: str = ""):
+        super().__init__(f"User {user} can't leave Lobby '{lobby_id}' because '{reason}'.")
         self.detail = {
             "lobby_id": lobby_id,
             "user": user.model_dump(mode="json"),
