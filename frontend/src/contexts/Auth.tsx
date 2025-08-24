@@ -46,8 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode}) {
     if (token) {
         testAuth(token)
         .then((res) => {
-            console.log("Auth test success:", res);
-        });
+            if (!res) logout();
+        })
     }
 
     return (

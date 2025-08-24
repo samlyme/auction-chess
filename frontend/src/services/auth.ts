@@ -29,7 +29,7 @@ export function usernamePasswordLogin(credentials: UserCredentials): Promise<Tok
     })
 }
 
-export function testAuth(access_token: string): Promise<{message: string}> {
+export function testAuth(access_token: string): Promise<boolean> {
     return fetch(`${URL}/auth`, {
         method: "GET",
         headers: { 
@@ -37,9 +37,7 @@ export function testAuth(access_token: string): Promise<{message: string}> {
             'accept': 'application/json',
         },
     })
-    .then((res: Response) => 
-        {
-            return res.json()
-        }
-    );
+    .then((res: Response) => {
+        return res.ok;
+    })
 }
