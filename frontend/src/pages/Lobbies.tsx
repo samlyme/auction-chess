@@ -46,6 +46,9 @@ function Lobbies() {
         createLobby(token!)
         .then((res: LobbyProfile | null) => {
             console.log("Created lobby:", res);
+            if (res) {
+                navigate(`/lobbies/${res.id}`)
+            }
         })
     }
 
