@@ -26,10 +26,13 @@ async def create_lobby(
     except LobbyCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
-
 @router.get("")
-async def get_lobby_id_by_user_id(user: CurrentUserDep, lobby_manager: LobbyDep) -> api.LobbyId | None:
-    return await lobby_manager.get_lobby_id_by_user_id(user.uuid)
+async def get_lobby_by_user_id(user: CurrentUserDep, lobby_manager: LobbyDep) -> api.LobbyProfile | None:
+    lobby_id = await lobby_manager.get_lobby_id_by_user_id(user.uuid)
+    if lobby_id is None: 
+        return None
+    
+    return lobby_manager.to_profile(lobby_id)
 
 
 @router.get("/{lobby_id}")
