@@ -7,6 +7,7 @@ import Game from "./pages/Game";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Lobbies from "./pages/Lobbies";
+import Lobby from "./pages/Lobby";
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function Content() {
           <Route path="/home" element={<Home />}/>
           <Route path="/auth" element={<Auth />}/>
           <Route path="/lobbies" element={<Lobbies />}/>
-          <Route path="/lobbies/:lobbyId" element={<Lobbies />}/>
+          <Route path="/lobbies/:lobbyId" element={<Lobby />}/>
           <Route path="/game" element={<Game />}/>
           <Route path="/profile" element={<Profile />}/>
         </Routes>
