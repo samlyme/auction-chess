@@ -1,4 +1,4 @@
-import type { LobbyProfile } from "../schemas/types";
+import type { LobbyId, LobbyProfile } from "../schemas/types";
 
 const URL = "/api/lobbies";
 
@@ -9,6 +9,21 @@ export function userLobby(access_token: string): Promise<LobbyProfile | null> {
       accept: "application/json",
       Authorization: `Bearer ${access_token}`,
     },
+  })
+  .then((res: Response) => res.json())
+}
+
+export function getLobby(access_token: string, lobbyId: LobbyId): Promise<LobbyProfile> {
+  return fetch(`${URL}/${lobbyId}`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+  })
+  .then((res: Response) => {
+    if (!res.ok) throw Error("Not found")
+    return res
   })
   .then((res: Response) => res.json())
 }
