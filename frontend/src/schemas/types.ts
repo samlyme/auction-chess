@@ -53,3 +53,15 @@ export interface TokenResponse {
   access_token: string;
   token_type: string;
 }
+
+
+// Lobbies and such
+type LobbyId = number;
+type LobbyStatus = "active" | "pending";
+
+export interface LobbyProfile {
+  id: LobbyId;
+  status: LobbyStatus;
+  host: UserProfile;
+  guest: UserProfile | null;
+}
