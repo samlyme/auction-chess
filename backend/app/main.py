@@ -7,6 +7,25 @@ from app.routers import auth
 
 app = FastAPI()
 
+# This flag will save you from a lot of gray hairs.
+
+# By default, this is True, but all this does is obfuscate routing errors.
+# For example, if you defined a trailing slash here in the backend, then send 
+# a request from the frontend without a trailing slash, this flag will cause 
+# an automatic redirect to the "correct" route. 
+
+# HOWEVER, the redirect will NOT retain any custom headers you set, eg. auth tokens,
+# special dependencies. You will look all over the frontend codebase searching 
+# for reasons why headers are not being sent properly, when it was really just
+# this flag.
+
+# With this flag False, you will see a very clear 404 and know exactly that you 
+# have messed up the route. With it True, you don't know whether the route is
+# wrong or something else is wrong.
+
+# So please. Keep this flag.
+app.router.redirect_slashes = False 
+
 origins = ["http://localhost:3000",
            "http://localhost:3001",
            ]
