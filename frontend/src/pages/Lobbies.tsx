@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/Auth";
-import { createLobby, joinLobby } from "../services/lobbies";
+import { createLobby, joinLobby, userLobby } from "../services/lobbies";
 import type { LobbyProfile } from "../schemas/types";
 import { useNavigate } from "react-router";
 
@@ -11,7 +11,20 @@ function Lobbies() {
     const { token } = useAuthContext();
 
     useEffect(() => {
-        if (!token) navigate("/auth");
+        if (!token) {
+            navigate("/auth");
+            return;
+        }
+
+        userLobby(token)
+        .then(
+            (lobby: LobbyProfile | null) => {
+                if (lobby) {
+                    console.log("user lobby", lobby);
+                    navigate(`/lobbies/${lobby.id}`)
+                }
+            }
+        )
     }, [token])
 
     const handleJoin = (e: React.FormEvent) => {
@@ -31,7 +44,7 @@ function Lobbies() {
 
     const handleCreate = () => {
         createLobby(token!)
-        .then((res: LobbyProfile) => {
+        .then((res: LobbyProfile | null) => {
             console.log("Created lobby:", res);
         })
     }

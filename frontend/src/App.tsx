@@ -32,6 +32,7 @@ function Content() {
           <Route path="/home" element={<Home />}/>
           <Route path="/auth" element={<Auth />}/>
           <Route path="/lobbies" element={<Lobbies />}/>
+          <Route path="/lobbies/:lobbyId" element={<Lobbies />}/>
           <Route path="/game" element={<Game />}/>
           <Route path="/profile" element={<Profile />}/>
         </Routes>

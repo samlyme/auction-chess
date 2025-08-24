@@ -2,7 +2,18 @@ import type { LobbyProfile } from "../schemas/types";
 
 const URL = "/api/lobbies";
 
-export function createLobby(access_token: string): Promise<LobbyProfile> {
+export function userLobby(access_token: string): Promise<LobbyProfile | null> {
+  return fetch(`${URL}`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+  })
+  .then((res: Response) => res.json())
+}
+
+export function createLobby(access_token: string): Promise<LobbyProfile | null> {
   console.log("Creating lobby with token:", access_token);
 
   return fetch(`${URL}`, {
