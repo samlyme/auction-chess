@@ -24,6 +24,9 @@ class LobbyManager:
 
     async def get(self, lobby_id: api.LobbyId) -> Lobby | None:
         return self.lobbies.get(lobby_id)
+    
+    async def get_lobby_id_by_user_id(self, user_id: UUID) -> api.LobbyId | None:
+        return self.active_users.get(user_id)
 
     async def create(self, host: api.UserProfile) -> api.LobbyId:
         if host.uuid in self.active_users:
