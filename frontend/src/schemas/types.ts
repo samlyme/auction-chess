@@ -65,3 +65,17 @@ export interface LobbyProfile {
   host: UserProfile;
   guest: UserProfile | null;
 }
+
+
+// Websocket packets !!!!
+export type PacketType = "lobby_packet" | "game_packet"
+export interface LobbyPacket {
+  type: "lobby_packet"
+  content: LobbyProfile
+}
+
+// TODO: handle this
+export interface GamePacket {
+  type: "game_packet"
+  board: BoardState
+}

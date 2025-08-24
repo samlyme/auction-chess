@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal, Union
 from uuid import UUID
 from pydantic import BaseModel, Field
 
@@ -31,9 +31,6 @@ BoardPieces = list[list[Piece | None]]
 
 LegalMoves = list[list[list[BoardPosition]]]
 
-
-class GamePacket(BaseModel):
-    board: BoardPieces
 
 
 # Users and such
@@ -71,11 +68,8 @@ class TokenResponse(BaseModel):
     token_type: str
 
 
-LobbyId = str
-
-# maybe needed?
 LobbyIdLength = 5
-
+LobbyId = str
 LobbyStatus = Literal["active", "pending"]
 
 class LobbyProfile(BaseModel):
@@ -83,3 +77,19 @@ class LobbyProfile(BaseModel):
     status: LobbyStatus
     host: UserProfile
     guest: UserProfile | None
+    
+
+PacketType = Literal["lobby_packet", "game_packet"]
+
+class LobbyPacket(BaseModel):
+    type: PacketType = "lobby_packet"
+    content: LobbyProfile
+
+class GamePacket(BaseModel):
+    type: PacketType = "game_packet"
+    board: BoardPieces
+
+Packet = Annotated[ 
+    Union[LobbyPacket, GamePacket],
+    Field(discriminator="type")
+]
