@@ -6,6 +6,7 @@ from app.core.auction_chess.game import Game
 from app.core.auction_chess.game import AuctionChess
 import app.schemas.types as api
 from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
+from app.utils.lobbies import generate_lobby_id
 
 class Lobby(TypedDict):
     status: api.LobbyStatus
@@ -35,7 +36,9 @@ class LobbyManager:
                 lobby_id=self.active_users[host.uuid]
             )
 
-        lobby_id = len(self.lobbies)
+        lobby_id = generate_lobby_id()
+        while lobby_id in self.lobbies:
+            lobby_id = generate_lobby_id()
 
         self.active_users[host.uuid] = lobby_id
         self.lobbies[lobby_id] = {

@@ -71,7 +71,11 @@ class TokenResponse(BaseModel):
     token_type: str
 
 
-LobbyId = int
+LobbyId = str
+
+# maybe needed?
+LobbyIdLength = 5
+
 LobbyStatus = Literal["active", "pending"]
 
 class LobbyProfile(BaseModel):

@@ -17,6 +17,12 @@ function Lobby() {
             return;
         }
 
+        // Redundant, but needed for type checker to be happy
+        if (!lobbyId) {
+            navigate("/lobbies");
+            return;
+        }
+
         // TODO: change LobbyId type to string
         getLobby(token, lobbyId)
         .then(

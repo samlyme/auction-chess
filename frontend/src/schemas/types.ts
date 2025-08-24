@@ -56,7 +56,7 @@ export interface TokenResponse {
 
 
 // Lobbies and such
-export type LobbyId = number;
+export type LobbyId = string;
 export type LobbyStatus = "active" | "pending";
 
 export interface LobbyProfile {
