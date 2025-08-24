@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import type { UserCreate, UserCredentials, UserProfile } from "../schemas/types";
-import { usernamePasswordLogin } from "../services/auth";
+import { testAuth, usernamePasswordLogin } from "../services/auth";
 import { createUser } from "../services/users";
 
 interface AuthContextType {
@@ -43,6 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode}) {
     }
 
     const context: AuthContextType = { token, login, signup, logout }
+    if (token) {
+        testAuth(token)
+        .then((res) => {
+            console.log("Auth test success:", res);
+        });
+    }
 
     return (
         <AuthContext value={context}>

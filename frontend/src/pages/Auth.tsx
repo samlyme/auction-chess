@@ -7,7 +7,7 @@ function Auth() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (token) navigate("/game")
+        if (token) navigate("/lobbies")
     })
 
     return (

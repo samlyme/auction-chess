@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import Game from "./pages/Game";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
+import Lobbies from "./pages/Lobbies";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function Content() {
           <Route path="/" element={<Home />}/>
           <Route path="/home" element={<Home />}/>
           <Route path="/auth" element={<Auth />}/>
+          <Route path="/lobbies" element={<Lobbies />}/>
           <Route path="/game" element={<Game />}/>
           <Route path="/profile" element={<Profile />}/>
         </Routes>
