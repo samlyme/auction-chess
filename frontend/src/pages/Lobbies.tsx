@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/Auth";
 import { createLobby, joinLobby } from "../services/lobbies";
 import type { LobbyProfile } from "../schemas/types";
 import { useNavigate } from "react-router";
 
 function Lobbies() {
+    const navigate = useNavigate();
 
     const [lobbyId, setLobbyId] = useState("");
     const { token } = useAuthContext();
-    const navigate = useNavigate();
-    if (!token) navigate("/auth");
-    console.log("token in lobbies", token);
+
+    useEffect(() => {
+        if (!token) navigate("/auth");
+    }, [token])
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
