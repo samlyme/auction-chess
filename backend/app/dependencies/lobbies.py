@@ -147,7 +147,7 @@ class LobbyManager:
             black=lobby["guest"].uuid
         )
     
-    def to_profile(self, lobby_id: api.LobbyId):
+    def to_profile(self, lobby_id: api.LobbyId) -> api.LobbyProfile:
         if lobby_id not in self.lobbies:
             raise LobbyNotFoundError(lobby_id)
         
