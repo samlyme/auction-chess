@@ -16,7 +16,7 @@ router = APIRouter(prefix="/lobbies")
 
 
 # Once a lobby is created, the host must stay connected to the websocket
-@router.post("/")
+@router.post("")
 async def create_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep
 ) -> api.LobbyProfile:
@@ -44,7 +44,7 @@ async def join_lobby(
     try:
         await lobby_manager.join(user, lobby_id)
         return lobby_manager.to_profile(lobby_id)
-    except LobbyJoinError as e:
+    except (LobbyNotFoundError, LobbyJoinError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 

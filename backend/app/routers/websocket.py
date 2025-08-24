@@ -6,7 +6,7 @@ from app.dependencies.auth import CurrentUserDep
 
 router = APIRouter(prefix="/ws")
 
-@router.websocket("/")
+@router.websocket("")
 async def ws(websocket: WebSocket, user: CurrentUserDep):
     try:
         while True:

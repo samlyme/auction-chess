@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/users")
 
-@router.post("/")
+@router.post("")
 def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
     try:
         password_hash = get_password_hash(user_in.password)
@@ -23,7 +23,7 @@ def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
     except IntegrityError:
         raise HTTPException(status_code=400, detail="User already exists.")
 
-@router.get("/")
+@router.get("")
 def get_user_by_username(db: DBDep, username: str | None = None, uuid: UUID | None = None) -> UserProfile | list[UserProfile]:
     # NOTE: If a uuid is provided, the username is ignored.
     if (not username) and (not uuid): 

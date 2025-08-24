@@ -1,18 +1,36 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+import jwt
 from sqlalchemy import select
 
-from app.schemas.types import TokenResponse
+from app.schemas.types import JWTPayload, TokenResponse
 from app.dependencies.auth import AuthDep
 from app.dependencies.db import DBDep
 from app.models.models import User
-from app.utils.auth import encode_jwt, verify_password
+from app.utils.auth import decode_jwt, encode_jwt, verify_password
 
 router = APIRouter(prefix="")
 
 @router.get("/auth")
 async def auth_test(token: AuthDep):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload: JWTPayload = decode_jwt(token)
+        print("get_current_user token", token)
+        print("get_current_user payload", payload)
+
+        uuid = payload.sub
+        if uuid is None:
+            raise credentials_exception
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+
+    print("Auth test success")
     return token
 
 @router.post("/token")
