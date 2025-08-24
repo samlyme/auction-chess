@@ -11,7 +11,7 @@ class LobbyNotFoundError(LobbyError):
     """Raised when a lobby with the given ID does not exist."""
     def __init__(self, lobby_id: api.LobbyId):
         super().__init__(f"Lobby '{lobby_id}' not found.")
-        self.detail = {"lobby_id": lobby_id}
+        self.detail = {"lobby_id": lobby_id, "reson": "This lobby does not exist."}
 
 class LobbyPermissionError(LobbyError):
     """Raised when a non-host user tries performing host actions on lobby."""
