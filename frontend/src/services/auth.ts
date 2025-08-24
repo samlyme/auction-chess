@@ -28,3 +28,18 @@ export function usernamePasswordLogin(credentials: UserCredentials): Promise<Tok
         return res
     })
 }
+
+export function testAuth(access_token: string): Promise<{message: string}> {
+    return fetch(`${URL}/auth`, {
+        method: "GET",
+        headers: { 
+            'Authorization': `Bearer ${access_token}` ,
+            'accept': 'application/json',
+        },
+    })
+    .then((res: Response) => 
+        {
+            return res.json()
+        }
+    );
+}
