@@ -10,7 +10,7 @@ function Lobby() {
     const [lobby, setLobby] = useState<LobbyProfile | null>(null);
 
     const {getLobby, startLobby, deleteLobby, leaveLobby} = useLobbies();
-    const {user} = useAuthContext()
+    const {user, isLoading} = useAuthContext()
 
 
     useEffect(() => {
@@ -33,38 +33,35 @@ function Lobby() {
         )
     }, [lobbyId])
 
-    return (
-        <div>
-        {lobby 
-            ? (
-                <div>
-                    <h1>Lobby {lobbyId} </h1>
-                    <h2>Status: {lobby.status}</h2>
-                    <h2>Host: {lobby.host.username}</h2>
-                    <h2>Guest: {lobby.guest ? lobby.guest.username : (<i>none</i>)}</h2>
+    if (!lobby || isLoading) return (
+        <div>Loading</div>
+    )
 
-                    {user!.uuid === lobby.host.uuid
-                        ? ( 
-                            // Host options
-                            <div>
-                                <button onClick={() => startLobby(lobbyId!)}>start lobby</button>
-                                <button onClick={() => deleteLobby(lobbyId!).then(() => navigate("/lobbies"))}>delete lobby</button>
-                            </div>
-                        )
-                        : (
-                            // Guest options
-                            <div>
-                                <button onClick={() => leaveLobby(lobbyId!).then(() => navigate("/lobbies"))}>leave lobby</button>
-                            </div>
-                        )
-                    }
-                </div>
-            ) 
-            : (
-                <div>Loading</div>
-            )
-        }
-        </div>
+
+
+    return (
+            <div>
+                <h1>Lobby {lobbyId} </h1>
+                <h2>Status: {lobby.status}</h2>
+                <h2>Host: {lobby.host.username}</h2>
+                <h2>Guest: {lobby.guest ? lobby.guest.username : (<i>none</i>)}</h2>
+
+                {user!.uuid === lobby.host.uuid
+                    ? ( 
+                        // Host options
+                        <div>
+                            <button onClick={() => startLobby(lobbyId!)}>start lobby</button>
+                            <button onClick={() => deleteLobby(lobbyId!).then(() => navigate("/lobbies"))}>delete lobby</button>
+                        </div>
+                    )
+                    : (
+                        // Guest options
+                        <div>
+                            <button onClick={() => leaveLobby(lobbyId!).then(() => navigate("/lobbies"))}>leave lobby</button>
+                        </div>
+                    )
+                }
+            </div>
     )
 }
 

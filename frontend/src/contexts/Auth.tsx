@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { JWTPayload, UserCreate, UserCredentials, UserProfile } from "../schemas/types";
 import { testAuth, usernamePasswordLogin } from "../services/auth";
 import { createUser, getUserByUUID } from "../services/users";
@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 interface AuthContextType {
     token: string | null;
     user: UserProfile | null;
+    isLoading: boolean;
     login: (credentials: UserCredentials) => void;
     signup: (newUser: UserCreate) => void;
     logout: () => void;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode}) {
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"))
     const [user, setUser] = useState<UserProfile | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
     
     const login = useCallback( async (credentials: UserCredentials) => {
         try {
@@ -53,13 +55,40 @@ export function AuthProvider({ children }: { children: ReactNode}) {
         localStorage.removeItem("access_token");
     }
 
-    const context: AuthContextType = { token, user, login, signup, logout }
-    if (token) {
-        testAuth(token)
-        .then((res) => {
-            if (!res) logout();
-        })
-    }
+    
+    useEffect(() => {
+        console.log("Inside auth context useEffect");
+        
+        if (!token) {
+            logout()
+            return;
+        }
+
+        // 1) check if token is still valid
+        testAuth(token).then((ok) => {
+        if (!ok) {
+            logout();
+            return;
+        }
+
+        // 2) decode & fetch user
+        try {
+            const payload = jwtDecode<JWTPayload>(token);
+            getUserByUUID(payload.sub).then(
+                (val: UserProfile) => {
+                    console.log("auth context get user", val);
+                    setUser(val)
+                    setIsLoading(false)
+                }
+            );
+        } catch (err) {
+            console.error("invalid token", err);
+            logout();
+        }
+        });
+    }, [token]);
+
+    const context: AuthContextType = { token, user, isLoading, login, signup, logout }
 
     return (
         <AuthContext value={context}>
