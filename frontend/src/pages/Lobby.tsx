@@ -9,7 +9,7 @@ function Lobby() {
     const { lobbyId } = useParams();
     const [lobby, setLobby] = useState<LobbyProfile | null>(null);
 
-    const {getLobby, deleteLobby} = useLobbies();
+    const {getLobby, startLobby, deleteLobby, leaveLobby} = useLobbies();
     const user = useUser() as UserProfile
 
 
@@ -47,14 +47,14 @@ function Lobby() {
                         ? ( 
                             // Host options
                             <div>
-                                <button>start game</button>
-                                <button>delete lobby</button>
+                                <button onClick={() => startLobby(lobbyId!)}>start lobby</button>
+                                <button onClick={() => deleteLobby(lobbyId!).then(() => navigate("/lobbies"))}>delete lobby</button>
                             </div>
                         )
                         : (
                             // Guest options
                             <div>
-                                <button>leave lobby</button>
+                                <button onClick={() => leaveLobby(lobbyId!).then(() => navigate("/lobbies"))}>leave lobby</button>
                             </div>
                         )
                     }

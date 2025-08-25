@@ -8,8 +8,10 @@ interface UseLobbyReturn {
     userLobby: () => Promise<LobbyProfile | null>
     getLobby: (lobbyId: LobbyId) => Promise<LobbyProfile>
     createLobby: () => Promise<LobbyProfile | null>
-    joinLobby: (lobbyId: LobbyId) => Promise<LobbyProfile>
+    startLobby: (lobbyId: LobbyId) => Promise<void>
     deleteLobby: (lobbyId: LobbyId) => Promise<void>
+    leaveLobby: (lobbyId: LobbyId) => Promise<void>
+    joinLobby: (lobbyId: LobbyId) => Promise<LobbyProfile>
 }
 
 function useLobbies(): UseLobbyReturn {
@@ -28,18 +30,22 @@ function useLobbies(): UseLobbyReturn {
         userLobby:   async () => null,
         getLobby:    async () => { throw new Error("no auth") },
         createLobby: async () => null,
-        joinLobby:   async () => { throw new Error("no auth") },
+        startLobby: async () => {},
         deleteLobby: async () => {},
+        leaveLobby: async () => {},
+        joinLobby:   async () => { throw new Error("no auth") },
         }
     }
 
     const userLobby = () => LobbyServices.userLobby(token)
     const getLobby = (lobbyId: LobbyId) => LobbyServices.getLobby(token, lobbyId)
     const createLobby = () => LobbyServices.createLobby(token)
+    const startLobby = (lobbyId: LobbyId) => LobbyServices.startLobby(token, lobbyId)
+    const leaveLobby = (lobbyId: LobbyId) => LobbyServices.leaveLobby(token, lobbyId)
     const joinLobby = (lobbyId: LobbyId) => LobbyServices.joinLobby(token, lobbyId)
     const deleteLobby = (lobbyId: LobbyId) => LobbyServices.deleteLobby(token, lobbyId)
 
-    return { userLobby, getLobby, createLobby, joinLobby, deleteLobby }
+    return { userLobby, getLobby, createLobby, startLobby, deleteLobby, joinLobby, leaveLobby}
 }
 
 export default useLobbies;

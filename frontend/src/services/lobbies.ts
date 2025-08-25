@@ -43,6 +43,38 @@ export function createLobby(access_token: string): Promise<LobbyProfile | null> 
   }).then((res: Response) => res.json());
 }
 
+export function startLobby(
+  access_token: string,
+  lobbyId: string
+): Promise<void> {
+  return fetch(`${URL}/${lobbyId}/start`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${access_token}`,
+      accept: "application/json",
+    },
+  }).then((res: Response) => {
+    if (res.ok) return;
+    throw new Error(`Failed to start, ${res}`)
+  });
+}
+
+export function deleteLobby(
+  access_token: string,
+  lobbyId: string
+): Promise<void> {
+  return fetch(`${URL}/${lobbyId}`, {
+    method: "DELETE",
+    headers: {
+      authorization: `Bearer ${access_token}`,
+    },
+  })
+  .then((res: Response) => {
+    if (res.ok) return;
+    throw new Error(`Failed to delete, ${res}`)
+  })
+}
+
 export function joinLobby(
   access_token: string,
   lobbyId: string
@@ -56,12 +88,12 @@ export function joinLobby(
   }).then((res: Response) => res.json());
 }
 
-export function deleteLobby(
+export function leaveLobby(
   access_token: string,
   lobbyId: string
 ): Promise<void> {
-  return fetch(`${URL}/${lobbyId}`, {
-    method: "DELETE",
+  return fetch(`${URL}/${lobbyId}/leave`, {
+    method: "POST",
     headers: {
       authorization: `Bearer ${access_token}`,
     },
