@@ -1,7 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { LobbyProfile } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
+import { websocketFactory } from "../services/websocket"
+import { useAuthContext } from "./Auth";
 
 interface ServerUpdatesContextType {
     isLoading: boolean
@@ -20,6 +22,8 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
     const { getLobby } = useLobbies()
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [lobby, setLobby] = useState<LobbyProfile | null>(null)
+    const {token} = useAuthContext()
+    const wsRef = useRef<WebSocket | null>(null)
 
     useEffect(() => {
         getLobby(lobbyId)
@@ -27,6 +31,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
             (val: LobbyProfile) => {
                 setLobby(val)
                 setIsLoading(false)
+                wsRef.current = websocketFactory(token!, lobbyId)
             }
         )
         .catch(() => navigate("/lobbies"))

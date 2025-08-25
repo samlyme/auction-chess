@@ -10,7 +10,7 @@ from app.models.models import User
 from app.utils.auth import decode_jwt
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 AuthDep = Annotated[str, Depends(oauth2_scheme)]
 
