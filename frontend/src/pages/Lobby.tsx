@@ -43,8 +43,8 @@ function Lobby() {
             <div>
                 <h1>Lobby {lobbyId} </h1>
                 <h2>Status: {lobby.status}</h2>
-                <h2>Host: {lobby.host.username}</h2>
-                <h2>Guest: {lobby.guest ? lobby.guest.username : (<i>none</i>)}</h2>
+                <h2>Host: {lobby.host.username} {user!.uuid === lobby.host.uuid && (<i>(you)</i>)}</h2>
+                <h2>Guest: {lobby.guest ? lobby.guest.username : (<i>none</i>)} {user!.uuid === lobby.guest?.uuid && (<i>(you)</i>)}</h2>
 
                 {user!.uuid === lobby.host.uuid
                     ? ( 
