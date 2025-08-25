@@ -28,6 +28,7 @@ export function getLobby(access_token: string, lobbyId: LobbyId): Promise<LobbyP
   .then((res: Response) => res.json())
 }
 
+// TODO: Add error handling
 export function createLobby(access_token: string): Promise<LobbyProfile | null> {
   console.log("Creating lobby with token:", access_token);
 
@@ -53,4 +54,20 @@ export function joinLobby(
       accept: "application/json",
     },
   }).then((res: Response) => res.json());
+}
+
+export function deleteLobby(
+  access_token: string,
+  lobbyId: string
+): Promise<void> {
+  return fetch(`${URL}/${lobbyId}`, {
+    method: "DELETE",
+    headers: {
+      authorization: `Bearer ${access_token}`,
+    },
+  })
+  .then((res: Response) => {
+    if (res.ok) return;
+    throw new Error(`Failed to delete, ${res}`)
+  })
 }
