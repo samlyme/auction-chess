@@ -14,7 +14,7 @@ async def ws(websocket: WebSocket, db: DBDep, lobby_id: LobbyId):
     WebSockets will only be used to send info to the clients.
     The client will never send info to the server via the WebSocket.
     """
-
+    print("🟡 found ws")
     # Jank to get around websocket funky business
     token = websocket.query_params.get("access_token")
     if not token:
@@ -29,9 +29,7 @@ async def ws(websocket: WebSocket, db: DBDep, lobby_id: LobbyId):
 
     try:
         await websocket.accept()
-        while True:
-            data = await websocket.receive_text()
-            await websocket.send_text(f"{user}, {data}")
+        await websocket.send_text(f"{user}, bruh")
     except WebSocketDisconnect:
         print(f"Disconnected: {user}")
     await websocket.accept()

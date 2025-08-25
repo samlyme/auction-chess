@@ -43,6 +43,10 @@ app.include_router(auth.router)
 app.include_router(lobbies.router)
 app.include_router(websocket.router)
 
+
+for r in app.router.routes:
+    print(r)
+
 @app.on_event("startup")
 def start_server():
     init_db()

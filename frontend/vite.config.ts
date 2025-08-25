@@ -10,7 +10,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8000', // Make sure this matches your Python backend's port
         changeOrigin: true,
-
+        ws: true,
         // Optional rewrite based on your backend's API structure
         // Uncomment/modify this based on your needs (Scenario A vs B from last explanation)
         // If your frontend fetches '/api/users' but backend expects '/users':
