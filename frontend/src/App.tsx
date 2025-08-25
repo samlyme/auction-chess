@@ -3,7 +3,6 @@ import "./App.css"; // Optional: for basic styling
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./contexts/Auth";
 import { BrowserRouter, Route, Routes } from "react-router";
-import Game from "./pages/Game";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Lobbies from "./pages/Lobbies";
@@ -34,7 +33,6 @@ function Content() {
           <Route path="/auth" element={<Auth />}/>
           <Route path="/lobbies" element={<Lobbies />}/>
           <Route path="/lobbies/:lobbyId" element={<Lobby />}/>
-          <Route path="/game" element={<Game />}/>
           <Route path="/profile" element={<Profile />}/>
         </Routes>
       </BrowserRouter>
