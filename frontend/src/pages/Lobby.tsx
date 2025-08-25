@@ -1,43 +1,28 @@
-import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import type { LobbyProfile } from "../schemas/types";
-import useLobbies from "../hooks/useLobbies";
 import { useAuthContext } from "../contexts/Auth";
+import { useServerUpdatesContext } from "../contexts/ServerUpdates";
+import useLobbies from "../hooks/useLobbies";
 
 function Lobby() {
     const navigate = useNavigate();
     const { lobbyId } = useParams();
-    const [lobby, setLobby] = useState<LobbyProfile | null>(null);
+    const {startLobby, deleteLobby, leaveLobby} = useLobbies()
 
-    const {getLobby, startLobby, deleteLobby, leaveLobby} = useLobbies();
-    const {user, isLoading} = useAuthContext()
+    function getData() {
+        const {user, isLoading: userLoading} = useAuthContext()
+        const {lobby, isLoading: lobbyLoading} = useServerUpdatesContext()
 
+        const isLoading = userLoading || lobbyLoading
+        
+        return { isLoading, user, lobby}
+    }
 
-    useEffect(() => {
-        // Redundant, but needed for type checker to be happy
-        if (!lobbyId) {
-            throw new Error("missing lobbyId param")
-        }
+    const {isLoading, user, lobby} = getData()
 
-        // TODO: Move service calls to hooks
-        getLobby(lobbyId)
-        .then(
-            (val: LobbyProfile) => {
-                setLobby(val)
-            }
-        )
-        .catch(
-            (_: any) => {
-                navigate("/lobbies")
-            }
-        )
-    }, [lobbyId])
-
-    if (!lobby || isLoading) return (
+    // Last two are redundant, just to make typechecker happy
+    if (isLoading || !lobby || !user) return (
         <div>Loading</div>
     )
-
-
 
     return (
             <div>
