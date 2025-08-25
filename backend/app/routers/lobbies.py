@@ -37,10 +37,21 @@ async def get_lobby_by_user_id(user: CurrentUserDep, lobby_manager: LobbyDep) ->
 
 @router.get("/{lobby_id}")
 async def get_lobby(
-    _: AuthDep, lobby_manger: LobbyDep, lobby_id: api.LobbyId
+    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
 ) -> api.LobbyProfile:
     try:
-        return lobby_manger.to_profile(lobby_id)
+        lobby = await lobby_manager.get(lobby_id)
+        if lobby is None:
+            raise LobbyNotFoundError(lobby_id)
+
+        if user == lobby["host"] or user == lobby["guest"]:
+            return lobby_manager.to_profile(lobby_id)
+
+        if lobby["guest"] is None:
+            return await join_lobby(user, lobby_manager, lobby_id)
+        
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        
     except LobbyNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.detail)
 
