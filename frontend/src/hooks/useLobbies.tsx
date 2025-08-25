@@ -1,6 +1,8 @@
+import { useNavigate } from "react-router";
 import { useAuthContext } from "../contexts/Auth";
 import type { LobbyId, LobbyProfile } from "../schemas/types";
 import * as LobbyServices from "../services/lobbies";
+import { useEffect } from "react";
 
 interface UseLobbyReturn {
     userLobby: () => Promise<LobbyProfile | null>
@@ -12,7 +14,24 @@ interface UseLobbyReturn {
 
 function useLobbies(): UseLobbyReturn {
     const { token } = useAuthContext(); // notice that we need to use this hook in auth context
-    if (!token) throw new Error("auth token missing in useLobbies hook")
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (!token) {
+            navigate("/auth")
+        }
+    }, [token, navigate])
+
+    // make type checker happy
+    if (!token) {
+        return {
+        userLobby:   async () => null,
+        getLobby:    async () => { throw new Error("no auth") },
+        createLobby: async () => null,
+        joinLobby:   async () => { throw new Error("no auth") },
+        deleteLobby: async () => {},
+        }
+    }
 
     const userLobby = () => LobbyServices.userLobby(token)
     const getLobby = (lobbyId: LobbyId) => LobbyServices.getLobby(token, lobbyId)

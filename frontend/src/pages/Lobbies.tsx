@@ -1,22 +1,18 @@
 import { useEffect, useState } from "react";
-import { useAuthContext } from "../contexts/Auth";
-import { createLobby, joinLobby, userLobby } from "../services/lobbies";
 import type { LobbyProfile } from "../schemas/types";
 import { useNavigate } from "react-router";
+import useLobbies from "../hooks/useLobbies";
 
 function Lobbies() {
     const navigate = useNavigate();
 
     const [lobbyId, setLobbyId] = useState("");
-    const { token } = useAuthContext();
+
+    const {userLobby, createLobby, joinLobby} = useLobbies()
 
     useEffect(() => {
-        if (!token) {
-            navigate("/auth");
-            return;
-        }
 
-        userLobby(token)
+        userLobby()
         .then(
             (lobby: LobbyProfile | null) => {
                 if (lobby) {
@@ -25,14 +21,15 @@ function Lobbies() {
                 }
             }
         )
-    }, [token])
+    }, [])
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
 
-        joinLobby(token || "", lobbyId)
+        joinLobby(lobbyId)
         .then((res: LobbyProfile) => {
             console.log("Joined lobby:", res);
+            navigate(`/lobbies/${res.id}`)
         })
         .catch((err) => {
             console.error("Error joining lobby:", err);
@@ -43,7 +40,7 @@ function Lobbies() {
     }
 
     const handleCreate = () => {
-        createLobby(token!)
+        createLobby()
         .then((res: LobbyProfile | null) => {
             console.log("Created lobby:", res);
             if (res) {
