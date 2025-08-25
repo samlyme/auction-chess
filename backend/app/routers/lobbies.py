@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.dependencies.auth import AuthDep, CurrentUserDep
+from app.dependencies.auth import CurrentUserDep
 from app.dependencies.lobbies import LobbyDep
 
 import app.schemas.types as api
@@ -26,12 +26,15 @@ async def create_lobby(
     except LobbyCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
+
 @router.get("")
-async def get_lobby_by_user_id(user: CurrentUserDep, lobby_manager: LobbyDep) -> api.LobbyProfile | None:
+async def get_lobby_by_user_id(
+    user: CurrentUserDep, lobby_manager: LobbyDep
+) -> api.LobbyProfile | None:
     lobby_id = await lobby_manager.get_lobby_id_by_user_id(user.uuid)
-    if lobby_id is None: 
+    if lobby_id is None:
         return None
-    
+
     return lobby_manager.to_profile(lobby_id)
 
 
@@ -49,9 +52,9 @@ async def get_lobby(
 
         if lobby["guest"] is None:
             return await join_lobby(user, lobby_manager, lobby_id)
-        
+
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-        
+
     except LobbyNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.detail)
 
@@ -77,6 +80,7 @@ async def start_lobby(
         return lobby_manager.to_profile(lobby_id)
     except LobbyPermissionError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
+
 
 # TODO: implement lobby leave
 @router.post("/{lobby_id}/leave")
