@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import type { UserCreate, UserCredentials, UserProfile } from "../schemas/types";
+import type { JWTPayload, UserCreate, UserCredentials, UserProfile } from "../schemas/types";
 import { testAuth, usernamePasswordLogin } from "../services/auth";
-import { createUser } from "../services/users";
+import { createUser, getUserByUUID } from "../services/users";
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
     token: string | null;
+    user: UserProfile | null;
     login: (credentials: UserCredentials) => void;
     signup: (newUser: UserCreate) => void;
     logout: () => void;
@@ -14,6 +16,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode}) {
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"))
+    const [user, setUser] = useState<UserProfile | null>(null)
     
     const login = useCallback( async (credentials: UserCredentials) => {
         try {
@@ -21,6 +24,14 @@ export function AuthProvider({ children }: { children: ReactNode}) {
 
             localStorage.setItem("access_token", res.access_token)
             setToken(res.access_token)
+
+            const payload: JWTPayload = jwtDecode(res.access_token);
+            if (!payload) throw new Error("Invalid token")
+
+            getUserByUUID(payload.sub)
+            .then((res: UserProfile) => {
+                setUser(res);
+            })
         }
         catch (err) {
             console.error("failed to login", err);
@@ -42,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode}) {
         localStorage.removeItem("access_token");
     }
 
-    const context: AuthContextType = { token, login, signup, logout }
+    const context: AuthContextType = { token, user, login, signup, logout }
     if (token) {
         testAuth(token)
         .then((res) => {

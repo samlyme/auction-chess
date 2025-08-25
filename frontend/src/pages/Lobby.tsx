@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import type { LobbyProfile, UserProfile } from "../schemas/types";
+import type { LobbyProfile } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
-import useUser from "../hooks/useUser";
+import { useAuthContext } from "../contexts/Auth";
 
 function Lobby() {
     const navigate = useNavigate();
@@ -10,7 +10,7 @@ function Lobby() {
     const [lobby, setLobby] = useState<LobbyProfile | null>(null);
 
     const {getLobby, startLobby, deleteLobby, leaveLobby} = useLobbies();
-    const user = useUser() as UserProfile
+    const {user} = useAuthContext()
 
 
     useEffect(() => {
@@ -43,7 +43,7 @@ function Lobby() {
                     <h2>Host: {lobby.host.username}</h2>
                     <h2>Guest: {lobby.guest ? lobby.guest.username : (<i>none</i>)}</h2>
 
-                    {user.uuid === lobby.host.uuid
+                    {user!.uuid === lobby.host.uuid
                         ? ( 
                             // Host options
                             <div>

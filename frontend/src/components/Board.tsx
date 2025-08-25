@@ -3,12 +3,12 @@ import type { Piece, UserProfile } from "../schemas/types";
 import { pieceSVGMap } from "../utils/chess";
 import "./Board.css";
 import useMoves from "../hooks/useMoves";
-import useUser from "../hooks/useUser";
+import { useAuthContext } from "../contexts/Auth";
 
 function Board() {
   const { game, makeMove, isConnected, error } = useGame();
   const { selectedSquare, handleSquareClick } = useMoves(game, makeMove);
-  const user: UserProfile | null = useUser();
+  const {user} = useAuthContext();
 
   if (error) return <div>Error: {error}</div>;
   if (!isConnected) return <div>Connecting to game...</div>;
