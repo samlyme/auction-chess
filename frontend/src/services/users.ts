@@ -23,7 +23,7 @@ export function getUserByUsername(username: string): Promise<UserProfile> {
 export function getUserByUUID(uuid: UUIDTypes): Promise<UserProfile> {
     console.log("Getting user by UUID");
     
-    return fetch(`${URL}/?uuid=${uuid}`, {
+    return fetch(`${URL}?uuid=${uuid}`, {
         method: "GET",
         headers: {'content-type': 'application/json'},
     })
