@@ -99,6 +99,9 @@ class Rook(Piece):
                 square = board_state[move.end[0]][move.end[1]]
                 square.attacked_by.append(self)
                 yield move
+    
+    def public_piece(self) -> api.Piece:
+        return api.Piece(type="r", color=self.color, has_moved=self.hasMoved)
 
 
 class Knight(Piece):
@@ -124,6 +127,9 @@ class Knight(Piece):
                 square.attacked_by.append(self)
                 yield Move(self.position, (nr, nc))
 
+    def public_piece(self) -> api.Piece:
+        return api.Piece(type="n", color=self.color, has_moved=self.hasMoved)
+
 
 class Bishop(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
@@ -139,6 +145,9 @@ class Bishop(Piece):
                 square = board_state[move.end[0]][move.end[1]]
                 square.attacked_by.append(self)
                 yield move
+
+    def public_piece(self) -> api.Piece:
+        return api.Piece(type="b", color=self.color, has_moved=self.hasMoved)
 
 
 class Queen(Piece):
@@ -164,6 +173,9 @@ class Queen(Piece):
                 square = board_state[move.end[0]][move.end[1]]
                 square.attacked_by.append(self)
                 yield move
+
+    def public_piece(self) -> api.Piece:
+        return api.Piece(type="q", color=self.color, has_moved=self.hasMoved)
 
 
 class King(Piece):
@@ -230,3 +242,6 @@ class King(Piece):
                         end=BoardPosition(row=r, col=c+1)
                     ))
                 )
+                
+    def public_piece(self) -> api.Piece:
+        return api.Piece(type="k", color=self.color, has_moved=self.hasMoved)

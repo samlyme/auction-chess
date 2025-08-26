@@ -5,15 +5,16 @@ from app.core.auction_chess.rules.pieces import King
 from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Position
 
 # All the types defined here are for the interface between BE and FE
-from app.core.auction_chess.rules.factories import en_passant_test_board_factory
+from app.core.auction_chess.rules.factories import standard_board_factory
 from app.core.auction_chess.types import Game, Piece
 from app.core.utils import PriorityQueue
 
 import app.schemas.types as api
+from app.utils.exceptions import IllegalMoveException
 
 
 class AuctionChess(Game):
-    phase: GamePhase = "bid"
+    phase: GamePhase = "move"
     turn: Color = "w"
     players: dict[Color, UUID] = {}
 
@@ -28,7 +29,7 @@ class AuctionChess(Game):
         self.players["w"] = white
         self.players["b"] = black
         # for testing
-        self.board = ChessBoard(board_factory=en_passant_test_board_factory(self))
+        self.board = ChessBoard(board_factory=standard_board_factory(self))
         for row in self.board.board_state:
             for square in row:
                 if square.piece:
@@ -45,16 +46,26 @@ class AuctionChess(Game):
         if expires != -1:
             self.marker_queue.push(expires + self.turns, marker)
 
-    def move(self, move: api.Move) -> None:
+    def move(self, user: api.UserProfile, move: api.Move) -> None:
         """
         Executes a standard move from client.
         """
+        if self.phase == "bid":
+            raise IllegalMoveException("Can't make moves during bid phase.")
+        
+        if self.players[self.turn] != user.uuid:
+            raise IllegalMoveException("Not your move turn.")
+        
         parsed_move = Move(
             start=(move.start.row, move.start.col),
             end=(move.end.row, move.end.col)
         )
 
-        piece = self.board.piece_at(parsed_move.start)
+        try:
+            piece = self.board.piece_at(parsed_move.start)
+        except Exception:
+            raise IllegalMoveException("Invalid move.")
+
         moves = self.moves[piece]
 
         # TODO: implement move validation
@@ -64,7 +75,7 @@ class AuctionChess(Game):
                 game_move = m
                 break
         if not game_move:
-            raise Exception("Bad move")
+            raise IllegalMoveException("Invalid move.")
 
         captured: Piece | None = self.board.move(game_move)
         if captured:
@@ -107,6 +118,12 @@ class AuctionChess(Game):
         del self.moves[piece]
 
     def _increment_turn(self):
+        # TODO: change the turn to be based on bid
+        if self.turn == "b":
+            self.turn = "w"
+        else:
+            self.turn = "b"
+
         while (
             not self.marker_queue.is_empty()
             and self.marker_queue.peek()[0] <= self.turns
