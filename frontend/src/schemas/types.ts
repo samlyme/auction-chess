@@ -79,3 +79,5 @@ export interface GamePacket {
   type: "game_packet"
   board: BoardState
 }
+
+export type Packet = LobbyPacket | GamePacket

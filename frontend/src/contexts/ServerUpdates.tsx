@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { LobbyProfile } from "../schemas/types";
+import type { LobbyPacket, LobbyProfile } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
-import { websocketFactory } from "../services/websocket"
+import { parsePacket, websocketFactory } from "../services/websocket"
 import { useAuthContext } from "./Auth";
 
 interface ServerUpdatesContextType {
@@ -31,7 +31,24 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
             (val: LobbyProfile) => {
                 setLobby(val)
                 setIsLoading(false)
-                wsRef.current = websocketFactory(token!, lobbyId)
+
+                const onopen = (event: Event) => {
+                    console.log("🟢 WS connected", event)
+                }
+
+                const onmessage = (event: MessageEvent) => {
+                    console.log("🟡 Message Received", event);
+                    // TODO: Parse and "dispatch"
+                    const data: LobbyPacket = parsePacket(event.data) as LobbyPacket
+                    console.log("Attempting to parse packet", data);
+                    
+                    setLobby(data.content)
+                }
+
+                const onclose = (event: CloseEvent) => {
+                    console.log("🔴 WS Closed", event);
+                }
+                wsRef.current = websocketFactory(token!, lobbyId, onopen, onmessage, onclose)
             }
         )
         .catch(() => navigate("/lobbies"))
