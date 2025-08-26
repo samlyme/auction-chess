@@ -180,11 +180,9 @@ class LobbyManager:
         if user == lobby["host"]:
             print("set", user, "as host WS")
             lobby["host_ws"] = websocket
-            await websocket.send_text("hello host")
         elif user == lobby["guest"]:
             print("set", user, "as guest WS")
             lobby["guest_ws"] = websocket
-            await websocket.send_text("hello guest")
         else:
             raise Exception("This user is not in this lobby.")
 
