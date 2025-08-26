@@ -230,7 +230,7 @@ class LobbyManager:
             raise Exception("Game not initialized")
 
         packet: api.GamePacket = api.GamePacket(
-            board=lobby["game"].public_board()
+            content=lobby["game"].public_board()
         )
         data: str = packet.json()
         if lobby["guest_ws"]:
