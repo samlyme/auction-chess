@@ -5,6 +5,7 @@ from app.dependencies.lobbies import LobbyDep
 
 import app.schemas.types as api
 from app.utils.exceptions import (
+    IllegalMoveException,
     LobbyCreateError,
     LobbyJoinError,
     LobbyLeaveError,
@@ -109,4 +110,7 @@ async def delete_lobby(
 async def play(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId, move: api.Move
 ) -> None:
-    await lobby_manager.play(lobby_id, user, move)
+    try:
+        await lobby_manager.make_move(lobby_id, user, move)
+    except IllegalMoveException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
