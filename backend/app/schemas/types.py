@@ -3,8 +3,12 @@ from typing import Annotated, Literal, Union
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-from app.core.auction_chess.types import Color, PieceType
+# For the love of god please keep types here
+# from app.core.auction_chess.types import Color, PieceType
 
+Color = Literal["w", "b"]
+PieceType = Literal["p", "r", "n", "b", "q", "k"]
+GamePhase = Literal["bid", "move"]
 
 class Player(BaseModel):
     color: Color
