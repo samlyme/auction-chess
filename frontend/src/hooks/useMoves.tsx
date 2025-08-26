@@ -1,6 +1,6 @@
 // src/hooks/useChessMoves.ts
 import { useState, useCallback } from "react";
-import type { GamePacket, BoardPosition, Move, Piece } from "../schemas/types"; // Import your types
+import type { BoardPieces, BoardPosition, Move, Piece } from "../schemas/types"; // Import your types
 
 interface UseMovesReturn {
   selectedSquare: BoardPosition | null;
@@ -8,7 +8,7 @@ interface UseMovesReturn {
 }
 
 function useMoves(
-  game: GamePacket | undefined,
+  board: BoardPieces | null,
   makeMove: (move: Move) => void
 ): UseMovesReturn {
   const [selectedSquare, setSelectedSquare] = useState<BoardPosition | null>(
@@ -19,8 +19,8 @@ function useMoves(
     ({ row, col }: BoardPosition) => {
       console.log("Clicked sqaure: ", row, col);
 
-      if (!game || !game.board) return;
-      const clickedSquare: Piece | null = game.board[row][col];
+      if (!board) return;
+      const clickedSquare: Piece | null = board[row][col];
 
       if (selectedSquare) {
         if (selectedSquare.row == row && selectedSquare.col == col) {
@@ -43,7 +43,7 @@ function useMoves(
         if (clickedSquare) setSelectedSquare({ row, col });
       }
     },
-    [game, selectedSquare, makeMove]
+    [board, selectedSquare, makeMove]
   );
 
   return { selectedSquare, handleSquareClick };

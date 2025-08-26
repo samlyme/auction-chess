@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { LobbyProfile, Packet } from "../schemas/types";
+import type { BoardPieces, LobbyProfile, Packet } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
 import { parsePacket, websocketFactory } from "../services/websocket"
@@ -7,6 +7,7 @@ import { useAuthContext } from "./Auth";
 
 interface ServerUpdatesContextType {
     lobby: LobbyProfile | null
+    board: BoardPieces | null
 }
 
 const ServerUpdatesContext = createContext<ServerUpdatesContextType | null>(null);
@@ -20,6 +21,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
     const navigate = useNavigate()
     const { getLobby } = useLobbies()
     const [lobby, setLobby] = useState<LobbyProfile | null>(null)
+    const [board, setBoard] = useState<BoardPieces | null>(null)
     const {token} = useAuthContext()
     const wsRef = useRef<WebSocket | null>(null)
 
@@ -40,6 +42,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
                     console.log("Attempting to parse packet", data);
                     
                     if (data.type == "lobby_packet") setLobby(data.content)
+                    else if (data.type == "game_packet") setBoard(data.content)
                 }
 
                 const onclose = (event: CloseEvent) => {
@@ -52,7 +55,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
         .catch(() => navigate("/lobbies"))
     }, [])
 
-    const context: ServerUpdatesContextType = { lobby }
+    const context: ServerUpdatesContextType = { lobby, board }
 
     return (
         <ServerUpdatesContext value={context}>

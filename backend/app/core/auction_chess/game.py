@@ -45,25 +45,28 @@ class AuctionChess(Game):
         if expires != -1:
             self.marker_queue.push(expires + self.turns, marker)
 
-    def move(self, move: Move) -> None:
+    def move(self, move: api.Move) -> None:
         """
         Executes a standard move from client.
         """
-        start: Position = (move.start[0], move.start[1])
-        end: Position = (move.end[0], move.end[1])
+        parsed_move = Move(
+            start=(move.start.row, move.start.col),
+            end=(move.end.row, move.end.col)
+        )
 
-        piece = self.board.piece_at(start)
+        piece = self.board.piece_at(parsed_move.start)
         moves = self.moves[piece]
 
         # TODO: implement move validation
-        # for m in moves:
-        #     if m.end == end:
-        #         game_move = m
-        #         break
-        # if not game_move:
-        #     raise Exception("Bad move")
+        game_move = None
+        for m in moves:
+            if m.end == parsed_move.end:
+                game_move = m
+                break
+        if not game_move:
+            raise Exception("Bad move")
 
-        captured: Piece | None = self.board.move(move)
+        captured: Piece | None = self.board.move(game_move)
         if captured:
             self._remove_piece(captured)
 
@@ -142,9 +145,3 @@ if __name__ == "__main__":
         sc = int(input("start col: "))
         er = int(input("end row: "))
         ec = int(input("end col: "))
-        test.move(
-            Move(
-                start=(sr, sc),
-                end=(er, ec)
-            )
-        )

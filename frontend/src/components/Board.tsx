@@ -6,20 +6,20 @@ import useMoves from "../hooks/useMoves";
 import { useAuthContext } from "../contexts/Auth";
 
 function Board() {
-  const { game, makeMove, isConnected, error } = useGame();
-  const { selectedSquare, handleSquareClick } = useMoves(game, makeMove);
+  const { board, makeMove } = useGame();
+  const { selectedSquare, handleSquareClick } = useMoves(board, makeMove);
   const {user} = useAuthContext();
 
-  if (error) return <div>Error: {error}</div>;
-  if (!isConnected) return <div>Connecting to game...</div>;
-  if (!game) return <div>Loading game state...</div>;
+  if (!board) return (
+    <div>Loading board</div>
+  )
 
   const squares = [];
   for (let row = 7; row >= 0; row--) {
     for (let col = 0; col <= 7; col++) {
       const colorClass = (row + col) % 2 == 0 ? "light-square" : "dark-square";
 
-      const piece = game.board[row][col];
+      const piece = board[row][col];
 
       squares.push(
         <Square

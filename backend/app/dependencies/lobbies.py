@@ -4,7 +4,6 @@ from fastapi import Depends, WebSocket, status
 from app.core.auction_chess.game import Game
 
 from app.core.auction_chess.game import AuctionChess
-from app.core.auction_chess.types import Move
 import app.schemas.types as api
 from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
 from app.utils.lobbies import generate_lobby_id
@@ -156,6 +155,7 @@ class LobbyManager:
             black=lobby["guest"].uuid
         )
         await self.broadcast(lobby_id)
+        await self.broadcast_game(lobby_id)
     
     def to_profile(self, lobby_id: api.LobbyId) -> api.LobbyProfile:
         if lobby_id not in self.lobbies:
@@ -206,10 +206,7 @@ class LobbyManager:
             raise Exception("Game not initialized")
         
         # TODO: Fix dummy move
-        lobby["game"].move(Move(
-            start=(1, 0),
-            end=(3, 0)
-        ))
+        lobby["game"].move(move)
 
         await self.broadcast_game(lobby_id)
 
@@ -227,7 +224,7 @@ class LobbyManager:
     async def broadcast_game(self, lobby_id: api.LobbyId) -> None:
         lobby = self.lobbies[lobby_id]
         if lobby["game"] is None:
-            raise Exception("Game not initialized")
+            return
 
         packet: api.GamePacket = api.GamePacket(
             content=lobby["game"].public_board()

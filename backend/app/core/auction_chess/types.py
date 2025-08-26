@@ -110,7 +110,7 @@ class Game(ABC):
         pass
     
     @abstractmethod
-    def move(self, move: Move) -> None:
+    def move(self, move: api.Move) -> None:
         pass
 
     @abstractmethod
