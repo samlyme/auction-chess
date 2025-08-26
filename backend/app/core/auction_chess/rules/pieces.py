@@ -82,6 +82,8 @@ class Pawn(Piece):
             ):  # type: ignore
                 yield Move(self.position, (nr, nc))
 
+    def public_piece(self) -> api.Piece:
+        return api.Piece(type="p", color=self.color, has_moved=self.hasMoved)
 
 class Rook(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):

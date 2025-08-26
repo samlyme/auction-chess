@@ -81,6 +81,13 @@ class AuctionChess(Game):
         except Exception:
             pass
 
+    def public_board(self) -> api.BoardPieces:
+        board_pieces: api.BoardPieces = [
+            [square.piece.public_piece() if square.piece else None for square in row] for row in self.board.board_state
+        ] 
+
+        return board_pieces
+
     # TODO: Optimize this
     def _update_all_moves(self):
         kings = []
@@ -106,13 +113,6 @@ class AuctionChess(Game):
             marker.effect = lambda: None
             marker.target = lambda _: False
         self.turns += 1
-
-    def public_board(self) -> api.BoardPieces:
-        board_pieces: api.BoardPieces = [
-            [square.piece for square in row] for row in self.board.board_state
-        ]  # type: ignore
-
-        return board_pieces
 
     def __repr__(self) -> str:
         out = ""

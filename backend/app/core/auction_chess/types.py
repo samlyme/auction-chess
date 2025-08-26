@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, Literal
+from typing import Callable, Iterable
 from uuid import UUID
+import app.schemas.types as api
 
 Position = tuple[int, int]
 
@@ -11,9 +12,9 @@ Position = tuple[int, int]
 Effect = Callable[[], None]
 MarkerTarget = Callable[["Piece"], bool]
 
-Color = Literal["w", "b"]
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-GamePhase = Literal["bid", "move"]
+Color = api.Color
+PieceType = api.PieceType
+GamePhase = api.GamePhase
 
 
 class Marker:
@@ -67,6 +68,9 @@ class Piece(ABC):
         self.initial = initial
         self.position = position
         
+    @abstractmethod
+    def public_piece(self) -> api.Piece:
+        pass
 
     def __repr__(self) -> str:
         return self.initial if self.color == "b" else self.initial.upper()
@@ -111,6 +115,10 @@ class Game(ABC):
 
     @abstractmethod
     def capture(self, position: Position):
+        pass
+    
+    @abstractmethod
+    def public_board(self) -> api.BoardPieces:
         pass
 
 class Board(ABC):
