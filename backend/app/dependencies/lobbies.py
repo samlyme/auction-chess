@@ -71,7 +71,6 @@ class LobbyManager:
 
         if lobby["host_ws"]:
             try:
-                await lobby["host_ws"].send_text("closing")
                 await lobby["host_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
                 print(f"Closed host WS for lobby {lobby_id}")
             except RuntimeError as e:
@@ -79,7 +78,6 @@ class LobbyManager:
 
         if lobby["guest_ws"]:
             try:
-                await lobby["guest_ws"].send_text("closing")
                 await lobby["guest_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
                 print(f"Closed guest WS for lobby {lobby_id}")
             except RuntimeError as e:
