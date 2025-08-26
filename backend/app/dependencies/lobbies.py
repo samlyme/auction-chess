@@ -4,6 +4,7 @@ from fastapi import Depends, WebSocket, status
 from app.core.auction_chess.game import Game
 
 from app.core.auction_chess.game import AuctionChess
+from app.core.auction_chess.types import Move
 import app.schemas.types as api
 from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
 from app.utils.lobbies import generate_lobby_id
@@ -206,6 +207,21 @@ class LobbyManager:
             await lobby["guest_ws"].send_text(data)
         if lobby["host_ws"]:
             await lobby["host_ws"].send_text(data)
+    
+    async def play(self, lobby_id: api.LobbyId, user: api.UserProfile, move: api.Move):
+        # ignore move val for now
+        lobby = self.lobbies[lobby_id]
+        if lobby["status"] != "active":
+            raise Exception("Lobby not started")
+        if lobby["game"] is None:
+            raise Exception("Game not initialized")
+        
+        # TODO: Fix dummy move
+        lobby["game"].move(Move(
+            start=(0, 0),
+            end=(0,1)
+        ))
+        
 
 lobby_manager = LobbyManager()
 

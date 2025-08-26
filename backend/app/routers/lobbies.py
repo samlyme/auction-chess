@@ -71,7 +71,6 @@ async def join_lobby(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
-# TODO: implement lobby start errors
 @router.post("/{lobby_id}/start")
 async def start_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
@@ -83,7 +82,6 @@ async def start_lobby(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
 
 
-# TODO: implement lobby leave
 @router.post("/{lobby_id}/leave")
 async def leave_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
@@ -105,3 +103,10 @@ async def delete_lobby(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.detail)
     except LobbyPermissionError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
+
+
+@router.post("/{lobby_id}/game")
+async def play(
+    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId, move: api.Move
+) -> None:
+    await lobby_manager.play(lobby_id, user, move)

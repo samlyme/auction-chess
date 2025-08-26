@@ -55,15 +55,15 @@ class AuctionChess(Game):
         piece = self.board.piece_at(start)
         moves = self.moves[piece]
 
-        game_move: Move | None = None
-        for m in moves:
-            if m.end == end:
-                game_move = m
-                break
-        if not game_move:
-            raise Exception("Bad move")
+        # TODO: implement move validation
+        # for m in moves:
+        #     if m.end == end:
+        #         game_move = m
+        #         break
+        # if not game_move:
+        #     raise Exception("Bad move")
 
-        captured: Piece | None = self.board.move(game_move)
+        captured: Piece | None = self.board.move(move)
         if captured:
             self._remove_piece(captured)
 
@@ -107,12 +107,12 @@ class AuctionChess(Game):
             marker.target = lambda _: False
         self.turns += 1
 
-    def public_board(self) -> api.GamePacket:
+    def public_board(self) -> api.BoardPieces:
         board_pieces: api.BoardPieces = [
             [square.piece for square in row] for row in self.board.board_state
         ]  # type: ignore
 
-        return api.GamePacket(board=board_pieces)
+        return board_pieces
 
     def __repr__(self) -> str:
         out = ""
