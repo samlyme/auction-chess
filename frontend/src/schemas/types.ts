@@ -19,11 +19,7 @@ export interface Piece {
   hasMoved: boolean;
 }
 
-export type BoardState = (Piece | null)[][];
-
-export interface GamePacket {
-  board: BoardState;
-}
+export type BoardPieces = (Piece | null)[][];
 
 // Users and such
 export interface UserCredentials {
@@ -77,7 +73,7 @@ export interface LobbyPacket {
 // TODO: handle this
 export interface GamePacket {
   type: "game_packet"
-  board: BoardState
+  board: BoardPieces
 }
 
 export type Packet = LobbyPacket | GamePacket
