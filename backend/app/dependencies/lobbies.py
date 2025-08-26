@@ -197,7 +197,7 @@ class LobbyManager:
         else:
             raise Exception("This user is not in this lobby.")
     
-    async def play(self, lobby_id: api.LobbyId, user: api.UserProfile, move: api.Move):
+    async def make_move(self, lobby_id: api.LobbyId, user: api.UserProfile, move: api.Move):
         # ignore move val for now
         lobby = self.lobbies[lobby_id]
         if lobby["status"] != "active":
@@ -206,7 +206,7 @@ class LobbyManager:
             raise Exception("Game not initialized")
         
         # TODO: Fix dummy move
-        lobby["game"].move(move)
+        lobby["game"].move(user, move)
 
         await self.broadcast_game(lobby_id)
 
