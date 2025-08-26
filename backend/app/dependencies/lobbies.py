@@ -61,20 +61,6 @@ class LobbyManager:
         if user != lobby["host"]:
             raise LobbyPermissionError(user, lobby_id)
 
-        if lobby["host_ws"]:
-            try:
-                await lobby["host_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
-                print(f"Closed host WS for lobby {lobby_id}")
-            except RuntimeError as e:
-                print(f"Error closing host WS for lobby {lobby_id}: {e}")
-
-        if lobby["guest_ws"]:
-            try:
-                await lobby["guest_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
-                print(f"Closed guest WS for lobby {lobby_id}")
-            except RuntimeError as e:
-                print(f"Error closing host WS for lobby {lobby_id}: {e}")
-
         del self.active_users[lobby["host"].uuid]
         try:
             del self.active_users[lobby["guest"].uuid] # type: ignore
@@ -82,6 +68,22 @@ class LobbyManager:
             pass
 
         del self.lobbies[lobby_id]
+
+        if lobby["host_ws"]:
+            try:
+                await lobby["host_ws"].send_text("closing")
+                await lobby["host_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
+                print(f"Closed host WS for lobby {lobby_id}")
+            except RuntimeError as e:
+                print(f"Error closing host WS for lobby {lobby_id}: {e}")
+
+        if lobby["guest_ws"]:
+            try:
+                await lobby["guest_ws"].send_text("closing")
+                await lobby["guest_ws"].close(code=status.WS_1000_NORMAL_CLOSURE)
+                print(f"Closed guest WS for lobby {lobby_id}")
+            except RuntimeError as e:
+                print(f"Error closing guest WS for lobby {lobby_id}: {e}")
 
     async def join(self, guest: api.UserProfile, lobby_id: api.LobbyId):
         if lobby_id not in self.lobbies:
@@ -100,6 +102,7 @@ class LobbyManager:
         
         self.active_users[guest.uuid] = lobby_id
         lobby["guest"] = guest
+        await self.broadcast(lobby_id)
 
     async def leave(self, user: api.UserProfile, lobby_id: api.LobbyId):
         if lobby_id not in self.lobbies:
@@ -130,6 +133,7 @@ class LobbyManager:
                 lobby["host"] = lobby["guest"]
                 lobby["guest"] = None
         del self.active_users[user.uuid]
+        await self.broadcast(lobby_id)
 
     # Assume that this method is called from a reputatble source
     async def start(self, user: api.UserProfile, lobby_id: api.LobbyId):
@@ -152,6 +156,7 @@ class LobbyManager:
             white=lobby["host"].uuid,
             black=lobby["guest"].uuid
         )
+        await self.broadcast(lobby_id)
     
     def to_profile(self, lobby_id: api.LobbyId) -> api.LobbyProfile:
         if lobby_id not in self.lobbies:
@@ -166,22 +171,45 @@ class LobbyManager:
             guest=lobby["guest"]
         )
 
-    # async def set_websocket(self, member: Literal["host", "guest"], lobby_id: api.LobbyId, websocket: WebSocket):
-    #     if lobby_id not in self.lobbies:
-    #         raise Exception("This lobby does not exist")
-    #     lobby = self.lobbies[lobby_id]
+    async def set_websocket(self, lobby_id: api.LobbyId, websocket: WebSocket, user: api.UserProfile) -> None:
+        print("🔴 attempting to set websocket")
+        if lobby_id not in self.lobbies:
+            raise Exception("This lobby does not exist")
+        lobby = self.lobbies[lobby_id]
 
-    #     if member == "host":
-    #         lobby["host_ws"] = websocket
-    #     else:
-    #         lobby["guest_ws"] = websocket
+        if user == lobby["host"]:
+            print("set", user, "as host WS")
+            lobby["host_ws"] = websocket
+            await websocket.send_text("hello host")
+        elif user == lobby["guest"]:
+            print("set", user, "as guest WS")
+            lobby["guest_ws"] = websocket
+            await websocket.send_text("hello guest")
+        else:
+            raise Exception("This user is not in this lobby.")
 
-    # async def remove_websocket(self, member: Literal["host", "guest"], lobby_id: api.LobbyId):
-    #     lobby = self.lobbies[lobby_id]
-    #     if member == "host":
-    #         lobby["host_ws"] = None
-    #     else:
-    #         lobby["guest_ws"] = None
+    async def remove_websocket(self, lobby_id: api.LobbyId, user: api.UserProfile) -> None:
+        print("🔴 disconnected ws", user.username)
+        lobby = self.lobbies[lobby_id]
+        if user == lobby["host"]:
+            print("remove", user, "as host WS")
+            lobby["host_ws"] = None
+        elif user == lobby["guest"]:
+            print("remove", user, "as guest WS")
+            lobby["guest_ws"] = None
+        else:
+            raise Exception("This user is not in this lobby.")
+
+    async def broadcast(self, lobby_id: api.LobbyId) -> None:
+        lobby = self.lobbies[lobby_id]
+        packet: api.LobbyPacket = api.LobbyPacket(
+            content=self.to_profile(lobby_id)
+        )
+        data: str = packet.json()
+        if lobby["guest_ws"]:
+            await lobby["guest_ws"].send_text(data)
+        if lobby["host_ws"]:
+            await lobby["host_ws"].send_text(data)
 
 lobby_manager = LobbyManager()
 

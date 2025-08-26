@@ -10,6 +10,7 @@ from app.utils.exceptions import (
     LobbyLeaveError,
     LobbyNotFoundError,
     LobbyPermissionError,
+    LobbyStartError,
 )
 
 router = APIRouter(prefix="/lobbies")
@@ -78,7 +79,7 @@ async def start_lobby(
     try:
         await lobby_manager.start(user, lobby_id)
         return lobby_manager.to_profile(lobby_id)
-    except LobbyPermissionError as e:
+    except (LobbyPermissionError, LobbyStartError) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
 
 

@@ -17,7 +17,7 @@ print(f"Database URL: {DB_URL}")
 print(f"Database file path: {DB_FILE_PATH}")
 
 # Ensure `echo=True` for debugging, so you can see the SQL queries
-engine: Engine = create_engine(DB_URL, echo=True)
+engine: Engine = create_engine(DB_URL, echo=False)
 
 def init_db():
     print("Initializing database: Creating all tables...")

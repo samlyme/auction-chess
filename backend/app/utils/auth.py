@@ -33,7 +33,6 @@ def encode_jwt(data: User, expires_delta: timedelta | None = None) -> str:
     payload = JWTPayload(exp=expire, sub=data.uuid)
     payload_dict = payload.model_dump()
     payload_dict["sub"] = payload_dict["sub"].__str__()
-    print("JWT Payload", payload_dict)
     encoded_jwt = jwt.encode(payload_dict, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
     

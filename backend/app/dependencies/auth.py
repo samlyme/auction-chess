@@ -22,8 +22,6 @@ async def get_current_user(db: DBDep, token: AuthDep) -> UserProfile:
     )
     try:
         payload: JWTPayload = decode_jwt(token)
-        print("get_current_user token", token)
-        print("get_current_user payload", payload)
 
         uuid = payload.sub
         if uuid is None:

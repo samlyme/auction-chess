@@ -21,8 +21,6 @@ async def auth_test(token: AuthDep):
     )
     try:
         payload: JWTPayload = decode_jwt(token)
-        print("get_current_user token", token)
-        print("get_current_user payload", payload)
 
         uuid = payload.sub
         if uuid is None:
@@ -30,7 +28,6 @@ async def auth_test(token: AuthDep):
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    print("Auth test success")
     return token
 
 @router.post("/token")
