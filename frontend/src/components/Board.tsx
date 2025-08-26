@@ -1,5 +1,5 @@
 import useGame from "../hooks/useGame";
-import type { Piece, UserProfile } from "../schemas/types";
+import type { Piece } from "../schemas/types";
 import { pieceSVGMap } from "../utils/chess";
 import "./Board.css";
 import useMoves from "../hooks/useMoves";

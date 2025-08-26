@@ -6,9 +6,9 @@ from app.schemas.types import LobbyId
 
 
 
-router = APIRouter(prefix="")
+router = APIRouter(prefix="/ws")
 
-@router.websocket("/lobbies/{lobby_id}/ws")
+@router.websocket("/lobbies/{lobby_id}")
 async def ws(websocket: WebSocket, db: DBDep, lobby_id: LobbyId):
     """
     WebSockets will only be used to send info to the clients.
