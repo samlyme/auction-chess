@@ -10,9 +10,9 @@ function Lobby() {
 
     function getData() {
         const {user, isLoading: userLoading} = useAuthContext()
-        const {lobby, isLoading: lobbyLoading} = useServerUpdatesContext()
+        const { lobby } = useServerUpdatesContext()
 
-        const isLoading = userLoading || lobbyLoading
+        const isLoading = userLoading || !lobby
         
         return { isLoading, user, lobby}
     }
