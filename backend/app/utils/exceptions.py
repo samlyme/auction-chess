@@ -60,3 +60,14 @@ class LobbyStartError(LobbyError):
             "user": user.model_dump(mode="json"),
             "reason": reason,
         }
+
+
+class GameError(Exception):
+    """Base exception for all lobby-related errors."""
+    def __init__(self, message: str, detail: dict | None = None):
+        super().__init__(message)
+        self.detail = detail if detail is not None else {}
+        
+class IllegalMoveException(GameError):
+    def __init__(self, message: str, detail: dict | None = None):
+        super().__init__(message, detail)
