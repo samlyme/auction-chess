@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router";
 import { useAuthContext } from "../contexts/Auth";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useLobbies from "../hooks/useLobbies";
+import Board from "../components/Board";
 
 function Lobby() {
     const navigate = useNavigate();
@@ -22,6 +23,10 @@ function Lobby() {
     // Last two are redundant, just to make typechecker happy
     if (isLoading || !lobby || !user) return (
         <div>Loading</div>
+    )
+
+    if (lobby.status == "active") return (
+        <Board />
     )
 
     return (

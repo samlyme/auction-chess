@@ -91,7 +91,7 @@ class LobbyPacket(BaseModel):
 
 class GamePacket(BaseModel):
     type: PacketType = "game_packet"
-    board: BoardPieces
+    content: BoardPieces
 
 Packet = Annotated[ 
     Union[LobbyPacket, GamePacket],

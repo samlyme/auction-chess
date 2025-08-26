@@ -73,7 +73,7 @@ export interface LobbyPacket {
 // TODO: handle this
 export interface GamePacket {
   type: "game_packet"
-  board: BoardPieces
+  content: BoardPieces
 }
 
 export type Packet = LobbyPacket | GamePacket
