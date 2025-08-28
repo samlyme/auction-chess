@@ -7,7 +7,7 @@ from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Positio
 
 # All the types defined here are for the interface between BE and FE
 from app.core.auction_chess.rules.factories import standard_board_factory
-from app.core.auction_chess.types import Game, Piece
+from app.core.auction_chess.types import Game
 from app.core.utils import PriorityQueue
 
 import app.schemas.types as api
@@ -57,6 +57,13 @@ class AuctionChess(Game):
             start=(move.start.row, move.start.col),
             end=(move.end.row, move.end.col)
         )
+        
+        square = self.board.square_at(parsed_move.start)
+        if not square.piece:
+            raise IllegalMoveException("Invalid move. No piece at start.")
+        
+        if square.piece.color != self.turn:
+            raise IllegalMoveException("Invalid move. Not your piece.")
 
         moves = self.moves[parsed_move.start]
 
@@ -68,6 +75,9 @@ class AuctionChess(Game):
                 break
         if not game_move:
             raise IllegalMoveException("Invalid move. Illegal move")
+
+
+        self.board.move(game_move)
 
         self._increment_turn()
         self._update_all_moves()
