@@ -184,6 +184,8 @@ class LobbyManager:
             lobby["guest_ws"] = websocket
         else:
             raise Exception("This user is not in this lobby.")
+        if lobby["game"]:
+            await self.broadcast_game(lobby_id)
 
     async def remove_websocket(self, lobby_id: api.LobbyId, user: api.UserProfile) -> None:
         print("🔴 disconnected ws", user.username)
@@ -227,7 +229,8 @@ class LobbyManager:
             return
 
         packet: api.GamePacket = api.GamePacket(
-            content=lobby["game"].public_board()
+            board=lobby["game"].public_board(),
+            moves=lobby["game"].public_moves(),
         )
         data: str = packet.json()
         if lobby["guest_ws"]:

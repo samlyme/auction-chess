@@ -113,4 +113,4 @@ async def play(
     try:
         await lobby_manager.make_move(lobby_id, user, move)
     except IllegalMoveException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
