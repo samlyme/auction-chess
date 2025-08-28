@@ -1,18 +1,18 @@
 from typing import Iterable
 from app.core.auction_chess.rules.effects import move_effect, place_en_passent_marker
-from app.core.auction_chess.types import Board, BoardState, Game, Move, Piece, Position
+from app.core.auction_chess.types import Board, Game, Move, Piece, Position
 from app.schemas.types import BoardPosition, Color
 import app.schemas.types as api
 
 
 def sliding_moves(
-    board_state: BoardState, color: Color, start: Position, direction: tuple[int, int]
+    board: Board, color: Color, start: Position, direction: tuple[int, int]
 ):
     r, c = start
     dr, dc = direction
     nr, nc = r + dr, c + dc
-    while nr < len(board_state) and nc < len(board_state[0]):
-        square = board_state[nr][nc]
+    while in_bounds(board, (nr,nc)):
+        square = board.board_state[nr][nc]
         if square.piece:
             if square.piece.color != color:
                 yield Move(start, (nr, nc))
@@ -94,7 +94,7 @@ class Rook(Piece):
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         for direction in directions:
             for move in sliding_moves(
-                board_state, self.color, self.position, direction
+                board, self.color, self.position, direction
             ):
                 square = board_state[move.end[0]][move.end[1]]
                 square.attacked_by.append(self)
@@ -116,13 +116,13 @@ class Knight(Piece):
 
         for sr, sc in signs:
             nr, nc = long * sr + r, short * sc + c
-            if nr < len(board_state) and nc < len(board_state[0]):
+            if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
                 square.attacked_by.append(self)
                 yield Move(self.position, (nr, nc))
 
             nr, nc = short * sr + r, long * sc + c
-            if nr < len(board_state) and nc < len(board_state[0]):
+            if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
                 square.attacked_by.append(self)
                 yield Move(self.position, (nr, nc))
@@ -140,7 +140,7 @@ class Bishop(Piece):
         directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         for direction in directions:
             for move in sliding_moves(
-                board_state, self.color, self.position, direction
+                board, self.color, self.position, direction
             ):
                 square = board_state[move.end[0]][move.end[1]]
                 square.attacked_by.append(self)
@@ -168,7 +168,7 @@ class Queen(Piece):
         ]
         for direction in directions:
             for move in sliding_moves(
-                board_state, self.color, self.position, direction
+                board, self.color, self.position, direction
             ):
                 square = board_state[move.end[0]][move.end[1]]
                 square.attacked_by.append(self)
@@ -197,7 +197,7 @@ class King(Piece):
         r, c = self.position
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
-            if nr < len(board_state) and nc < len(board_state[0]):
+            if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
                 square.attacked_by.append(self)
                 yield Move(self.position, (nr, nc))

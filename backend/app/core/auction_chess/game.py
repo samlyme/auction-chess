@@ -6,7 +6,7 @@ from app.core.auction_chess.board import ChessBoard
 from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Position
 
 # All the types defined here are for the interface between BE and FE
-from app.core.auction_chess.rules.factories import en_passant_test_board_factory, standard_board_factory
+from app.core.auction_chess.rules.factories import standard_board_factory
 from app.core.auction_chess.types import Game, Piece
 from app.core.utils import PriorityQueue
 
@@ -29,7 +29,7 @@ class AuctionChess(Game):
         self.players["w"] = white
         self.players["b"] = black
         # for testing
-        self.board = ChessBoard(board_factory=en_passant_test_board_factory(self))
+        self.board = ChessBoard(board_factory=standard_board_factory(self))
         self.moves = defaultdict(list)
 
         self._update_all_moves()
@@ -69,9 +69,6 @@ class AuctionChess(Game):
         if not game_move:
             raise IllegalMoveException("Invalid move. Illegal move")
 
-        captured: Piece | None = self.board.move(game_move)
-        print("captured", captured)
-
         self._increment_turn()
         self._update_all_moves()
     
@@ -99,7 +96,6 @@ class AuctionChess(Game):
         ]
         for row in range(self.board.rows):
             for col in range(self.board.cols):
-                print("🟡", self.moves[(row, col)])
                 moves[row][col] += [api.BoardPosition(row=move.end[0], col=move.end[1]) for move in self.moves[(row, col)]]
         return moves
 
@@ -110,7 +106,6 @@ class AuctionChess(Game):
                 try:
                     piece = self.board.piece_at((row, col))
                     self.moves[(row, col)] = list(piece.moves(self.board))
-                    print("moves from", (row, col), self.moves[(row, col)])
                 except Exception:
                     self.moves[(row,col)].clear()
                 
@@ -134,6 +129,14 @@ class AuctionChess(Game):
 
     def __repr__(self) -> str:
         out = ""
+        for row in range(self.board.rows):
+            for col in range(self.board.cols):
+                try:
+                    piece = self.board.piece_at((row, col))
+                    out += piece.initial + str(self.moves[(row, col)]) + "\n"
+                except Exception:
+                    pass
+
         for row in reversed(self.board.board_state):
             for square in row:
                 piece = square.piece
