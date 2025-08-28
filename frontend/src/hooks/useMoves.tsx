@@ -27,17 +27,12 @@ function useMoves(
           setSelectedSquare(null);
           return;
         }
-        // TODO: Do turn validation here
-        if (clickedSquare) {
-          setSelectedSquare({ row, col });
-          return;
-        }
-        // already had something selected, and clicked on empty square
-        // TODO: Do move legality validation here
+
         makeMove({
           start: selectedSquare,
           end: { row, col },
         });
+
         setSelectedSquare(null);
       } else {
         if (clickedSquare) setSelectedSquare({ row, col });

@@ -20,6 +20,7 @@ export interface Piece {
 }
 
 export type BoardPieces = (Piece | null)[][];
+export type LegalMoves = BoardPosition[][][];
 
 // Users and such
 export interface UserCredentials {
@@ -73,7 +74,8 @@ export interface LobbyPacket {
 // TODO: handle this
 export interface GamePacket {
   type: "game_packet"
-  content: BoardPieces
+  board: BoardPieces
+  moves: LegalMoves
 }
 
 export type Packet = LobbyPacket | GamePacket

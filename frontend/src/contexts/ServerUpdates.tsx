@@ -42,7 +42,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
                     console.log("Attempting to parse packet", data);
                     
                     if (data.type == "lobby_packet") setLobby(data.content)
-                    else if (data.type == "game_packet") setBoard(data.content)
+                    else if (data.type == "game_packet") setBoard(data.board)
                 }
 
                 const onclose = (event: CloseEvent) => {
