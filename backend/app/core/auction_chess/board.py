@@ -60,8 +60,12 @@ class ChessBoard(Board):
         end_square: Square = self.square_at(end)
         captured: Piece | None = end_square.piece
 
-        end_square.piece = start_square.piece
+        end_square.piece = piece
         start_square.piece = None
+
+        piece.position = end
+        piece.hasMoved = True
+
 
         # ALL MOVE EFFECTS HAPPEN AFTER THE BOARD MOVES
         move.effect()

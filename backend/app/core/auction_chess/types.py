@@ -40,6 +40,12 @@ class Move:
 
     def __repr__(self) -> str:
         return f"<Move (start={self.start} end={self.end})>"
+    
+    def public(self) -> api.Move:
+        return api.Move(
+            start=api.BoardPosition(row=self.start[0], col=self.start[1]),
+            end=api.BoardPosition(row=self.end[0], col=self.end[1])
+        )
 
 
 # TODO: implement on capture
@@ -119,6 +125,10 @@ class Game(ABC):
     
     @abstractmethod
     def public_board(self) -> api.BoardPieces:
+        pass
+
+    @abstractmethod
+    def public_moves(self) -> api.LegalMoves:
         pass
 
 class Board(ABC):

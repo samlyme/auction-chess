@@ -1,11 +1,12 @@
+from collections import defaultdict
+import datetime
 from uuid import UUID, uuid1
 
 from app.core.auction_chess.board import ChessBoard
-from app.core.auction_chess.rules.pieces import King
 from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Position
 
 # All the types defined here are for the interface between BE and FE
-from app.core.auction_chess.rules.factories import standard_board_factory
+from app.core.auction_chess.rules.factories import en_passant_test_board_factory, standard_board_factory
 from app.core.auction_chess.types import Game, Piece
 from app.core.utils import PriorityQueue
 
@@ -18,9 +19,8 @@ class AuctionChess(Game):
     turn: Color = "w"
     players: dict[Color, UUID] = {}
 
-    # later for when we need to convert API sent moves to game logic moves
-    moves: dict[Piece, list[Move]] = {}
     board: ChessBoard
+    moves: dict[Position, list[Move]]
 
     turns: int = 0
     marker_queue: PriorityQueue[Marker] = PriorityQueue()
@@ -29,11 +29,8 @@ class AuctionChess(Game):
         self.players["w"] = white
         self.players["b"] = black
         # for testing
-        self.board = ChessBoard(board_factory=standard_board_factory(self))
-        for row in self.board.board_state:
-            for square in row:
-                if square.piece:
-                    self.moves.setdefault(square.piece, [])
+        self.board = ChessBoard(board_factory=en_passant_test_board_factory(self))
+        self.moves = defaultdict(list)
 
         self._update_all_moves()
 
@@ -61,12 +58,7 @@ class AuctionChess(Game):
             end=(move.end.row, move.end.col)
         )
 
-        try:
-            piece = self.board.piece_at(parsed_move.start)
-        except Exception:
-            raise IllegalMoveException("Invalid move.")
-
-        moves = self.moves[piece]
+        moves = self.moves[parsed_move.start]
 
         # TODO: implement move validation
         game_move = None
@@ -75,11 +67,10 @@ class AuctionChess(Game):
                 game_move = m
                 break
         if not game_move:
-            raise IllegalMoveException("Invalid move.")
+            raise IllegalMoveException("Invalid move. Illegal move")
 
         captured: Piece | None = self.board.move(game_move)
-        if captured:
-            self._remove_piece(captured)
+        print("captured", captured)
 
         self._increment_turn()
         self._update_all_moves()
@@ -89,9 +80,7 @@ class AuctionChess(Game):
         Captures a piece without question. Only really used for en passent.
         """
         try:
-            piece = self.board.piece_at(position)
             self.board.square_at(position).piece = None
-            self._remove_piece(piece)
         except Exception:
             pass
 
@@ -101,21 +90,30 @@ class AuctionChess(Game):
         ] 
 
         return board_pieces
+    
+    def public_moves(self) -> api.LegalMoves:
+        moves: api.LegalMoves = [
+            [ []                  # start with an empty list of moves
+            for _ in row ]      # one per column in this board‐row
+            for row in self.board.board_state      # one list-of-lists per board‐row
+        ]
+        for row in range(self.board.rows):
+            for col in range(self.board.cols):
+                print("🟡", self.moves[(row, col)])
+                moves[row][col] += [api.BoardPosition(row=move.end[0], col=move.end[1]) for move in self.moves[(row, col)]]
+        return moves
 
     # TODO: Optimize this
     def _update_all_moves(self):
-        kings = []
-        for piece in self.moves.keys():
-            if isinstance(piece, King):
-                kings.append(piece)
-            else:
-                self.moves[piece] = [move for move in piece.moves(self.board)]
-
-        for king in kings:
-            self.moves[king] = [move for move in king.moves(self.board)]
-
-    def _remove_piece(self, piece: Piece):
-        del self.moves[piece]
+        for row in range(self.board.rows):
+            for col in range(self.board.cols):
+                try:
+                    piece = self.board.piece_at((row, col))
+                    self.moves[(row, col)] = list(piece.moves(self.board))
+                    print("moves from", (row, col), self.moves[(row, col)])
+                except Exception:
+                    self.moves[(row,col)].clear()
+                
 
     def _increment_turn(self):
         # TODO: change the turn to be based on bid
@@ -147,18 +145,24 @@ class AuctionChess(Game):
                     out += "-"
                 out += " "
             out += "\n"
+        
         return out
 
 
 if __name__ == "__main__":
-    white = api.Player(color="w", uuid=uuid1())
-    black = api.Player(color="b", uuid=uuid1())
+    white = api.UserProfile(uuid=uuid1(), username="sam", created_at=datetime.datetime.now())
+    black = api.UserProfile(uuid=uuid1(), username="bob", created_at=datetime.datetime.now())
     test: Game = AuctionChess(white=white.uuid, black=black.uuid)
     while True:
         print(test)
-        print(test.moves)
-        print("markers", test.marker_queue)
+        # print(test.moves)
+        # print("markers", test.marker_queue)
         sr = int(input("start row: "))
         sc = int(input("start col: "))
         er = int(input("end row: "))
         ec = int(input("end col: "))
+        
+        if test.turn == "w":
+            test.move(white, api.Move(start=api.BoardPosition(row=sr, col=sc), end=api.BoardPosition(row=er, col=ec)))
+        else:
+            test.move(black, api.Move(start=api.BoardPosition(row=sr, col=sc), end=api.BoardPosition(row=er, col=ec)))
