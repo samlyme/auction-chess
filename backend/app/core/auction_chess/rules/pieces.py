@@ -189,6 +189,7 @@ class King(Piece):
         super().__init__(game, color, "King", "k", position, hasMoved)
 
     def moves(self, board: Board) -> Iterable[Move]:
+        print("🟢 calculating king moves")
         board_state = board.board_state
         directions = [
             (1, 0),
@@ -214,18 +215,25 @@ class King(Piece):
 
         if self.hasMoved:
             return
+        
+        print("🟢 king has not moved")
 
-        square = board_state[r][c]
-        if square.attacked_by:
-            return
+        # TODO: Fix "attacked_by"
+        # square = board_state[r][c]
+        # if square.attacked_by:
+        #     print("🔴 king is attacked by", square.attacked_by)
+        #     return
+
+        print("🟢 king is not in check")
 
         # Long castle
         piece = board_state[r][0].piece
         if isinstance(piece, Rook) and not piece.hasMoved:
+            print("🟢 rook has not moved")
             if (
-                not board_state[r][c - 1].attacked_by
-                and board_state[r][c - 2].attacked_by
+                not any(board_state[r][col].piece for col in range(1, c))
             ):
+                print("🟡 legal long castle, no pieces in the way")
                 yield Move(
                     start=self.position,
                     end=(r, c - 2),
@@ -238,10 +246,11 @@ class King(Piece):
         # Short castle
         piece = board.square_at((r, 7)).piece
         if isinstance(piece, Rook) and not piece.hasMoved:
+            print("🟢 rook has not moved")
             if (
-                not board_state[r][c + 1].attacked_by
-                and board_state[r][c + 2].attacked_by
+                not any(board_state[r][ic].piece for ic in range(c+1, 7))
             ):
+                print("🟡 legal short castle, no pieces in the way")
                 yield Move(
                     start=self.position,
                     end=(r, c + 2),

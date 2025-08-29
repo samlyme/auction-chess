@@ -43,7 +43,7 @@ class AuctionChess(Game):
         if expires != -1:
             self.marker_queue.push(expires + self.turns, marker)
 
-    def move(self, user: api.UserProfile, move: api.Move) -> None:
+    def user_move(self, user: api.UserProfile, move: api.Move) -> None:
         """
         Executes a standard move from client.
         """
@@ -81,6 +81,17 @@ class AuctionChess(Game):
 
         self._increment_turn()
         self._update_all_moves()
+
+    def move(self, move: api.Move) -> None:
+        """
+        This move is for internal moves like castling.
+        """
+        parsed_move = Move(
+            start=(move.start.row, move.start.col),
+            end=(move.end.row, move.end.col)
+        )
+
+        self.board.move(parsed_move)
     
     def capture(self, position: Position):
         """
@@ -176,6 +187,6 @@ if __name__ == "__main__":
         ec = int(input("end col: "))
         
         if test.turn == "w":
-            test.move(white, api.Move(start=api.BoardPosition(row=sr, col=sc), end=api.BoardPosition(row=er, col=ec)))
+            test.user_move(white, api.Move(start=api.BoardPosition(row=sr, col=sc), end=api.BoardPosition(row=er, col=ec)))
         else:
-            test.move(black, api.Move(start=api.BoardPosition(row=sr, col=sc), end=api.BoardPosition(row=er, col=ec)))
+            test.user_move(black, api.Move(start=api.BoardPosition(row=sr, col=sc), end=api.BoardPosition(row=er, col=ec)))

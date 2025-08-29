@@ -117,7 +117,11 @@ class Game(ABC):
         pass
     
     @abstractmethod
-    def move(self, user: api.UserProfile, move: api.Move) -> None:
+    def user_move(self, user: api.UserProfile, move: api.Move) -> None:
+        pass
+
+    @abstractmethod
+    def move(self, move: api.Move) -> None:
         pass
 
     @abstractmethod

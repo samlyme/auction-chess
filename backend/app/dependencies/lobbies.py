@@ -208,7 +208,7 @@ class LobbyManager:
             raise Exception("Game not initialized")
         
         # TODO: Fix dummy move
-        lobby["game"].move(user, move)
+        lobby["game"].user_move(user, move)
 
         await self.broadcast_game(lobby_id)
 
