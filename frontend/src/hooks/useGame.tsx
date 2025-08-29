@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { BoardPieces, LegalMoves, Move } from "../schemas/types";
+import type { BoardPieces, Color, LegalMoves, Move } from "../schemas/types";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import { sendMove } from "../services/game";
 import { useAuthContext } from "../contexts/Auth";
@@ -10,14 +10,15 @@ interface UseGameReturn {
   board: BoardPieces | null
   moves: LegalMoves | null
   makeMove: (move: Move) => void;
+  userColor: Color
 }
 
 function useGame(): UseGameReturn {
-  const { board, moves } = useServerUpdatesContext()
-  const { token } = useAuthContext()
+  const { board, moves, white, black } = useServerUpdatesContext()
+  const { token, user } = useAuthContext()
   const { lobbyId } = useParams()
 
-  if (!token) throw new Error("Not authenticated")
+  if (!token || !user) throw new Error("Not authenticated")
   if (!lobbyId) throw new Error("Not in lobby")
 
   const makeMove = useCallback((move: Move): void => {
@@ -31,8 +32,11 @@ function useGame(): UseGameReturn {
     })
   }, []);
 
+  if (user.uuid !== white && user.uuid !== black) throw new Error("User not in right game.")
 
-  return { board, moves, makeMove };
+  const userColor: Color = user.uuid == white ? "w" : "b";
+
+  return { board, moves, makeMove, userColor };
 }
 
 export default useGame;

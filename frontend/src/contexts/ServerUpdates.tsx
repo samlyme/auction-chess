@@ -9,6 +9,8 @@ interface ServerUpdatesContextType {
     lobby: LobbyProfile | null
     board: BoardPieces | null
     moves: LegalMoves | null
+    white: string | null
+    black: string | null
 }
 
 const ServerUpdatesContext = createContext<ServerUpdatesContextType | null>(null);
@@ -24,6 +26,10 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
     const [lobby, setLobby] = useState<LobbyProfile | null>(null)
     const [board, setBoard] = useState<BoardPieces | null>(null)
     const [moves, setMoves] = useState<LegalMoves | null>(null)
+
+    const [white, setWhite] = useState<string | null>(null)
+    const [black, setBlack] = useState<string | null>(null)
+
     const {token} = useAuthContext()
     const wsRef = useRef<WebSocket | null>(null)
 
@@ -49,6 +55,9 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
                     else if (data.type == "game_packet") {
                         setBoard(data.board)
                         setMoves(data.moves)
+                        
+                        setWhite(data.white)
+                        setBlack(data.black)
                         console.log("🟢 board", data.board);
                         console.log("🟢 moves", data.moves);
                     }
@@ -64,7 +73,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
         .catch(() => navigate("/lobbies"))
     }, [])
 
-    const context: ServerUpdatesContextType = { lobby, board, moves}
+    const context: ServerUpdatesContextType = { lobby, board, moves, white, black }
 
     return (
         <ServerUpdatesContext value={context}>

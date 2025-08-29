@@ -1,6 +1,6 @@
 // src/hooks/useChessMoves.ts
 import { useState, useCallback } from "react";
-import type { BoardPosition } from "../schemas/types"; // Import your types
+import type { BoardPosition, Piece } from "../schemas/types"; // Import your types
 import useGame from "./useGame";
 
 interface UseMovesReturn {
@@ -9,7 +9,7 @@ interface UseMovesReturn {
 }
 
 function useMoves(): UseMovesReturn {
-  const { board, moves, makeMove } = useGame()
+  const { board, moves, makeMove, userColor } = useGame()
   const [selectedSquare, setSelectedSquare] = useState<BoardPosition | null>(
     null
   );
@@ -20,14 +20,26 @@ function useMoves(): UseMovesReturn {
 
       if (!board || !moves) return;
 
-      if (!selectedSquare && board[row][col]) {}
+      const piece: Piece | null = board[row][col]
+      if (!selectedSquare && !piece) return
+      if (!selectedSquare && piece && piece.color !== userColor) return
 
-      if (selectedSquare) {
-        if (selectedSquare.row == row && selectedSquare.col == col) {
-          setSelectedSquare(null);
-          return;
-        }
+      // Base case, nothing is currently selected and clicked on own piece
+      if (!selectedSquare && piece && piece.color === userColor) {
+        setSelectedSquare({ row, col })
+        return;
+      }
 
+      // Clicked on currently selected square
+      if (selectedSquare && selectedSquare.row == row && selectedSquare.col == col) {
+        setSelectedSquare(null);
+        return;
+      }
+
+      // Something has been selected, and you clicked on another square.
+      // This "tries" to make a move. If move is legal, a request is made.
+      // Either case, sets the selected back to null.
+      if (selectedSquare){
         const legalMoves: BoardPosition[] = moves[selectedSquare.row][selectedSquare.col]
         if (legalMoves.some((elem: BoardPosition) => elem.row === row && elem.col === col)) {
           makeMove({
@@ -36,8 +48,6 @@ function useMoves(): UseMovesReturn {
           });
         }
         setSelectedSquare(null);
-      } else {
-        if (board[row][col]) setSelectedSquare({ row, col });
       }
     },
     [board, selectedSquare, makeMove]

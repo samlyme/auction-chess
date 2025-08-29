@@ -76,6 +76,9 @@ export interface GamePacket {
   type: "game_packet"
   board: BoardPieces
   moves: LegalMoves
+
+  white: string
+  black: string
 }
 
 export type Packet = LobbyPacket | GamePacket

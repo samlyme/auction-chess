@@ -106,6 +106,7 @@ MarkerPlacer = Callable[[BoardState], None]
 
 
 class Game(ABC):
+    players: dict[Color, UUID]
 
     @abstractmethod
     def __init__(self, white: UUID, black: UUID):

@@ -94,6 +94,9 @@ class GamePacket(BaseModel):
     board: BoardPieces
     moves: LegalMoves
 
+    white: UUID
+    black: UUID
+
 Packet = Annotated[ 
     Union[LobbyPacket, GamePacket],
     Field(discriminator="type")
