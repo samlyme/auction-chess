@@ -1,17 +1,15 @@
 // src/hooks/useChessMoves.ts
 import { useState, useCallback } from "react";
-import type { BoardPieces, BoardPosition, LegalMoves, Move, Piece } from "../schemas/types"; // Import your types
+import type { BoardPosition } from "../schemas/types"; // Import your types
+import useGame from "./useGame";
 
 interface UseMovesReturn {
   selectedSquare: BoardPosition | null;
   handleSquareClick: (p: BoardPosition) => void;
 }
 
-function useMoves(
-  board: BoardPieces | null,
-  moves: LegalMoves | null,
-  makeMove: (move: Move) => void
-): UseMovesReturn {
+function useMoves(): UseMovesReturn {
+  const { board, moves, makeMove } = useGame()
   const [selectedSquare, setSelectedSquare] = useState<BoardPosition | null>(
     null
   );
@@ -20,10 +18,9 @@ function useMoves(
     ({ row, col }: BoardPosition) => {
       console.log("Clicked sqaure: ", row, col);
 
-      if (!board) return;
-      if (!moves) return;
-      
-      const clickedSquare: Piece | null = board[row][col];
+      if (!board || !moves) return;
+
+      if (!selectedSquare && board[row][col]) {}
 
       if (selectedSquare) {
         if (selectedSquare.row == row && selectedSquare.col == col) {
@@ -31,13 +28,16 @@ function useMoves(
           return;
         }
 
-        makeMove({
-          start: selectedSquare,
-          end: { row, col },
-        });
+        const legalMoves: BoardPosition[] = moves[selectedSquare.row][selectedSquare.col]
+        if (legalMoves.some((elem: BoardPosition) => elem.row === row && elem.col === col)) {
+          makeMove({
+            start: selectedSquare,
+            end: { row, col },
+          });
+        }
         setSelectedSquare(null);
       } else {
-        if (clickedSquare) setSelectedSquare({ row, col });
+        if (board[row][col]) setSelectedSquare({ row, col });
       }
     },
     [board, selectedSquare, makeMove]

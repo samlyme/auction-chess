@@ -6,8 +6,8 @@ import useMoves from "../hooks/useMoves";
 import { useAuthContext } from "../contexts/Auth";
 
 function Board() {
-  const { board, moves, makeMove } = useGame();
-  const { selectedSquare, handleSquareClick } = useMoves(board, moves, makeMove);
+  const { board, moves } = useGame();
+  const { selectedSquare, handleSquareClick } = useMoves();
   const {user} = useAuthContext();
 
   if (!board || !moves) return (
