@@ -121,13 +121,17 @@ class Knight(Piece):
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
                 square.attacked_by.append(self)
-                yield Move(self.position, (nr, nc))
+                piece: Piece | None = square.piece
+                if not piece or piece.color != self.color:
+                    yield Move(self.position, (nr, nc))
 
             nr, nc = short * sr + r, long * sc + c
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
                 square.attacked_by.append(self)
-                yield Move(self.position, (nr, nc))
+                piece: Piece | None = square.piece
+                if not piece or piece.color != self.color:
+                    yield Move(self.position, (nr, nc))
 
     def public_piece(self) -> api.Piece:
         return api.Piece(type="n", color=self.color, has_moved=self.hasMoved)
