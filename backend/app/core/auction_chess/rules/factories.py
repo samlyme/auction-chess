@@ -27,7 +27,7 @@ def standard_board_factory(game: Game) -> BoardFactory:
     pf = peice_factory(game)
 
     def f():
-        board: BoardState = [[Square() for _ in range(8)] for _ in range(8)]
+        board: BoardState = [[Square((row, col)) for col in range(8)] for row in range(8)]
 
         piece_order: list[PieceType] = ["r", "n", "b", "q", "k", "b", "n", "r"]
         for index, piece in enumerate(piece_order):
@@ -47,7 +47,7 @@ def standard_board_factory(game: Game) -> BoardFactory:
 def en_passant_test_board_factory(game: Game) -> BoardFactory:
     pf = peice_factory(game)
     def f():
-        board: BoardState = [[Square() for _ in range(8)] for _ in range(8)]
+        board: BoardState = [[Square((row, col)) for col in range(8)] for row in range(8)]
         board[1][0].piece = pf("p", "w", (1,0), False)
 
         board[3][1].piece = pf("p", "b", (3,1), True)

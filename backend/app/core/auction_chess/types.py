@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from re import S
 from typing import Callable, Iterable
 from uuid import UUID
 import app.schemas.types as api
@@ -57,6 +58,7 @@ class Piece(ABC):
     # Trust that board class sets this properly
     position: Position
     game: "Game"
+    attacking: list["Square"]
 
     def __init__(
         self, 
@@ -73,15 +75,25 @@ class Piece(ABC):
         self.name = name
         self.initial = initial
         self.position = position
+
+        self.attacking = []
         
+    def __repr__(self) -> str:
+        return self.initial if self.color == "b" else self.initial.upper()
+
+    def update_position(self, position: Position) -> None:
+        self.position = position
+        self.hasMoved = True
+
+        for sqaure in self.attacking:
+            sqaure.attacked_by.remove(self)
+        
+        self.attacking.clear()
+
     @abstractmethod
     def public_piece(self) -> api.Piece:
         pass
 
-    def __repr__(self) -> str:
-        return self.initial if self.color == "b" else self.initial.upper()
-
-# TODO: refactor this to take in a Board object
     @abstractmethod
     def moves(self, board: "Board") -> Iterable[Move]:
         pass
@@ -89,14 +101,27 @@ class Piece(ABC):
 
 class Square:
     piece: Piece | None
+    position: Position
     marker: Marker | None
-    attacked_by: list[Piece] = []
+    attacked_by: list[Piece]
 
     def __init__(
-        self, piece: Piece | None = None, marker: Marker | None = None
+        self, position: Position, piece: Piece | None = None, marker: Marker | None = None
     ) -> None:
+        self.position = position
         self.piece = piece
         self.marker = marker
+        self.attacked_by = []
+
+    def __repr__(self) -> str:
+        return f"Square ({self.position[0]}, {self.position[1]})"
+
+    def add_attacker(self, piece: Piece) -> None:
+        # print("🟢 square", self, "attacked by", piece)
+        self.attacked_by.append(piece)
+
+    def remove_attacker(self, piece: Piece) -> None:
+        self.attacked_by.remove(piece)
 
 
 BoardState = list[list[Square]]

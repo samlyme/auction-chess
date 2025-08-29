@@ -64,7 +64,7 @@ class Pawn(Piece):
         # Only these moves are considered attacking
         nr, nc = r + dir, c + 1
         if in_bounds(board, (nr, nc)):
-            board_state[nr][nc].attacked_by.append(self)
+            board_state[nr][nc].add_attacker(self)
             square: Square = board_state[nr][nc]
             piece: Piece | None = board_state[nr][nc].piece
             if (
@@ -75,7 +75,7 @@ class Pawn(Piece):
 
         nr, nc = r + dir, c - 1
         if in_bounds(board, (nr, nc)):
-            board_state[nr][nc].attacked_by.append(self)
+            board_state[nr][nc].add_attacker(self)
             square: Square = board_state[nr][nc]
             piece: Piece | None = board_state[nr][nc].piece
             if (
@@ -99,7 +99,7 @@ class Rook(Piece):
                 board, self.color, self.position, direction
             ):
                 square = board_state[move.end[0]][move.end[1]]
-                square.attacked_by.append(self)
+                square.add_attacker(self)
                 yield move
     
     def public_piece(self) -> api.Piece:
@@ -120,7 +120,7 @@ class Knight(Piece):
             nr, nc = long * sr + r, short * sc + c
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
-                square.attacked_by.append(self)
+                square.add_attacker(self)
                 piece: Piece | None = square.piece
                 if not piece or piece.color != self.color:
                     yield Move(self.position, (nr, nc))
@@ -128,7 +128,7 @@ class Knight(Piece):
             nr, nc = short * sr + r, long * sc + c
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
-                square.attacked_by.append(self)
+                square.add_attacker(self)
                 piece: Piece | None = square.piece
                 if not piece or piece.color != self.color:
                     yield Move(self.position, (nr, nc))
@@ -149,7 +149,7 @@ class Bishop(Piece):
                 board, self.color, self.position, direction
             ):
                 square = board_state[move.end[0]][move.end[1]]
-                square.attacked_by.append(self)
+                square.add_attacker(self)
                 yield move
 
     def public_piece(self) -> api.Piece:
@@ -177,7 +177,7 @@ class Queen(Piece):
                 board, self.color, self.position, direction
             ):
                 square = board_state[move.end[0]][move.end[1]]
-                square.attacked_by.append(self)
+                square.add_attacker(self)
                 yield move
 
     def public_piece(self) -> api.Piece:
@@ -206,7 +206,7 @@ class King(Piece):
             nr, nc = r + dr, c + dc
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
-                square.attacked_by.append(self)
+                square.add_attacker(self)
                 piece: Piece | None = square.piece
                 if not piece or piece.color != self.color:
                     yield Move(self.position, (nr, nc))
@@ -219,13 +219,15 @@ class King(Piece):
         print("🟢 king has not moved")
 
         # TODO: Fix "attacked_by"
-        # square = board_state[r][c]
-        # if square.attacked_by:
-        #     print("🔴 king is attacked by", square.attacked_by)
-        #     return
+        square = board_state[r][c]
+        if any(opp.color != self.color for opp in square.attacked_by):
+            print("🔴 king", self.position, "is attacked by", square.attacked_by)
+            return
 
         print("🟢 king is not in check")
 
+
+        # TODO: Fix magic numbers
         # Long castle
         piece = board_state[r][0].piece
         if isinstance(piece, Rook) and not piece.hasMoved:

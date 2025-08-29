@@ -63,9 +63,7 @@ class ChessBoard(Board):
         end_square.piece = piece
         start_square.piece = None
 
-        piece.position = end
-        piece.hasMoved = True
-
+        piece.update_position(end)
 
         # ALL MOVE EFFECTS HAPPEN AFTER THE BOARD MOVES
         move.effect()
