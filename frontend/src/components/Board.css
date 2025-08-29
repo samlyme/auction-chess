@@ -69,3 +69,9 @@
   background-color: #8c7047; /* Keep the selected color on hover, or blend it */
   box-shadow: inset 0 0 0 3px gold; /* Keep outline */
 }
+
+.legal-square {
+/* TODO: make a proper style for this */
+  background-color: #8c7047; /* Keep the selected color on hover, or blend it */
+  box-shadow: inset 0 0 0 3px gold; /* Keep outline */
+}

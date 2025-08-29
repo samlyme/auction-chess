@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { BoardPieces, Move } from "../schemas/types";
+import type { BoardPieces, LegalMoves, Move } from "../schemas/types";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import { sendMove } from "../services/game";
 import { useAuthContext } from "../contexts/Auth";
@@ -8,11 +8,12 @@ import { useParams } from "react-router";
 
 interface UseGameReturn {
   board: BoardPieces | null
+  moves: LegalMoves | null
   makeMove: (move: Move) => void;
 }
 
 function useGame(): UseGameReturn {
-  const { board } = useServerUpdatesContext()
+  const { board, moves } = useServerUpdatesContext()
   const { token } = useAuthContext()
   const { lobbyId } = useParams()
 
@@ -31,7 +32,7 @@ function useGame(): UseGameReturn {
   }, []);
 
 
-  return { board, makeMove };
+  return { board, moves, makeMove };
 }
 
 export default useGame;
