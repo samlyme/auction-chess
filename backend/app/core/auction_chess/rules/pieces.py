@@ -1,6 +1,6 @@
 from typing import Iterable
 from app.core.auction_chess.rules.effects import move_effect, place_en_passent_marker
-from app.core.auction_chess.types import Board, Game, Move, Piece, Position
+from app.core.auction_chess.types import Board, Game, Move, Piece, Position, Square
 from app.schemas.types import BoardPosition, Color
 import app.schemas.types as api
 
@@ -65,21 +65,23 @@ class Pawn(Piece):
         nr, nc = r + dir, c + 1
         if in_bounds(board, (nr, nc)):
             board_state[nr][nc].attacked_by.append(self)
+            square: Square = board_state[nr][nc]
+            piece: Piece | None = board_state[nr][nc].piece
             if (
-                board_state[nr][nc].piece
-                or board.square_at((nr, nc)).marker
-                and board.square_at((nr, nc)).marker.target(self) # type: ignore
-            ):  # type: ignore
+                (piece is not None and piece.color != self.color)
+                or square.marker and square.marker.target(self)
+            ): 
                 yield Move(self.position, (nr, nc))
 
         nr, nc = r + dir, c - 1
         if in_bounds(board, (nr, nc)):
             board_state[nr][nc].attacked_by.append(self)
+            square: Square = board_state[nr][nc]
+            piece: Piece | None = board_state[nr][nc].piece
             if (
-                board_state[nr][nc].piece
-                or board.square_at((nr, nc)).marker
-                and board.square_at((nr, nc)).marker.target(self) # type: ignore
-            ):  # type: ignore
+                (piece is not None and piece.color != self.color)
+                or square.marker and square.marker.target(self)
+            ): 
                 yield Move(self.position, (nr, nc))
 
     def public_piece(self) -> api.Piece:
