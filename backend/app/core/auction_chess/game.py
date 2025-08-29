@@ -3,7 +3,7 @@ import datetime
 from uuid import UUID, uuid1
 
 from app.core.auction_chess.board import ChessBoard
-from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Position
+from app.core.auction_chess.types import Color, GamePhase, Marker, Move, Piece, Position
 
 # All the types defined here are for the interface between BE and FE
 from app.core.auction_chess.rules.factories import standard_board_factory
@@ -122,13 +122,23 @@ class AuctionChess(Game):
 
     # TODO: Optimize this
     def _update_all_moves(self):
+        print("🟢 updating moves")
+        kings: list[Piece] = []
         for row in range(self.board.rows):
             for col in range(self.board.cols):
                 try:
                     piece = self.board.piece_at((row, col))
-                    self.moves[(row, col)] = list(piece.moves(self.board))
+                    piece.update_position((row, col))
+                    if piece.initial == "k":
+                        kings.append(piece)
+                    else:
+                        self.moves[(row, col)] = list(piece.moves(self.board))
                 except Exception:
                     self.moves[(row,col)].clear()
+        
+        # must do kings last for castling to work
+        for king in kings:
+            self.moves[king.position] = list(king.moves(self.board))
                 
 
     def _increment_turn(self):

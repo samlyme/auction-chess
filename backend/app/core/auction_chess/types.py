@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from re import S
 from typing import Callable, Iterable
 from uuid import UUID
 import app.schemas.types as api
@@ -58,7 +57,7 @@ class Piece(ABC):
     # Trust that board class sets this properly
     position: Position
     game: "Game"
-    attacking: list["Square"]
+    attacking: set["Square"]
 
     def __init__(
         self, 
@@ -76,14 +75,13 @@ class Piece(ABC):
         self.initial = initial
         self.position = position
 
-        self.attacking = []
+        self.attacking = set()
         
     def __repr__(self) -> str:
         return self.initial if self.color == "b" else self.initial.upper()
 
     def update_position(self, position: Position) -> None:
         self.position = position
-        self.hasMoved = True
 
         for sqaure in self.attacking:
             sqaure.attacked_by.remove(self)
@@ -103,7 +101,7 @@ class Square:
     piece: Piece | None
     position: Position
     marker: Marker | None
-    attacked_by: list[Piece]
+    attacked_by: set[Piece]
 
     def __init__(
         self, position: Position, piece: Piece | None = None, marker: Marker | None = None
@@ -111,14 +109,14 @@ class Square:
         self.position = position
         self.piece = piece
         self.marker = marker
-        self.attacked_by = []
+        self.attacked_by = set()
 
     def __repr__(self) -> str:
         return f"Square ({self.position[0]}, {self.position[1]})"
 
     def add_attacker(self, piece: Piece) -> None:
         # print("🟢 square", self, "attacked by", piece)
-        self.attacked_by.append(piece)
+        self.attacked_by.add(piece)
 
     def remove_attacker(self, piece: Piece) -> None:
         self.attacked_by.remove(piece)
