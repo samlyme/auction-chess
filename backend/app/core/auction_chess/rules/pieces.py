@@ -202,7 +202,9 @@ class King(Piece):
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
                 square.attacked_by.append(self)
-                yield Move(self.position, (nr, nc))
+                piece: Piece | None = square.piece
+                if not piece or piece.color != self.color:
+                    yield Move(self.position, (nr, nc))
 
         # TODO: implement castling
 
