@@ -57,14 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode}) {
 
     
     useEffect(() => {
-        console.log("Inside auth context useEffect");
-        
         if (!token) {
             logout()
             return;
         }
 
-        // 1) check if token is still valid
         testAuth(token).then((ok) => {
         if (!ok) {
             logout();
@@ -82,7 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode}) {
                 }
             );
         } catch (err) {
-            console.error("invalid token", err);
             logout();
         }
         });
