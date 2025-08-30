@@ -1,7 +1,7 @@
 {
 }
 
-localhost {
+{$DOMAIN} {
     # Backend service
     handle_path /api* {
         reverse_proxy {$BACKEND_URL}
