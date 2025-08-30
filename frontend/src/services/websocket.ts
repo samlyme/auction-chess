@@ -5,22 +5,27 @@ export function websocketFactory(
   lobbyId: LobbyId,
   onopen: (event: Event) => void,
   onmessage: (event: MessageEvent) => void,
-  onclose: (event: CloseEvent) => void,
+  onclose: (event: CloseEvent) => void
 ): WebSocket {
   console.log("connecting to ws");
 
-  let url = `/api/ws/lobbies/${lobbyId}`;
-  const qp = new URLSearchParams({ access_token });
-  url += `?${qp.toString()}`;
-  const ws = new WebSocket(url);
+  const scheme = location.protocol === "https:" ? "wss" : "ws";
+  const origin = `${scheme}://${location.host}`;
+  const path = `/api/ws/lobbies/${lobbyId}`;
+  const qs = new URLSearchParams({ access_token }).toString();
 
-  ws.onopen = onopen
-  ws.onmessage = onmessage
-  ws.onclose = onclose
+  // This is literally "wss://localhost/api/ws/lobbies/OERBJ?access_token=…"
+  const wsUrl = `${origin}${path}?${qs}`;
+
+  const ws = new WebSocket(wsUrl);
+
+  ws.onopen = onopen;
+  ws.onmessage = onmessage;
+  ws.onclose = onclose;
 
   return ws;
 }
 
 export function parsePacket(text: string): Packet {
-  return JSON.parse(text) as Packet
+  return JSON.parse(text) as Packet;
 }
