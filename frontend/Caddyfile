@@ -2,6 +2,7 @@
 {
   # disable automatic HTTPS if you don’t have a domain
   auto_https off
+  env PORT BACKEND_URL
 }
 
 # listen on the port Railway gives you
