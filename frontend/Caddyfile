@@ -5,7 +5,7 @@
 }
 
 # listen on the port Railway gives you
-:{env.PORT}
+:{ENV.PORT}
 
 # serve the static files
 root * /srv/site
@@ -16,5 +16,5 @@ try_files {path} /index.html
 
 # proxy /api/* requests to your backend
 handle_path /api/* {
-  reverse_proxy {env.BACKEND_URL}
+  reverse_proxy {ENV.BACKEND_URL}
 }
