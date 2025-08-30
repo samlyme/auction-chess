@@ -131,6 +131,8 @@ class Game(ABC):
     turn: api.Color
 
     prev_bid: int
+
+    outcome: api.GameOutcome
     
     players: dict[Color, UUID]
     balances: dict[Color, int]

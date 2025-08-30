@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type {
   BoardPieces,
   Color,
+  GameOutcome,
   GamePhase,
   LegalMoves,
   Move,
@@ -17,6 +18,7 @@ interface UseGameReturn {
   makeMove: (move: Move) => void;
   makeBid: (amount: number) => void;
   prevBid: number;
+  outcome: GameOutcome;
   userColor: Color;
   opponentColor: Color;
   userBalance: number;
@@ -26,7 +28,7 @@ interface UseGameReturn {
 }
 
 function useGame(): UseGameReturn {
-  const { board, moves, players, prevBid, balances, phase, turn } =
+  const { board, moves, outcome, players, prevBid, balances, phase, turn } =
     useServerUpdatesContext();
   const { token, user } = useAuthContext();
   const { lobbyId } = useParams();
@@ -61,6 +63,7 @@ function useGame(): UseGameReturn {
       moves,
       makeMove,
       makeBid,
+      outcome,
       prevBid,
       userColor: "w",
       userBalance: 0,
@@ -85,6 +88,7 @@ function useGame(): UseGameReturn {
     moves,
     makeMove,
     makeBid,
+    outcome,
     prevBid,
     userColor,
     opponentColor,

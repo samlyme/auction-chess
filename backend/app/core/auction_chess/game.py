@@ -15,10 +15,12 @@ from app.utils.exceptions import IllegalMoveException
 
 
 class AuctionChess(Game):
-    phase: GamePhase = "bid"
-    turn: Color = "w"
+    phase: GamePhase
+    turn: Color
 
-    prev_bid: int = 0
+    prev_bid: int
+
+    outcome: api.GameOutcome
     
     players: dict[Color, UUID]
     balances: dict[Color, int]
@@ -30,9 +32,17 @@ class AuctionChess(Game):
     marker_queue: PriorityQueue[Marker] = PriorityQueue()
 
     def __init__(self, white: UUID, black: UUID):
-        self.players = {} 
-        self.players["w"] = white
-        self.players["b"] = black
+        self.phase = "bid"
+        self.turn = "w"
+        
+        self.prev_bid = 0
+        
+        self.outcome = "pending"
+
+        self.players = {
+            "w": white,
+            "b": black
+        } 
 
         self.balances = {
             "w": 1000,
@@ -50,22 +60,36 @@ class AuctionChess(Game):
             raise IllegalMoveException("Can't make bids during move phase.")
 
         if self.players[self.turn] != user.uuid:
-            raise IllegalMoveException("Not your move turn.")
+            raise IllegalMoveException("Not your bid turn.")
 
         if bid.amount > self.balances[self.turn]:
             raise IllegalMoveException("Can't bid higher than your balance.")
         
+        opp = "w" if self.turn == "b" else "b"
         if bid.amount == -1:
             print(user, "folds")
-            self.balances["w" if self.turn == "b" else "b"] -= self.prev_bid
+            # if user folds while opponent is at $0, createdraw
+            if self.balances[opp] == 0:
+                self.outcome = "draw"
+                return
+            
+            self.balances[opp] -= self.prev_bid
             self.prev_bid = 0
             self.phase = "move"
         elif bid.amount <= self.prev_bid:
             raise IllegalMoveException("Can't bid less than or equal to previous bid.")
         else:
+            # if user bid is greater than or equal to opp's balance
+            # instantly procede to move phase
+            if bid.amount >= self.balances[opp]:
+                self.balances[self.turn] -= bid.amount
+                self.prev_bid = 0
+                self.phase = "move"
+                return
+                
             self.prev_bid = bid.amount
 
-        self.turn = "w" if self.turn == "b" else "b"
+        self.turn = opp
 
     def user_move(self, user: api.UserProfile, move: api.Move) -> None:
         """
@@ -101,10 +125,26 @@ class AuctionChess(Game):
             raise IllegalMoveException("Invalid move. Illegal move")
 
 
-        self.board.move(game_move)
+        captured: Piece | None = self.board.move(game_move)
+        if captured is not None and captured.initial == "k":
+            self.outcome = "w" if captured.color == "b" else "b"
+            return
+
+        if self.balances["w"] == 0 and self.balances["b"] == 0:
+            self.outcome = "draw"
+            return
+
         self.phase = "bid"
         self._increment_turn()
         self._update_all_moves()
+        
+        # TODO: change the turn to be based on bid
+        if self.balances["b"] == 0:
+            self.turn = "w"
+        elif self.balances["w"] == 0:
+            self.turn = "b"
+        else:
+            self.turn = "b" if self.turn == "w" else "w"
 
     def move(self, move: api.Move) -> None:
         """
@@ -191,12 +231,6 @@ class AuctionChess(Game):
                 
 
     def _increment_turn(self):
-        # TODO: change the turn to be based on bid
-        if self.turn == "b":
-            self.turn = "w"
-        else:
-            self.turn = "b"
-
         while (
             not self.marker_queue.is_empty()
             and self.marker_queue.peek()[0] <= self.turns

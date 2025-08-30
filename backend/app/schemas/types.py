@@ -4,11 +4,11 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 # For the love of god please keep types here
-# from app.core.auction_chess.types import Color, PieceType
 
 Color = Literal["w", "b"]
 PieceType = Literal["p", "r", "n", "b", "q", "k"]
 GamePhase = Literal["bid", "move"]
+GameOutcome = Literal["pending", "draw"] | Color
 
 class Player(BaseModel):
     color: Color
@@ -97,6 +97,8 @@ Balances = dict[Color, int]
 
 class GamePacket(BaseModel):
     type: PacketType = "game_packet"
+
+    outcome: GameOutcome
 
     phase: GamePhase
     turn: Color

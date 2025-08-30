@@ -11,7 +11,7 @@ function Lobby() {
     const { lobbyId } = useParams();
     const {startLobby, deleteLobby, leaveLobby} = useLobbies()
 
-    const { phase } = useGame()
+    const { phase, outcome } = useGame()
 
     function getData() {
         const {user, isLoading: userLoading} = useAuthContext()
@@ -31,6 +31,11 @@ function Lobby() {
 
     if (lobby.status == "active") return (
         <div className="game">
+            {   outcome != "pending" 
+                && <div className="modal">
+                    <h1>{outcome}</h1>
+                </div>
+            }
             <div className={phase === "move" ? "" : "lowlight"}>
                 <Board />
             </div>

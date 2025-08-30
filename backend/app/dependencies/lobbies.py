@@ -241,6 +241,7 @@ class LobbyManager:
 
         packet: api.GamePacket = api.GamePacket(
             phase=lobby["game"].phase,
+            outcome=lobby["game"].outcome,
             turn=lobby["game"].turn,
             prev_bid=lobby["game"].prev_bid,
             board=lobby["game"].public_board(),
