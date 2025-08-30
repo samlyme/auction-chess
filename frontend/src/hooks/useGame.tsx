@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { BoardPieces, Color, LegalMoves, Move } from "../schemas/types";
+import type { BoardPieces, Color, GamePhase, LegalMoves, Move } from "../schemas/types";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import { sendBid, sendMove } from "../services/game";
 import { useAuthContext } from "../contexts/Auth";
@@ -11,20 +11,23 @@ interface UseGameReturn {
   moves: LegalMoves | null
   makeMove: (move: Move) => void
   makeBid: (amount: number) => void
+  prevBid: number
   userColor: Color
   opponentColor: Color
   userBalance: number
   opponentBalance: number
+  phase: GamePhase
+  turn: Color
 }
 
 function useGame(): UseGameReturn {
-  const { board, moves, players, balances } = useServerUpdatesContext()
+  const { board, moves, players, prevBid, balances, phase, turn } = useServerUpdatesContext()
   const { token, user } = useAuthContext()
   const { lobbyId } = useParams()
 
-  if (!token || !user) throw new Error("Not authenticated")
   if (!lobbyId) throw new Error("Not in lobby")
 
+    // TODO: Fix token and user race condition
 
   const makeMove = useCallback((move: Move): void => {
     console.log("Making move", move);
@@ -50,7 +53,7 @@ function useGame(): UseGameReturn {
 
 
   if (!players || !balances) 
-    return { board, moves, makeMove, makeBid, userColor: "w", userBalance: 0, opponentColor: "b", opponentBalance: 0 }
+    return { board, moves, makeMove, makeBid, prevBid, userColor: "w", userBalance: 0, opponentColor: "b", opponentBalance: 0, phase, turn}
 
   if (user.uuid !== players.w && user.uuid !== players.b) throw new Error("User not in right game.")
 
@@ -60,7 +63,7 @@ function useGame(): UseGameReturn {
   const userBalance: number     = user.uuid == players.w ? balances.w : balances.b
   const opponentBalance: number = user.uuid == players.w ? balances.b : balances.w
 
-  return { board, moves, makeMove, makeBid, userColor, opponentColor, userBalance, opponentBalance };
+  return { board, moves, makeMove, makeBid, prevBid, userColor, opponentColor, userBalance, opponentBalance, phase, turn };
 }
 
 export default useGame;

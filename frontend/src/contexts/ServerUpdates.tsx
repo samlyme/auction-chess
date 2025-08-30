@@ -11,6 +11,8 @@ interface ServerUpdatesContextType {
     phase: GamePhase
     turn: Color 
 
+    prevBid: number
+
     board: BoardPieces | null
     moves: LegalMoves | null
     
@@ -38,6 +40,8 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
     const [phase, setPhase] = useState<GamePhase>("bid")
     const [turn, setTurn] = useState<Color>("w")
 
+    const [prevBid, setPrevBid] = useState<number>(0)
+
     const {token} = useAuthContext()
     const wsRef = useRef<WebSocket | null>(null)
 
@@ -61,6 +65,8 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
                         setPhase(data.phase)
                         setTurn(data.turn)
 
+                        setPrevBid(data.prev_bid)
+
                         setBoard(data.board)
                         setMoves(data.moves)
                         
@@ -79,7 +85,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
         .catch(() => navigate("/lobbies"))
     }, [])
 
-    const context: ServerUpdatesContextType = { lobby, phase, turn, board, moves, players, balances }
+    const context: ServerUpdatesContextType = { lobby, phase, turn, board, moves, prevBid, players, balances }
 
     return (
         <ServerUpdatesContext value={context}>

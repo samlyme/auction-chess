@@ -8,6 +8,7 @@
 /* make the container a flex row */
 .game {
   display: flex;
+  align-items: center;
 }
 
 
@@ -18,4 +19,15 @@
   flex: 0 0 300px;            /* fixed width (adjust as needed) */
   margin-left: 20px;          /* gap between board & menu */
   justify-content: space-between;
+  position: relative;
+}
+
+.highlight {
+  box-shadow: inset 0 0 0 3px green; /* An outline to make it really stand out */
+}
+
+.lowlight {
+  background:#000;
+  opacity:0.5;
+  cursor: not-allowed;
 }
