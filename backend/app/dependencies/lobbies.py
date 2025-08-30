@@ -207,10 +207,21 @@ class LobbyManager:
         if lobby["game"] is None:
             raise Exception("Game not initialized")
         
-        # TODO: Fix dummy move
         lobby["game"].user_move(user, move)
 
         await self.broadcast_game(lobby_id)
+
+    async def make_bid(self, lobby_id: api.LobbyId, user: api.UserProfile, bid: api.Bid):
+        lobby = self.lobbies[lobby_id]
+        if lobby["status"] != "active":
+            raise Exception("Lobby not started")
+        if lobby["game"] is None:
+            raise Exception("Game not initialized")
+
+        lobby["game"].user_bid(user, bid)
+
+        await self.broadcast_game(lobby_id)
+        
 
     async def broadcast(self, lobby_id: api.LobbyId) -> None:
         lobby = self.lobbies[lobby_id]
@@ -229,6 +240,9 @@ class LobbyManager:
             return
 
         packet: api.GamePacket = api.GamePacket(
+            phase=lobby["game"].phase,
+            turn=lobby["game"].turn,
+            prev_bid=lobby["game"].prev_bid,
             board=lobby["game"].public_board(),
             moves=lobby["game"].public_moves(),
             players=lobby["game"].players,
