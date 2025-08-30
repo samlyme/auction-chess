@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { BoardPieces, Color, LegalMoves, Move } from "../schemas/types";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
-import { sendMove } from "../services/game";
+import { sendBid, sendMove } from "../services/game";
 import { useAuthContext } from "../contexts/Auth";
 import { useParams } from "react-router";
 
@@ -9,7 +9,8 @@ import { useParams } from "react-router";
 interface UseGameReturn {
   board: BoardPieces | null
   moves: LegalMoves | null
-  makeMove: (move: Move) => void;
+  makeMove: (move: Move) => void
+  makeBid: (amount: number) => void
   userColor: Color
   opponentColor: Color
   userBalance: number
@@ -36,9 +37,20 @@ function useGame(): UseGameReturn {
     })
   }, []);
 
+  const makeBid = useCallback((amount: number) : void => {
+    console.log("Making bid", amount);
+    sendBid(token, lobbyId, { amount })
+    .then((res: any) => {
+      console.log("Sent bid", res);
+    }) 
+    .catch((reason: any) => {
+      console.log("Failed to make bid", reason);
+    })
+  }, [])
+
 
   if (!players || !balances) 
-    return { board, moves, makeMove, userColor: "w", userBalance: 0, opponentColor: "b", opponentBalance: 0 }
+    return { board, moves, makeMove, makeBid, userColor: "w", userBalance: 0, opponentColor: "b", opponentBalance: 0 }
 
   if (user.uuid !== players.w && user.uuid !== players.b) throw new Error("User not in right game.")
 
@@ -48,7 +60,7 @@ function useGame(): UseGameReturn {
   const userBalance: number     = user.uuid == players.w ? balances.w : balances.b
   const opponentBalance: number = user.uuid == players.w ? balances.b : balances.w
 
-  return { board, moves, makeMove, userColor, opponentColor, userBalance, opponentBalance };
+  return { board, moves, makeMove, makeBid, userColor, opponentColor, userBalance, opponentBalance };
 }
 
 export default useGame;

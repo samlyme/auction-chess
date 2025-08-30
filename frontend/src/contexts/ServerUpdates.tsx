@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { Balances, BoardPieces, LegalMoves, LobbyProfile, Packet, Players } from "../schemas/types";
+import type { Color, Balances, BoardPieces, GamePhase, LegalMoves, LobbyProfile, Packet, Players } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
 import { parsePacket, websocketFactory } from "../services/websocket"
@@ -7,6 +7,10 @@ import { useAuthContext } from "./Auth";
 
 interface ServerUpdatesContextType {
     lobby: LobbyProfile | null
+    
+    phase: GamePhase
+    turn: Color 
+
     board: BoardPieces | null
     moves: LegalMoves | null
     
@@ -31,6 +35,9 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
     const [players, setPlayers] = useState<Players | null>(null)
     const [balances, setBalances] = useState<Balances | null>(null)
 
+    const [phase, setPhase] = useState<GamePhase>("bid")
+    const [turn, setTurn] = useState<Color>("w")
+
     const {token} = useAuthContext()
     const wsRef = useRef<WebSocket | null>(null)
 
@@ -45,15 +52,15 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
                 }
 
                 const onmessage = (event: MessageEvent) => {
-                    console.log("🟡 Message Received", event);
-                    // TODO: Parse and "dispatch"
                     const data: Packet = parsePacket(event.data)
-                    console.log("Attempting to parse packet", data);
                     
                     if (data.type == "lobby_packet") {
                         setLobby(data.content)
                     }
                     else if (data.type == "game_packet") {
+                        setPhase(data.phase)
+                        setTurn(data.turn)
+
                         setBoard(data.board)
                         setMoves(data.moves)
                         
@@ -72,7 +79,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
         .catch(() => navigate("/lobbies"))
     }, [])
 
-    const context: ServerUpdatesContextType = { lobby, board, moves, players, balances }
+    const context: ServerUpdatesContextType = { lobby, phase, turn, board, moves, players, balances }
 
     return (
         <ServerUpdatesContext value={context}>
