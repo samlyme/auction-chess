@@ -1,4 +1,4 @@
-import type { LobbyId, Move } from "../schemas/types";
+import type { Bid, LobbyId, Move } from "../schemas/types";
 
 const URL = "/api/lobbies"
 
@@ -11,5 +11,17 @@ export function sendMove(access_token: string, lobbyId: LobbyId, move: Move) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(move),
+  }).then((res: Response) => res.json());
+}
+
+export function sendBid(access_token: string, lobbyId: LobbyId, bid: Bid) {
+  return fetch(`${URL}/${lobbyId}/bid`, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(bid),
   }).then((res: Response) => res.json());
 }
