@@ -106,7 +106,7 @@ async def delete_lobby(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
 
 
-@router.post("/{lobby_id}/game")
+@router.post("/{lobby_id}/move")
 async def play(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId, move: api.Move
 ) -> None:
