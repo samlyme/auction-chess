@@ -17,7 +17,8 @@ from app.utils.exceptions import IllegalMoveException
 class AuctionChess(Game):
     phase: GamePhase = "move"
     turn: Color = "w"
-    players: dict[Color, UUID] = {}
+    players: dict[Color, UUID]
+    balances: dict[Color, int]
 
     board: ChessBoard
     moves: dict[Position, list[Move]]
@@ -26,8 +27,15 @@ class AuctionChess(Game):
     marker_queue: PriorityQueue[Marker] = PriorityQueue()
 
     def __init__(self, white: UUID, black: UUID):
+        self.players = {} 
         self.players["w"] = white
         self.players["b"] = black
+
+        self.balances = {
+            "w": 1000,
+            "b": 1000
+        }
+
         # for testing
         self.board = ChessBoard(board_factory=standard_board_factory(self))
         self.moves = defaultdict(list)

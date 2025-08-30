@@ -89,13 +89,16 @@ class LobbyPacket(BaseModel):
     type: PacketType = "lobby_packet"
     content: LobbyProfile
 
+Players = dict[Color, UUID]
+Balances = dict[Color, int]
+
 class GamePacket(BaseModel):
     type: PacketType = "game_packet"
     board: BoardPieces
     moves: LegalMoves
 
-    white: UUID
-    black: UUID
+    players: Players
+    balances: Balances
 
 Packet = Annotated[ 
     Union[LobbyPacket, GamePacket],

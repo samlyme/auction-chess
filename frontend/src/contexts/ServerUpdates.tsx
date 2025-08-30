@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { BoardPieces, LegalMoves, LobbyProfile, Packet } from "../schemas/types";
+import type { Balances, BoardPieces, LegalMoves, LobbyProfile, Packet, Players } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
 import { parsePacket, websocketFactory } from "../services/websocket"
@@ -9,8 +9,9 @@ interface ServerUpdatesContextType {
     lobby: LobbyProfile | null
     board: BoardPieces | null
     moves: LegalMoves | null
-    white: string | null
-    black: string | null
+    
+    players: Players | null
+    balances: Balances | null
 }
 
 const ServerUpdatesContext = createContext<ServerUpdatesContextType | null>(null);
@@ -27,8 +28,8 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
     const [board, setBoard] = useState<BoardPieces | null>(null)
     const [moves, setMoves] = useState<LegalMoves | null>(null)
 
-    const [white, setWhite] = useState<string | null>(null)
-    const [black, setBlack] = useState<string | null>(null)
+    const [players, setPlayers] = useState<Players | null>(null)
+    const [balances, setBalances] = useState<Balances | null>(null)
 
     const {token} = useAuthContext()
     const wsRef = useRef<WebSocket | null>(null)
@@ -56,10 +57,8 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
                         setBoard(data.board)
                         setMoves(data.moves)
                         
-                        setWhite(data.white)
-                        setBlack(data.black)
-                        console.log("🟢 board", data.board);
-                        console.log("🟢 moves", data.moves);
+                        setPlayers(data.players)
+                        setBalances(data.balances)
                     }
                 }
 
@@ -73,7 +72,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
         .catch(() => navigate("/lobbies"))
     }, [])
 
-    const context: ServerUpdatesContextType = { lobby, board, moves, white, black }
+    const context: ServerUpdatesContextType = { lobby, board, moves, players, balances }
 
     return (
         <ServerUpdatesContext value={context}>

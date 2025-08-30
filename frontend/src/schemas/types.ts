@@ -71,14 +71,16 @@ export interface LobbyPacket {
   content: LobbyProfile
 }
 
+export type Players = Record<Color, string>
+export type Balances = Record<Color, number>
 // TODO: handle this
 export interface GamePacket {
   type: "game_packet"
   board: BoardPieces
   moves: LegalMoves
-
-  white: string
-  black: string
+  
+  players: Players
+  balances: Balances
 }
 
 export type Packet = LobbyPacket | GamePacket

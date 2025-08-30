@@ -231,8 +231,8 @@ class LobbyManager:
         packet: api.GamePacket = api.GamePacket(
             board=lobby["game"].public_board(),
             moves=lobby["game"].public_moves(),
-            white=lobby["game"].players["w"],
-            black=lobby["game"].players["b"],
+            players=lobby["game"].players,
+            balances=lobby["game"].balances,
         )
         data: str = packet.json()
         if lobby["guest_ws"]:
