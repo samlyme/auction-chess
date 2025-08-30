@@ -3,12 +3,10 @@ import type { BoardPosition, Piece } from "../schemas/types";
 import { pieceSVGMap } from "../utils/chess";
 import "./Board.css";
 import useMoves from "../hooks/useMoves";
-import { useAuthContext } from "../contexts/Auth";
 
 function Board() {
-  const { board, moves } = useGame();
+  const { board, moves, userColor } = useGame();
   const { selectedSquare, handleSquareClick } = useMoves();
-  const {user} = useAuthContext();
 
   if (!board || !moves) return (
     <div>Loading board</div>
@@ -46,11 +44,12 @@ function Board() {
     }
   }
 
+  if (userColor == "b") squares.reverse()
+
   // TODO: Fix game board component
   return (
     <div className="game">
       <div className="board">{squares}</div>
-      <p>Playing as {user?.username}</p>
     </div>
   );
 }
