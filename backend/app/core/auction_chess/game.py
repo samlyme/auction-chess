@@ -122,23 +122,39 @@ class AuctionChess(Game):
 
     # TODO: Optimize this
     def _update_all_moves(self):
-        print("🟢 updating moves")
         kings: list[Piece] = []
         for row in range(self.board.rows):
             for col in range(self.board.cols):
                 try:
                     piece = self.board.piece_at((row, col))
-                    piece.update_position((row, col))
+                    piece.clear_attacking()
+                    
                     if piece.initial == "k":
                         kings.append(piece)
                     else:
-                        self.moves[(row, col)] = list(piece.moves(self.board))
+                        moves, attacks = piece.moves(self.board)
+                        
+                        for attack in attacks:
+                            square = self.board.square_at(attack.end)
+                            square.add_attacker(piece)
+                            piece.attacking.add(square)
+
+                        self.moves[(row, col)] = moves
                 except Exception:
                     self.moves[(row,col)].clear()
         
-        # must do kings last for castling to work
+        # must recalculate kings last for castling to work
         for king in kings:
-            self.moves[king.position] = list(king.moves(self.board))
+            moves, attacks = king.moves(self.board)
+            
+            for attack in attacks:
+                square = self.board.square_at(attack.end)
+                square.add_attacker(king)
+                king.attacking.add(square)
+
+        for king in kings:
+            moves, _ = king.moves(self.board)
+            self.moves[king.position] = moves
                 
 
     def _increment_turn(self):

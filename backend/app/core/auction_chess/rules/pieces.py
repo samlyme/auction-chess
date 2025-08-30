@@ -1,4 +1,3 @@
-from typing import Iterable
 from app.core.auction_chess.rules.effects import move_effect, place_en_passent_marker
 from app.core.auction_chess.types import Board, Game, Move, Piece, Position, Square
 from app.schemas.types import BoardPosition, Color
@@ -37,7 +36,9 @@ class Pawn(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(game, color, "Pawn", "p", position, hasMoved)
 
-    def moves(self, board: Board) -> Iterable[Move]:
+    def moves(self, board: Board) -> tuple[list[Move], list[Move]]:
+        moves, attacks = [], []
+        
         board_state = board.board_state
         dir: int = 1 if self.color == "w" else -1
         r, c = self.position
@@ -45,46 +46,39 @@ class Pawn(Piece):
         nr, nc = r + dir, c
         if in_bounds(board, (nr, nc)):
             if not board_state[nr][nc].piece:
-                yield Move(self.position, (nr, nc))
+                moves.append(Move(self.position, (nr, nc)))
 
                 nr, nc = r + dir * 2, c
                 if not self.hasMoved and in_bounds(board, (nr, nc)):
                     if not board_state[nr][nc].piece:
-                        yield Move(
-                            start=self.position,
-                            end=(nr, nc),
-                            effect=place_en_passent_marker(
-                                game=self.game,
-                                skipped=(r + dir, c),
+                        moves.append(
+                            Move(
+                                start=self.position,
                                 end=(nr, nc),
-                                color=self.color,
-                            ),
+                                effect=place_en_passent_marker(
+                                    game=self.game,
+                                    skipped=(r + dir, c),
+                                    end=(nr, nc),
+                                    color=self.color,
+                                ),
+                            )
                         )
 
         # Only these moves are considered attacking
-        nr, nc = r + dir, c + 1
-        if in_bounds(board, (nr, nc)):
-            square: Square = board_state[nr][nc]
-            square.add_attacker(self)
-            self.attacking.add(square)
-            piece: Piece | None = square.piece
-            if (
-                (piece is not None and piece.color != self.color)
-                or square.marker and square.marker.target(self)
-            ): 
-                yield Move(self.position, (nr, nc))
+        for dc in [-1, 1]:
+            nr, nc = r + dir, c + dc
+            if in_bounds(board, (nr, nc)):
+                attacks.append(Move(self.position, (nr, nc)))
 
-        nr, nc = r + dir, c - 1
-        if in_bounds(board, (nr, nc)):
-            square: Square = board_state[nr][nc]
-            square.add_attacker(self)
-            self.attacking.add(square)
-            piece: Piece | None = square.piece
-            if (
-                (piece is not None and piece.color != self.color)
-                or square.marker and square.marker.target(self)
-            ): 
-                yield Move(self.position, (nr, nc))
+                square: Square = board_state[nr][nc]
+                piece: Piece | None = square.piece
+                if (
+                    (piece is not None and piece.color != self.color)
+                    or square.marker and square.marker.target(self)
+                ): 
+                    moves.append(Move(self.position, (nr, nc)))
+
+        return moves, attacks
 
     def public_piece(self) -> api.Piece:
         return api.Piece(type="p", color=self.color, has_moved=self.hasMoved)
@@ -93,17 +87,17 @@ class Rook(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(game, color, "Rook", "r", position, hasMoved)
 
-    def moves(self, board: Board) -> Iterable[Move]:
-        board_state = board.board_state
+    def moves(self, board: Board) -> tuple[list[Move], list[Move]]:
+        moves = []
+        
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         for direction in directions:
             for move in sliding_moves(
                 board, self.color, self.position, direction
             ):
-                square = board_state[move.end[0]][move.end[1]]
-                square.add_attacker(self)
-                self.attacking.add(square)
-                yield move
+                moves.append(move)
+
+        return moves, moves
     
     def public_piece(self) -> api.Piece:
         return api.Piece(type="r", color=self.color, has_moved=self.hasMoved)
@@ -113,7 +107,9 @@ class Knight(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(game, color, "Knight", "n", position, hasMoved)
 
-    def moves(self, board: Board) -> Iterable[Move]:
+    def moves(self, board: Board) -> tuple[list[Move], list[Move]]:
+        moves = []
+        
         board_state = board.board_state
         r, c = self.position
         signs = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
@@ -123,20 +119,18 @@ class Knight(Piece):
             nr, nc = long * sr + r, short * sc + c
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
-                square.add_attacker(self)
-                self.attacking.add(square)
                 piece: Piece | None = square.piece
                 if not piece or piece.color != self.color:
-                    yield Move(self.position, (nr, nc))
+                    moves.append(Move(self.position, (nr, nc)))
 
             nr, nc = short * sr + r, long * sc + c
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
-                square.add_attacker(self)
-                self.attacking.add(square)
                 piece: Piece | None = square.piece
                 if not piece or piece.color != self.color:
-                    yield Move(self.position, (nr, nc))
+                    moves.append(Move(self.position, (nr, nc)))
+        
+        return moves, moves
 
     def public_piece(self) -> api.Piece:
         return api.Piece(type="n", color=self.color, has_moved=self.hasMoved)
@@ -146,18 +140,16 @@ class Bishop(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(game, color, "Bishop", "b", position, hasMoved)
 
-    def moves(self, board: Board) -> Iterable[Move]:
-        print("🟢 updating bishop moves")
-        board_state = board.board_state
+    def moves(self, board: Board) -> tuple[list[Move], list[Move]]:
+        moves = []
         directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         for direction in directions:
             for move in sliding_moves(
                 board, self.color, self.position, direction
             ):
-                square = board_state[move.end[0]][move.end[1]]
-                square.add_attacker(self)
-                self.attacking.add(square)
-                yield move
+                moves.append(move)
+        
+        return moves, moves
 
     def public_piece(self) -> api.Piece:
         return api.Piece(type="b", color=self.color, has_moved=self.hasMoved)
@@ -167,8 +159,9 @@ class Queen(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(game, color, "Queen", "q", position, hasMoved)
 
-    def moves(self, board: Board) -> Iterable[Move]:
-        board_state = board.board_state
+    def moves(self, board: Board) -> tuple[list[Move], list[Move]]:
+        moves = []
+
         directions = [
             (1, 0),
             (-1, 0),
@@ -183,10 +176,9 @@ class Queen(Piece):
             for move in sliding_moves(
                 board, self.color, self.position, direction
             ):
-                square = board_state[move.end[0]][move.end[1]]
-                square.add_attacker(self)
-                self.attacking.add(square)
-                yield move
+                moves.append(move)
+        
+        return moves, moves
 
     def public_piece(self) -> api.Piece:
         return api.Piece(type="q", color=self.color, has_moved=self.hasMoved)
@@ -196,8 +188,8 @@ class King(Piece):
     def __init__(self, game: Game, color: Color, position: Position, hasMoved: bool = False):
         super().__init__(game, color, "King", "k", position, hasMoved)
 
-    def moves(self, board: Board) -> Iterable[Move]:
-        print("🟢 calculating king moves")
+    def moves(self, board: Board) -> tuple[list[Move], list[Move]]:
+        moves = []
         board_state = board.board_state
         directions = [
             (1, 0),
@@ -214,63 +206,58 @@ class King(Piece):
             nr, nc = r + dr, c + dc
             if in_bounds(board, (nr, nc)):
                 square = board_state[nr][nc]
-                square.add_attacker(self)
-                self.attacking.add(square)
                 piece: Piece | None = square.piece
                 if not piece or piece.color != self.color:
-                    yield Move(self.position, (nr, nc))
-
-        # TODO: implement castling
+                    moves.append(Move(self.position, (nr, nc)))
 
         if self.hasMoved:
-            return
+            return moves, moves
         
-        print("🟢 king has not moved")
+        def attacked_by_opp(s: Square) -> bool:
+            out = any(p.color != self.color for p in s.attacked_by)
+            return out
 
-        # TODO: Fix "attacked_by"
+
         square = board_state[r][c]
-        if any(opp.color != self.color for opp in square.attacked_by):
-            print("🔴 king", self.position, "is attacked by", square.attacked_by)
-            return
-
-        print("🟢 king is attacked by", square.attacked_by)
-        print("🟢 king is not in check")
-
+        if attacked_by_opp(square):
+            return moves, moves
 
         # TODO: Fix magic numbers
         # Long castle
         piece = board_state[r][0].piece
         if isinstance(piece, Rook) and not piece.hasMoved:
-            print("🟢 rook has not moved")
             if (
-                not any(board_state[r][col].piece for col in range(1, c))
+                all(board_state[r][ic].piece is None and not attacked_by_opp(board_state[r][ic]) for ic in range(1, c))
             ):
-                print("🟡 legal long castle, no pieces in the way")
-                yield Move(
-                    start=self.position,
-                    end=(r, c - 2),
-                    effect=move_effect(self.game, api.Move(
-                        start=BoardPosition(row=r, col=0),
-                        end=BoardPosition(row=r, col=c-1)
-                    ))
+                moves.append(
+                    Move(
+                        start=self.position,
+                        end=(r, c - 2),
+                        effect=move_effect(self.game, api.Move(
+                            start=BoardPosition(row=r, col=0),
+                            end=BoardPosition(row=r, col=c-1)
+                        ))
+                    )
                 )
 
         # Short castle
         piece = board.square_at((r, 7)).piece
         if isinstance(piece, Rook) and not piece.hasMoved:
-            print("🟢 rook has not moved")
             if (
-                not any(board_state[r][ic].piece for ic in range(c+1, 7))
+                all(board_state[r][ic].piece is None and not attacked_by_opp(board_state[r][ic]) for ic in range(c+1, 7))
             ):
-                print("🟡 legal short castle, no pieces in the way")
-                yield Move(
-                    start=self.position,
-                    end=(r, c + 2),
-                    effect=move_effect(self.game, api.Move(
-                        start=BoardPosition(row=r, col=7),
-                        end=BoardPosition(row=r, col=c+1)
-                    ))
+                moves.append(
+                    Move(
+                        start=self.position,
+                        end=(r, c + 2),
+                        effect=move_effect(self.game, api.Move(
+                            start=BoardPosition(row=r, col=7),
+                            end=BoardPosition(row=r, col=c+1)
+                        ))
+                    )
                 )
+        
+        return moves, moves
                 
     def public_piece(self) -> api.Piece:
         return api.Piece(type="k", color=self.color, has_moved=self.hasMoved)

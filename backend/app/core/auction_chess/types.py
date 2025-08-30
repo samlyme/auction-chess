@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable
+from typing import Callable
 from uuid import UUID
 import app.schemas.types as api
 
@@ -80,20 +80,19 @@ class Piece(ABC):
     def __repr__(self) -> str:
         return self.initial if self.color == "b" else self.initial.upper()
 
-    def update_position(self, position: Position) -> None:
-        self.position = position
+    def clear_attacking(self):
+        for square in self.attacking:
+            square.remove_attacker(self)
 
-        for sqaure in self.attacking:
-            sqaure.attacked_by.remove(self)
-        
         self.attacking.clear()
+
 
     @abstractmethod
     def public_piece(self) -> api.Piece:
         pass
 
     @abstractmethod
-    def moves(self, board: "Board") -> Iterable[Move]:
+    def moves(self, board: "Board") -> tuple[list[Move], list[Move]]:
         pass
 
 
@@ -112,10 +111,9 @@ class Square:
         self.attacked_by = set()
 
     def __repr__(self) -> str:
-        return f"Square ({self.position[0]}, {self.position[1]})"
+        return f"Square {self.position}"
 
     def add_attacker(self, piece: Piece) -> None:
-        # print("🟢 square", self, "attacked by", piece)
         self.attacked_by.add(piece)
 
     def remove_attacker(self, piece: Piece) -> None:
