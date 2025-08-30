@@ -5,6 +5,7 @@ import useLobbies from "../hooks/useLobbies";
 import Board from "../components/Board";
 import Menu from "../components/Menu";
 import useGame from "../hooks/useGame";
+import PostGameModal from "../components/PostGameModal";
 
 function Lobby() {
     const navigate = useNavigate();
@@ -30,17 +31,16 @@ function Lobby() {
     )
 
     if (lobby.status == "active") return (
-        <div className="game">
-            {   outcome != "pending" 
-                && <div className="modal">
-                    <h1>{outcome}</h1>
+        <div className="lobby">
+            {outcome != "pending" 
+            && <PostGameModal />}
+            <div className="game">
+                <div className={phase === "move" ? "" : "lowlight"}>
+                    <Board />
                 </div>
-            }
-            <div className={phase === "move" ? "" : "lowlight"}>
-                <Board />
-            </div>
-            <div className={phase === "bid" ? "" : "lowlight"}>
-                <Menu />
+                <div className={phase === "bid" ? "" : "lowlight"}>
+                    <Menu />
+                </div>
             </div>
         </div>
     )
