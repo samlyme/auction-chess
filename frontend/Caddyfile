@@ -2,11 +2,10 @@
 {
   # disable automatic HTTPS if you don’t have a domain
   auto_https off
-  env PORT BACKEND_URL
 }
 
 # listen on the port Railway gives you
-:{PORT}
+:{$PORT}
 
 # serve the static files
 root * /srv/site
@@ -17,5 +16,5 @@ try_files {path} /index.html
 
 # proxy /api/* requests to your backend
 handle_path /api/* {
-  reverse_proxy {BACKEND_URL}
+  reverse_proxy {$BACKEND_URL}
 }
