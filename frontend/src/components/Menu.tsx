@@ -57,7 +57,6 @@ function PlayerProfile({
         {username} <i>({color == "w" ? "white" : "black"})</i>
       </h2>
 
-      <h4>Balance:</h4>
       <h1>${balance}</h1>
     </div>
   );
