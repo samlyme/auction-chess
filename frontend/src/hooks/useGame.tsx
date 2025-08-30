@@ -11,7 +11,9 @@ interface UseGameReturn {
   moves: LegalMoves | null
   makeMove: (move: Move) => void;
   userColor: Color
+  opponentColor: Color
   userBalance: number
+  opponentBalance: number
 }
 
 function useGame(): UseGameReturn {
@@ -35,14 +37,18 @@ function useGame(): UseGameReturn {
   }, []);
 
 
-  if (!players || !balances) return { board, moves, makeMove, userColor: "w", userBalance: 0}
+  if (!players || !balances) 
+    return { board, moves, makeMove, userColor: "w", userBalance: 0, opponentColor: "b", opponentBalance: 0 }
 
   if (user.uuid !== players.w && user.uuid !== players.b) throw new Error("User not in right game.")
 
-  const userColor: Color = user.uuid == players.w ? "w" : "b";
-  const userBalance: number = user.uuid == players.w ? balances.w : balances.b
+  const userColor: Color     = user.uuid == players.w ? "w" : "b";
+  const opponentColor: Color = user.uuid == players.w ? "b" : "w";
 
-  return { board, moves, makeMove, userColor, userBalance };
+  const userBalance: number     = user.uuid == players.w ? balances.w : balances.b
+  const opponentBalance: number = user.uuid == players.w ? balances.b : balances.w
+
+  return { board, moves, makeMove, userColor, opponentColor, userBalance, opponentBalance };
 }
 
 export default useGame;

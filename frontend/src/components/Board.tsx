@@ -48,9 +48,7 @@ function Board() {
 
   // TODO: Fix game board component
   return (
-    <div className="game">
       <div className="board">{squares}</div>
-    </div>
   );
 }
 

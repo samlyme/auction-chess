@@ -3,6 +3,7 @@ import { useAuthContext } from "../contexts/Auth";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useLobbies from "../hooks/useLobbies";
 import Board from "../components/Board";
+import Menu from "../components/Menu";
 
 function Lobby() {
     const navigate = useNavigate();
@@ -26,7 +27,10 @@ function Lobby() {
     )
 
     if (lobby.status == "active") return (
-        <Board />
+        <div className="game">
+            <Board />
+            <Menu />
+        </div>
     )
 
     return (

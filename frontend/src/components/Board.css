@@ -9,8 +9,8 @@
 
   width: 80vmin; /* Example: Make the board 80% of the viewport's smaller dimension */
   height: 80vmin; /* Ensure it's a perfect square */
-  max-width: 600px; /* Optional: Set a max size for very large screens */
-  max-height: 600px; /* Optional: Set a max size */
+
+  flex: 0 0 auto;
 
   border: 4px solid #333; /* A nice border around the board */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */

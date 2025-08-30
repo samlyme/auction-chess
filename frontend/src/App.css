@@ -4,3 +4,18 @@
   padding: 2rem;
   text-align: center;
 }
+
+/* make the container a flex row */
+.game {
+  display: flex;
+}
+
+
+/* pin the menu to the right of the board */
+.game .menu {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 300px;            /* fixed width (adjust as needed) */
+  margin-left: 20px;          /* gap between board & menu */
+  justify-content: space-between;
+}
