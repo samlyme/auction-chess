@@ -1,0 +1,20 @@
+# top‐level block for env interpolation
+{
+  # disable automatic HTTPS if you don’t have a domain
+  auto_https off
+}
+
+# listen on the port Railway gives you
+:{env.PORT}
+
+# serve the static files
+root * /srv/site
+file_server
+
+# SPA fallback for client‐side routing
+try_files {path} /index.html
+
+# proxy /api/* requests to your backend
+handle_path /api/* {
+  reverse_proxy {env.BACKEND_URL}
+}
