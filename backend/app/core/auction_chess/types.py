@@ -127,6 +127,11 @@ MarkerPlacer = Callable[[BoardState], None]
 
 
 class Game(ABC):
+    phase: api.GamePhase
+    turn: api.Color
+
+    prev_bid: int
+    
     players: dict[Color, UUID]
     balances: dict[Color, int]
 
@@ -140,6 +145,10 @@ class Game(ABC):
     
     @abstractmethod
     def user_move(self, user: api.UserProfile, move: api.Move) -> None:
+        pass
+
+    @abstractmethod
+    def user_bid(self, user: api.UserProfile, bid: api.Bid) -> None:
         pass
 
     @abstractmethod

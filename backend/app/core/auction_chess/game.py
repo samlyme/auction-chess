@@ -17,6 +17,9 @@ from app.utils.exceptions import IllegalMoveException
 class AuctionChess(Game):
     phase: GamePhase = "move"
     turn: Color = "w"
+
+    prev_bid: int = 0
+    
     players: dict[Color, UUID]
     balances: dict[Color, int]
 
@@ -42,14 +45,25 @@ class AuctionChess(Game):
 
         self._update_all_moves()
 
-    def add_marker(self, position: Position, marker: Marker, expires: int = -1):
-        """
-        Places a marker down at the specified position. If "expires" is set to 
-        -1, the marker doesn't expire.
-        """
-        self.board.add_marker(position, marker)
-        if expires != -1:
-            self.marker_queue.push(expires + self.turns, marker)
+    def user_bid(self, user: api.UserProfile, bid: api.Bid) -> None:
+        if self.phase == "move":
+            raise IllegalMoveException("Can't make bids during move phase.")
+
+        if self.players[self.turn] != user.uuid:
+            raise IllegalMoveException("Not your move turn.")
+
+        if bid.amount > self.balances[self.turn]:
+            raise IllegalMoveException("Can't bid higher than your balance.")
+        
+        if bid.amount > self.prev_bid:
+            self.prev_bid = bid.amount
+        else:
+            print(user, "folds")
+            self.balances["w" if self.turn == "b" else "b"] -= self.prev_bid
+            self.prev_bid = 0
+            self.phase = "move"
+
+        self.turn = "w" if self.turn == "b" else "b"
 
     def user_move(self, user: api.UserProfile, move: api.Move) -> None:
         """
@@ -86,7 +100,7 @@ class AuctionChess(Game):
 
 
         self.board.move(game_move)
-
+        self.phase = "bid"
         self._increment_turn()
         self._update_all_moves()
 
@@ -100,6 +114,15 @@ class AuctionChess(Game):
         )
 
         self.board.move(parsed_move)
+        
+    def add_marker(self, position: Position, marker: Marker, expires: int = -1):
+        """
+        Places a marker down at the specified position. If "expires" is set to 
+        -1, the marker doesn't expire.
+        """
+        self.board.add_marker(position, marker)
+        if expires != -1:
+            self.marker_queue.push(expires + self.turns, marker)
     
     def capture(self, position: Position):
         """
