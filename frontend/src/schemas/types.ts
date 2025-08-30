@@ -2,6 +2,7 @@ import type { UUIDTypes } from "uuid";
 
 export type Color = "w" | "b";
 export type PieceType = "p" | "r" | "n" | "b" | "q" | "k";
+export type GamePhase = "bid" | "move"
 
 export interface BoardPosition {
   row: number;
@@ -11,6 +12,10 @@ export interface BoardPosition {
 export interface Move {
   start: BoardPosition;
   end: BoardPosition;
+}
+
+export interface Bid {
+  amount: number
 }
 
 export interface Piece {
@@ -76,6 +81,12 @@ export type Balances = Record<Color, number>
 // TODO: handle this
 export interface GamePacket {
   type: "game_packet"
+
+  phase: GamePhase 
+  turn: Color 
+
+  prev_bid: number 
+
   board: BoardPieces
   moves: LegalMoves
   

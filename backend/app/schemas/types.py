@@ -24,6 +24,9 @@ class Move(BaseModel):
     start: BoardPosition
     end: BoardPosition
 
+class Bid(BaseModel):
+    amount: int
+
 
 class Piece(BaseModel):
     type: PieceType
@@ -94,6 +97,12 @@ Balances = dict[Color, int]
 
 class GamePacket(BaseModel):
     type: PacketType = "game_packet"
+
+    phase: GamePhase
+    turn: Color
+
+    prev_bid: int
+    
     board: BoardPieces
     moves: LegalMoves
 
