@@ -15,7 +15,7 @@ from app.utils.exceptions import IllegalMoveException
 
 
 class AuctionChess(Game):
-    phase: GamePhase = "move"
+    phase: GamePhase = "bid"
     turn: Color = "w"
 
     prev_bid: int = 0
@@ -55,13 +55,15 @@ class AuctionChess(Game):
         if bid.amount > self.balances[self.turn]:
             raise IllegalMoveException("Can't bid higher than your balance.")
         
-        if bid.amount > self.prev_bid:
-            self.prev_bid = bid.amount
-        else:
+        if bid.amount == -1:
             print(user, "folds")
             self.balances["w" if self.turn == "b" else "b"] -= self.prev_bid
             self.prev_bid = 0
             self.phase = "move"
+        elif bid.amount <= self.prev_bid:
+            raise IllegalMoveException("Can't bid less than or equal to previous bid.")
+        else:
+            self.prev_bid = bid.amount
 
         self.turn = "w" if self.turn == "b" else "b"
 
