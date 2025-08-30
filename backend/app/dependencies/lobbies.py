@@ -143,8 +143,8 @@ class LobbyManager:
         if lobby["host"] != user:
             raise LobbyPermissionError(user, lobby_id)
 
-        if lobby["status"] == "active":
-            raise LobbyStartError(user, lobby_id, "lobby already active")
+        # if lobby["status"] == "active":
+        #     raise LobbyStartError(user, lobby_id, "lobby already active")
 
         if not lobby["guest"]:
             raise LobbyStartError(user, lobby_id, "lobby not full")
