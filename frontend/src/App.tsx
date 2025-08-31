@@ -8,7 +8,7 @@ import Profile from "./pages/Profile";
 import Lobbies from "./pages/Lobbies";
 import Lobby from "./pages/Lobby";
 import { ServerUpdatesProvider } from "./contexts/ServerUpdates";
-import Header from "./components/Header";
+import LayoutWithHeader from "./layouts/LayoutWithHeader";
 
 function App() {
   return (
@@ -38,19 +38,24 @@ function ServerUpdatesContext({ children }: { children: ReactNode }) {
 function Content() {
   return (
       <div>
-        <Header />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />}/>
-            <Route path="/home" element={<Home />}/>
-            <Route path="/auth" element={<Auth />}/>
-            <Route path="/lobbies" element={<Lobbies />}/>
-            <Route path="/lobbies/:lobbyId" element={
-              <ServerUpdatesContext>
-                <Lobby />
-              </ServerUpdatesContext>
-            }/>
-            <Route path="/profile" element={<Profile />}/>
+            <Route element={<LayoutWithHeader/>}>
+              <Route path="/" element={<Home />}/>
+              <Route path="/home" element={<Home />}/>
+              <Route path="/auth" element={<Auth />}/>
+              
+              <Route path="/lobbies" element={<Lobbies />}/>
+
+              <Route path="/lobbies/:lobbyId" element={
+                <ServerUpdatesContext>
+                  <Lobby />
+                </ServerUpdatesContext>
+              }/>
+
+              <Route path="/profile" element={<Profile />}/>
+
+            </Route>
           </Routes>
         </BrowserRouter>
       </div>

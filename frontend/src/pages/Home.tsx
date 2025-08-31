@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { useAuthContext } from "../contexts/Auth";
 import { useEffect } from "react";
-import Header from "../components/Header";
 
 function Home() {
     const { token } = useAuthContext();
@@ -13,8 +12,7 @@ function Home() {
 
     return (
         <div className="home">
-            <Header />
-            <h1>Welcom to Auction Chess</h1>
+            <h1>Welcome to Auction Chess</h1>
             <Link to="/auth">
                 <h1>login/signup</h1>
             </Link>
