@@ -5,7 +5,7 @@
 :{$PORT} {
 	# Backend service
 	handle_path /api* {
-		reverse_proxy ${BACKEND_URL}
+		reverse_proxy {$BACKEND_URL}
 	}
 
 	# Frontend SPA as static file
