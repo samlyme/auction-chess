@@ -1,17 +1,8 @@
 {
     auto_https off
-    debug
 }
 
 :{$PORT} {
-    encode 
-
-    # Backend service
-    handle_path /api* {
-        reverse_proxy {$BACKEND_URL}
-    }
-
-    # Frontend SPA as static file
     handle {
         root * ./dist
         try_files {path} /index.html
