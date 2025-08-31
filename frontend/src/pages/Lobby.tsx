@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "react-router";
-import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useLobbies from "../hooks/useLobbies";
 import Board from "../components/Board";
 import Menu from "../components/Menu";
 import useGame from "../hooks/useGame";
 import PostGameModal from "../components/PostGameModal";
 import { useAuth } from "../hooks/useAuth";
+import { useServerUpdates } from "../hooks/useServerUpdates";
 
 function Lobby() {
     const navigate = useNavigate();
@@ -16,7 +16,7 @@ function Lobby() {
 
     function getData() {
         const {user, isLoading: userLoading} = useAuth()
-        const { lobby } = useServerUpdatesContext()
+        const { lobby } = useServerUpdates()
 
         const isLoading = userLoading || !lobby
         

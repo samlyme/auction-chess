@@ -7,10 +7,10 @@ import type {
   LegalMoves,
   Move,
 } from "../schemas/types";
-import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import { sendBid, sendMove } from "../services/game";
 import { useParams } from "react-router";
 import { useAuth } from "./useAuth";
+import { useServerUpdates } from "./useServerUpdates";
 
 interface UseGameReturn {
   board: BoardPieces | null;
@@ -29,7 +29,7 @@ interface UseGameReturn {
 
 function useGame(): UseGameReturn {
   const { board, moves, outcome, players, prevBid, balances, phase, turn } =
-    useServerUpdatesContext();
+    useServerUpdates();
   const { token, user } = useAuth();
   const { lobbyId } = useParams();
 

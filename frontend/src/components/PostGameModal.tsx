@@ -1,14 +1,14 @@
 import { useNavigate, useParams } from "react-router";
-import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useGame from "../hooks/useGame";
 import useLobbies from "../hooks/useLobbies";
 import { useAuth } from "../hooks/useAuth";
+import { useServerUpdates } from "../hooks/useServerUpdates";
 
 function PostGameModal() {
     const { outcome, userColor } = useGame()
     const { user } = useAuth()
     const {startLobby, deleteLobby, leaveLobby} = useLobbies()
-    const { lobby } = useServerUpdatesContext()
+    const { lobby } = useServerUpdates()
     const { lobbyId } = useParams()
 
     const navigate = useNavigate()

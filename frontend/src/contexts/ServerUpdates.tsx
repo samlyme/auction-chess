@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Color, Balances, BoardPieces, GamePhase, LegalMoves, LobbyProfile, Packet, Players, GameOutcome } from "../schemas/types";
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
@@ -6,7 +6,7 @@ import { parsePacket, websocketFactory } from "../services/websocket"
 import { useAuth } from "../hooks/useAuth";
 
 // TODO: Refactor this to just be the gamepacket or null type
-interface ServerUpdatesContextType {
+export interface ServerUpdatesContextType {
     lobby: LobbyProfile | null
     
     phase: GamePhase
@@ -23,7 +23,7 @@ interface ServerUpdatesContextType {
     balances: Balances | null
 }
 
-const ServerUpdatesContext = createContext<ServerUpdatesContextType | null>(null);
+export const ServerUpdatesContext = createContext<ServerUpdatesContextType | null>(null);
 
 interface ServerUpdatesProps {
     lobbyId: string
@@ -101,10 +101,4 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
             {children}
         </ServerUpdatesContext>
     )
-}
-
-export function useServerUpdatesContext(): ServerUpdatesContextType {
-    const out = useContext(ServerUpdatesContext);
-    if (!out) throw Error("useServerUpdatesContext must be used within an erverUpdatesProvider")
-    return out;
 }
