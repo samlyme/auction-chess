@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
+import { useAuth } from "../hooks/useAuth";
 
 function Header() {
-    const { logout } = useAuthContext();
+    const { logout } = useAuth();
     const navigate = useNavigate()
     return (
         <div className="frame">

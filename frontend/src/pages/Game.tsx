@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router";
 import Board from "../components/Board";
-import { useAuthContext } from "../contexts/Auth";
 import { useEffect } from "react";
 import Header from "../components/Header";
+import { useAuth } from "../hooks/useAuth";
 
 function Game() {
-    const { token } = useAuthContext();
+    const { token } = useAuth();
     const navigate = useNavigate();
 
+    // TODO: Refactor this with "auth gaurd" component
     useEffect(() => {
         if (!token) navigate("/home")
     })

@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
 import type { LobbyId, LobbyProfile } from "../schemas/types";
 import * as LobbyServices from "../services/lobbies";
 import { useEffect } from "react";
+import { useAuth } from "./useAuth";
 
 interface UseLobbyReturn {
     userLobby: () => Promise<LobbyProfile | null>
@@ -15,7 +15,7 @@ interface UseLobbyReturn {
 }
 
 function useLobbies(): UseLobbyReturn {
-    const { token } = useAuthContext(); // notice that we need to use this hook in auth context
+    const { token } = useAuth(); // notice that we need to use this hook in auth context
     const navigate = useNavigate()
 
     useEffect(() => {

@@ -1,10 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import type { JWTPayload, UserCreate, UserCredentials, UserProfile } from "../schemas/types";
 import { testAuth, usernamePasswordLogin } from "../services/auth";
 import { createUser, getUserByUUID } from "../services/users";
 import { jwtDecode } from "jwt-decode";
 
-interface AuthContextType {
+export interface AuthContextType {
     token: string | null;
     user: UserProfile | null;
     isLoading: boolean;
@@ -13,7 +13,7 @@ interface AuthContextType {
     logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode}) {
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"))
@@ -91,10 +91,4 @@ export function AuthProvider({ children }: { children: ReactNode}) {
             {children}
         </AuthContext>
     )
-}
-
-export function useAuthContext(): AuthContextType {
-    const out = useContext(AuthContext);
-    if (!out) throw Error("useAuthContext must be used within an AuthProvider")
-    return out;
 }

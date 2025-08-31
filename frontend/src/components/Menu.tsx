@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { useAuthContext } from "../contexts/Auth";
 import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useGame from "../hooks/useGame";
 import type { Color, UserProfile } from "../schemas/types";
+import { useAuth } from "../hooks/useAuth";
 
 function Menu() {
   const { lobby } = useServerUpdatesContext();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const { userColor, opponentColor, userBalance, opponentBalance, turn } =
     useGame();
 

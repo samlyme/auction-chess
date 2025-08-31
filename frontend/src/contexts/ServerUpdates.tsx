@@ -3,7 +3,7 @@ import type { Color, Balances, BoardPieces, GamePhase, LegalMoves, LobbyProfile,
 import useLobbies from "../hooks/useLobbies";
 import { useNavigate } from "react-router";
 import { parsePacket, websocketFactory } from "../services/websocket"
-import { useAuthContext } from "./Auth";
+import { useAuth } from "../hooks/useAuth";
 
 // TODO: Refactor this to just be the gamepacket or null type
 interface ServerUpdatesContextType {
@@ -47,7 +47,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps)
 
     const [prevBid, setPrevBid] = useState<number>(0)
 
-    const {token} = useAuthContext()
+    const {token} = useAuth()
     const wsRef = useRef<WebSocket | null>(null)
 
     useEffect(() => {

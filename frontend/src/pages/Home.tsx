@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
 import { useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 function Home() {
-    const { token } = useAuthContext();
+    const { token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
