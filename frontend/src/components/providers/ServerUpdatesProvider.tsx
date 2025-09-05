@@ -72,7 +72,9 @@ export function ServerUpdatesProvider({ lobbyId, children }: {
             }
         )
         .catch(() => navigate("/lobbies"))
-    }, [getLobby, lobbyId, navigate, token])
+    // This UE should only run once and is practically "global".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const context: ServerUpdatesContextType = { lobby, phase, turn, outcome, board, moves, prevBid, players, balances }
 
