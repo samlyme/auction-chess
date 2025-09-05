@@ -1,5 +1,9 @@
 {
   auto_https off
+  log {
+    level INFO
+    format console
+  }
 }
 
 :3000 {
