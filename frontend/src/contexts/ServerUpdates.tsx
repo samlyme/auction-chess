@@ -1,9 +1,5 @@
-import { createContext, useEffect, useRef, useState, type ReactNode } from "react";
-import type { Color, Balances, BoardPieces, GamePhase, LegalMoves, LobbyProfile, Packet, Players, GameOutcome } from "../schemas/types";
-import useLobbies from "../hooks/useLobbies";
-import { useNavigate } from "react-router";
-import { parsePacket, websocketFactory } from "../services/websocket"
-import { useAuth } from "../hooks/useAuth";
+import { createContext } from "react";
+import type { Color, Balances, BoardPieces, GamePhase, LegalMoves, LobbyProfile, Players, GameOutcome } from "../schemas/types";
 
 // TODO: Refactor this to just be the gamepacket or null type
 export interface ServerUpdatesContextType {
@@ -24,81 +20,3 @@ export interface ServerUpdatesContextType {
 }
 
 export const ServerUpdatesContext = createContext<ServerUpdatesContextType | null>(null);
-
-interface ServerUpdatesProps {
-    lobbyId: string
-    children: ReactNode
-}
-
-export function ServerUpdatesProvider({ lobbyId, children }: ServerUpdatesProps) {
-    const navigate = useNavigate()
-    const { getLobby } = useLobbies()
-    const [lobby, setLobby] = useState<LobbyProfile | null>(null)
-    const [board, setBoard] = useState<BoardPieces | null>(null)
-    const [moves, setMoves] = useState<LegalMoves | null>(null)
-
-    const [players, setPlayers] = useState<Players | null>(null)
-    const [balances, setBalances] = useState<Balances | null>(null)
-
-    const [outcome, setOutcome] = useState<GameOutcome>("pending")
-
-    const [phase, setPhase] = useState<GamePhase>("bid")
-    const [turn, setTurn] = useState<Color>("w")
-
-    const [prevBid, setPrevBid] = useState<number>(0)
-
-    const {token} = useAuth()
-    const wsRef = useRef<WebSocket | null>(null)
-
-    useEffect(() => {
-        getLobby(lobbyId)
-        .then(
-            (val: LobbyProfile) => {
-                setLobby(val)
-
-                const onopen = (event: Event) => {
-                    console.log("🟢 WS connected", event)
-                }
-
-                const onmessage = (event: MessageEvent) => {
-                    const data: Packet = parsePacket(event.data)
-                    console.log("Packet", event.data);
-                    
-                    
-                    if (data.type == "lobby_packet") {
-                        setLobby(data.content)
-                    }
-                    else if (data.type == "game_packet") {
-                        setPhase(data.phase)
-                        setTurn(data.turn)
-
-                        setOutcome(data.outcome)
-
-                        setPrevBid(data.prev_bid)
-
-                        setBoard(data.board)
-                        setMoves(data.moves)
-                        
-                        setPlayers(data.players)
-                        setBalances(data.balances)
-                    }
-                }
-
-                const onclose = (event: CloseEvent) => {
-                    console.log("🔴 WS Closed", event);
-                    navigate("/lobbies")
-                }
-                wsRef.current = websocketFactory(token!, lobbyId, onopen, onmessage, onclose)
-            }
-        )
-        .catch(() => navigate("/lobbies"))
-    }, [])
-
-    const context: ServerUpdatesContextType = { lobby, phase, turn, outcome, board, moves, prevBid, players, balances }
-
-    return (
-        <ServerUpdatesContext value={context}>
-            {children}
-        </ServerUpdatesContext>
-    )
-}
