@@ -21,7 +21,7 @@ function Lobbies() {
                 }
             }
         )
-    }, [])
+    }, [navigate, userLobby])
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
