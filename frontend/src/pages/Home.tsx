@@ -8,7 +8,7 @@ function Home() {
 
     useEffect(() => {
         if (token) navigate("/lobbies")
-    } ,[])
+    }, [navigate, token])
 
     return (
         <div className="home">
