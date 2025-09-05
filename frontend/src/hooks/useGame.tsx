@@ -38,24 +38,24 @@ function useGame(): UseGameReturn {
   const makeMove = useCallback((move: Move): void => {
     console.log("Making move", move);
     sendMove(token!, lobbyId, move)
-      .then((res: any) => {
+      .then((res: unknown) => {
         console.log("Sent move", res);
       })
-      .catch((reason: any) => {
+      .catch((reason: unknown) => {
         console.log("Failed to make move", reason);
       });
-  }, []);
+  }, [lobbyId, token]);
 
   const makeBid = useCallback((amount: number): void => {
     console.log("Making bid", amount);
     sendBid(token!, lobbyId, { amount })
-      .then((res: any) => {
+      .then((res: unknown) => {
         console.log("Sent bid", res);
       })
-      .catch((reason: any) => {
+      .catch((reason: unknown) => {
         console.log("Failed to make bid", reason);
       });
-  }, []);
+  }, [lobbyId, token]);
 
   if (!players || !balances)
     return {
