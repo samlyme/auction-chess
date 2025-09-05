@@ -4,8 +4,8 @@ import Board from "../components/Board";
 import Menu from "../components/Menu";
 import useGame from "../hooks/useGame";
 import PostGameModal from "../components/PostGameModal";
-import { useAuth } from "../hooks/useAuth";
-import { useServerUpdates } from "../hooks/useServerUpdates";
+import useAuth from "../hooks/useAuth";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function Lobby() {
     const navigate = useNavigate();
@@ -14,16 +14,10 @@ function Lobby() {
 
     const { phase, outcome } = useGame()
 
-    function getData() {
-        const {user, isLoading: userLoading} = useAuth()
-        const { lobby } = useServerUpdates()
+    const {user, isLoading: userLoading} = useAuth()
+    const {lobby} = useServerUpdates()
+    const isLoading = userLoading || !lobby 
 
-        const isLoading = userLoading || !lobby
-        
-        return { isLoading, user, lobby}
-    }
-
-    const {isLoading, user, lobby} = getData()
 
     // Last two are redundant, just to make typechecker happy
     if (isLoading || !lobby || !user) return (

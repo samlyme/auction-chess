@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 import type { LobbyId, LobbyProfile } from "../schemas/types";
 import * as LobbyServices from "../services/lobbies";
 import { useEffect } from "react";
-import { useAuth } from "./useAuth";
+import useAuth from "./useAuth";
 
 interface UseLobbyReturn {
     userLobby: () => Promise<LobbyProfile | null>

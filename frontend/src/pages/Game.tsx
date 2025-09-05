@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 import Board from "../components/Board";
 import { useEffect } from "react";
 import Header from "../components/Header";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 
 function Game() {
     const { token } = useAuth();

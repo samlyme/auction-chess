@@ -9,8 +9,8 @@ import type {
 } from "../schemas/types";
 import { sendBid, sendMove } from "../services/game";
 import { useParams } from "react-router";
-import { useAuth } from "./useAuth";
-import { useServerUpdates } from "./useServerUpdates";
+import useAuth from "./useAuth";
+import useServerUpdates from "./useServerUpdates";
 
 interface UseGameReturn {
   board: BoardPieces | null;
