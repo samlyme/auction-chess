@@ -3,6 +3,7 @@ import type { Bid, LobbyId, Move } from "../schemas/types";
 const URL = "/api/lobbies"
 
 export function sendMove(access_token: string, lobbyId: LobbyId, move: Move) {
+    console.trace()
   return fetch(`${URL}/${lobbyId}/move`, {
     method: "POST",
     headers: {
@@ -15,6 +16,7 @@ export function sendMove(access_token: string, lobbyId: LobbyId, move: Move) {
 }
 
 export function sendBid(access_token: string, lobbyId: LobbyId, bid: Bid) {
+    console.trace()
   return fetch(`${URL}/${lobbyId}/bid`, {
     method: "POST",
     headers: {

@@ -5,7 +5,7 @@ const URL = "/api"
 
 // OAuth spec, kinda ugly
 export function usernamePasswordLogin(credentials: UserCredentials): Promise<TokenResponse> {
-    console.log();
+    console.trace()
     
     const encodedParams = new URLSearchParams();
     encodedParams.set('grant_type', 'password');
@@ -30,6 +30,8 @@ export function usernamePasswordLogin(credentials: UserCredentials): Promise<Tok
 }
 
 export function testAuth(access_token: string): Promise<boolean> {
+    console.trace()
+    
     return fetch(`${URL}/auth`, {
         method: "GET",
         headers: { 

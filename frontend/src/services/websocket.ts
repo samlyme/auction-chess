@@ -8,6 +8,7 @@ export function websocketFactory(
   onclose: (event: CloseEvent) => void
 ): WebSocket {
   console.log("connecting to ws");
+  console.trace()
 
   const scheme = location.protocol === "https:" ? "wss" : "ws";
   const origin = `${scheme}://${location.host}`;

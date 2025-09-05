@@ -4,6 +4,7 @@ import type { UserCreate, UserProfile } from "../schemas/types";
 const URL = "/api/users"
 
 export function createUser(user: UserCreate): Promise<UserProfile> {
+    console.trace()
     return fetch(URL, {
         method: 'POST',
         headers: {'content-type': 'application/json'},
@@ -13,6 +14,7 @@ export function createUser(user: UserCreate): Promise<UserProfile> {
 }
 
 export function getUserByUsername(username: string): Promise<UserProfile> {
+    console.trace()
     return fetch(`${URL}/?username=${username}`, {
         method: "GET",
         headers: {'content-type': 'application/json'},
@@ -22,6 +24,7 @@ export function getUserByUsername(username: string): Promise<UserProfile> {
 
 export function getUserByUUID(uuid: UUIDTypes): Promise<UserProfile> {
     console.log("Getting user by UUID");
+    console.trace()
     
     return fetch(`${URL}?uuid=${uuid}`, {
         method: "GET",
@@ -31,6 +34,7 @@ export function getUserByUUID(uuid: UUIDTypes): Promise<UserProfile> {
 }
 
 export function getUsers(): Promise<UserProfile[]> {
+    console.trace()
     return fetch(URL, {
         method: "GET",
         headers: {'content-type': 'application/json'},
