@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from "react-router";
 import useGame from "../hooks/useGame";
 import useLobbies from "../hooks/useLobbies";
-import { useAuth } from "../hooks/useAuth";
-import { useServerUpdates } from "../hooks/useServerUpdates";
+import useAuth from "../hooks/useAuth";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function PostGameModal() {
     const { outcome, userColor } = useGame()
@@ -15,10 +15,11 @@ function PostGameModal() {
 
     if (outcome == "pending") throw new Error("Modal only for finished games")
 
-        let title: string = ""
-        if (outcome == "draw") title = "Draw."
-        else if (outcome == userColor) title = "You lose."
-        else title = "You win."
+    let title: string = ""
+    if (outcome == "draw") title = "Draw."
+    else if (outcome == userColor) title = "You win."
+    else title = "You lose."
+
     return (
         <div className="modal">
             <h1>{title}</h1>

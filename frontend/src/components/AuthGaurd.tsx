@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import type { ReactNode } from "react";
 
 function AuthGaurd({ children }: { children: ReactNode}) {

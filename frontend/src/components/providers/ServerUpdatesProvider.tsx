@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router"
 import useLobbies from "../../hooks/useLobbies"
 import type { Balances, BoardPieces, Color, GameOutcome, GamePhase, LegalMoves, LobbyProfile, Packet, Players } from "../../schemas/types"
-import { useAuth } from "../../hooks/useAuth"
+import useAuth from "../../hooks/useAuth"
 import { ServerUpdatesContext, type ServerUpdatesContextType } from "../../contexts/ServerUpdates"
 import { parsePacket, websocketFactory } from "../../services/websocket"
 
