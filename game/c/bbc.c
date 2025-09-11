@@ -86,7 +86,7 @@ const U64 not_gh_file = 4557430888798830399ULL;
 // p attack table [side][square]
 U64 pawn_attacks[2][64];
 
-U64 mask_pawn_attacks(enum Square square, enum Side side) {
+U64 mask_pawn_attacks(enum Side side, enum Square square) {
     // result attacks bitboard
     U64 attacks = 0ULL;
 
@@ -96,7 +96,7 @@ U64 mask_pawn_attacks(enum Square square, enum Side side) {
     // set piece on board
     set_bit(bitboard, square);
 
-    // white pawns
+    // Here we don't need to check for rank because it just gets shifted off the board.
     if (side == white) {
         // forward left attack
         if ((bitboard >> 7) & not_a_file) attacks |= (bitboard >> 7);
@@ -113,8 +113,21 @@ U64 mask_pawn_attacks(enum Square square, enum Side side) {
     return attacks;
 }
 
-int main() {
-    print_bitboard(mask_pawn_attacks(b4, white));
+void init_leapers_attacks() {
+    for (int square = 0; square < 64; square++) {
+        // init pawn attacks
+        pawn_attacks[white][square] = mask_pawn_attacks(white, square);
+        pawn_attacks[black][square] = mask_pawn_attacks(black, square);
+    }
+}
 
+int main() {
+    // init leaper peices
+    init_leapers_attacks();
+
+    for (int square = 0; square < 64; square++) {
+        print_bitboard(pawn_attacks[white][square]);
+        print_bitboard(pawn_attacks[black][square]);
+    }
     return 0;
 }
