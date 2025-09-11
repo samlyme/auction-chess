@@ -22,6 +22,7 @@ enum {
 // typically, you can implicit cast this to a boolean.
 #define get_bit(bitboard, square) (bitboard &  (1ULL << square))
 #define set_bit(bitboard, square) (bitboard |= (1ULL << square))
+#define pop_bit(bitboard, square) (bitboard &=!(1ULL << square))
 
 // print bitboard
 void print_bitboard(U64 bitboard) {
@@ -49,8 +50,15 @@ int main() {
     U64 bitboard = 0ULL;
 
     set_bit(bitboard, e2);
-
     print_bitboard(bitboard);
     
+    pop_bit(bitboard, e2);
+    print_bitboard(bitboard);
+
+    pop_bit(bitboard, e2);
+    print_bitboard(bitboard);
+
+    set_bit(bitboard, e2);
+    print_bitboard(bitboard);
     return 0;
 }
