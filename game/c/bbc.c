@@ -45,79 +45,81 @@ void print_bitboard(U64 bitboard) {
         printf("\n");
     }
 
-    printf("\n    a b c d e f g h \n\n");
+    printf("    a b c d e f g h \n");
 
     // print bitboard as unsigned decimal number
-    printf("    Bitboard: %llud", bitboard);
+    printf("    Bitboard: %llud \n\n", bitboard);
 }
 
-
-
-/*  not A file
-    8  0 1 1 1 1 1 1 1
-    7  0 1 1 1 1 1 1 1
-    6  0 1 1 1 1 1 1 1
-    5  0 1 1 1 1 1 1 1
-    4  0 1 1 1 1 1 1 1
-    3  0 1 1 1 1 1 1 1
-    2  0 1 1 1 1 1 1 1
-    1  0 1 1 1 1 1 1 1
-
-       a b c d e f g h 
-*/
-/*  not B file
-    8  1 1 1 1 1 1 1 0
-    7  1 1 1 1 1 1 1 0
-    6  1 1 1 1 1 1 1 0
-    5  1 1 1 1 1 1 1 0
-    4  1 1 1 1 1 1 1 0
-    3  1 1 1 1 1 1 1 0
-    2  1 1 1 1 1 1 1 0
-    1  1 1 1 1 1 1 1 0
-
-       a b c d e f g h 
-*/
 const U64 not_a_file = 18374403900871474942ULL;
 const U64 not_h_file = 9187201950435737471ULL;
 const U64 not_ab_file = 18229723555195321596ULL;
 const U64 not_gh_file = 4557430888798830399ULL;
 
 // Attack tables
-// p attack table [side][square]
+// pawn attack table [side][square]
 U64 pawn_attacks[2][64];
+
+// knight attack table
+U64 knight_attacks[64];
 
 U64 mask_pawn_attacks(enum Side side, enum Square square) {
     // result attacks bitboard
     U64 attacks = 0ULL;
 
     // piece bitboard
-    U64 bitboard = 0ULL;
+    U64 peice = 0ULL;
 
     // set piece on board
-    set_bit(bitboard, square);
+    set_bit(peice, square);
 
     // Here we don't need to check for rank because it just gets shifted off the board.
     if (side == white) {
         // forward left attack
-        if ((bitboard >> 7) & not_a_file) attacks |= (bitboard >> 7);
+        if ((peice >> 7) & not_a_file) attacks |= (peice >> 7);
         // forward right attack
-        if ((bitboard >> 9) & not_h_file) attacks |= (bitboard >> 9);
+        if ((peice >> 9) & not_h_file) attacks |= (peice >> 9);
     }
     else {
         // forward right attack
-        if ((bitboard << 7) & not_h_file) attacks |= (bitboard << 7);
+        if ((peice << 7) & not_h_file) attacks |= (peice << 7);
         // forward left attack
-        if ((bitboard << 9) & not_a_file) attacks |= (bitboard << 9);
+        if ((peice << 9) & not_a_file) attacks |= (peice << 9);
     }
+
+    return attacks;
+}
+
+U64 mask_knight_attacks(enum Square square) {
+    // result attacks bitboard
+    U64 attacks = 0ULL;
+
+    // piece bitboard
+    U64 peice = 0ULL;
+
+    // set piece on board
+    set_bit(peice, square);
+
+    // knight deltas are 17, 15, 10, 6
+    if ((peice >> 17) & not_h_file) attacks |= (peice >> 17);
+    if ((peice >> 15) & not_a_file) attacks |= (peice >> 15);
+    if ((peice >> 10) & not_gh_file) attacks |= (peice >> 10);
+    if ((peice >> 6)  & not_ab_file) attacks |= (peice >> 6);
+
+    if ((peice << 17) & not_a_file) attacks |= (peice << 17);
+    if ((peice << 15) & not_h_file) attacks |= (peice << 15);
+    if ((peice << 10) & not_ab_file) attacks |= (peice << 10);
+    if ((peice << 6)  & not_gh_file) attacks |= (peice << 6);
 
     return attacks;
 }
 
 void init_leapers_attacks() {
     for (int square = 0; square < 64; square++) {
-        // init pawn attacks
         pawn_attacks[white][square] = mask_pawn_attacks(white, square);
         pawn_attacks[black][square] = mask_pawn_attacks(black, square);
+
+        knight_attacks[square] = mask_knight_attacks(square);
     }
 }
 
@@ -126,8 +128,7 @@ int main() {
     init_leapers_attacks();
 
     for (int square = 0; square < 64; square++) {
-        print_bitboard(pawn_attacks[white][square]);
-        // print_bitboard(pawn_attacks[black][square]);
+        print_bitboard(knight_attacks[square]);
     }
     return 0;
 }
