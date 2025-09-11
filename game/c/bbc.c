@@ -67,23 +67,23 @@ U64 mask_pawn_attacks(enum Side side, enum Square square) {
     U64 attacks = 0ULL;
 
     // piece bitboard
-    U64 peice = 0ULL;
+    U64 piece = 0ULL;
 
     // set piece on board
-    set_bit(peice, square);
+    set_bit(piece, square);
 
     // Here we don't need to check for rank because it just gets shifted off the board.
     if (side == white) {
         // forward left attack
-        if ((peice >> 7) & not_a_file) attacks |= (peice >> 7);
+        if ((piece >> 7) & not_a_file) attacks |= (piece >> 7);
         // forward right attack
-        if ((peice >> 9) & not_h_file) attacks |= (peice >> 9);
+        if ((piece >> 9) & not_h_file) attacks |= (piece >> 9);
     }
     else {
         // forward right attack
-        if ((peice << 7) & not_h_file) attacks |= (peice << 7);
+        if ((piece << 7) & not_h_file) attacks |= (piece << 7);
         // forward left attack
-        if ((peice << 9) & not_a_file) attacks |= (peice << 9);
+        if ((piece << 9) & not_a_file) attacks |= (piece << 9);
     }
 
     return attacks;
@@ -94,21 +94,21 @@ U64 mask_knight_attacks(enum Square square) {
     U64 attacks = 0ULL;
 
     // piece bitboard
-    U64 peice = 0ULL;
+    U64 piece = 0ULL;
 
     // set piece on board
-    set_bit(peice, square);
+    set_bit(piece, square);
 
     // knight deltas are 17, 15, 10, 6
-    if ((peice >> 17) & not_h_file) attacks |= (peice >> 17);
-    if ((peice >> 15) & not_a_file) attacks |= (peice >> 15);
-    if ((peice >> 10) & not_gh_file) attacks |= (peice >> 10);
-    if ((peice >> 6)  & not_ab_file) attacks |= (peice >> 6);
+    if ((piece >> 17) & not_h_file) attacks |= (piece >> 17);
+    if ((piece >> 15) & not_a_file) attacks |= (piece >> 15);
+    if ((piece >> 10) & not_gh_file) attacks |= (piece >> 10);
+    if ((piece >> 6)  & not_ab_file) attacks |= (piece >> 6);
 
-    if ((peice << 17) & not_a_file) attacks |= (peice << 17);
-    if ((peice << 15) & not_h_file) attacks |= (peice << 15);
-    if ((peice << 10) & not_ab_file) attacks |= (peice << 10);
-    if ((peice << 6)  & not_gh_file) attacks |= (peice << 6);
+    if ((piece << 17) & not_a_file) attacks |= (piece << 17);
+    if ((piece << 15) & not_h_file) attacks |= (piece << 15);
+    if ((piece << 10) & not_ab_file) attacks |= (piece << 10);
+    if ((piece << 6)  & not_gh_file) attacks |= (piece << 6);
 
     return attacks;
 }
@@ -118,21 +118,21 @@ U64 mask_king_attacks(enum Square square) {
     U64 attacks = 0ULL;
 
     // piece bitboard
-    U64 peice = 0ULL;
-    set_bit(peice, square);
+    U64 piece = 0ULL;
+    set_bit(piece, square);
 
     // king deltas are 1, 8, 7, 9
-    attacks |= (peice >> 8);
-    attacks |= (peice << 8);
+    attacks |= (piece >> 8);
+    attacks |= (piece << 8);
 
-    if (peice & not_a_file) attacks |= (peice >> 1);
-    if (peice & not_h_file) attacks |= (peice << 1);
+    if (piece & not_a_file) attacks |= (piece >> 1);
+    if (piece & not_h_file) attacks |= (piece << 1);
 
-    if (peice & not_a_file) attacks |= (peice >> 9);
-    if (peice & not_h_file) attacks |= (peice >> 7);
+    if (piece & not_a_file) attacks |= (piece >> 9);
+    if (piece & not_h_file) attacks |= (piece >> 7);
 
-    if (peice & not_a_file) attacks |= (peice << 7);
-    if (peice & not_h_file) attacks |= (peice << 9);
+    if (piece & not_a_file) attacks |= (piece << 7);
+    if (piece & not_h_file) attacks |= (piece << 9);
 
     return attacks;
 }
@@ -149,7 +149,7 @@ void init_leapers_attacks() {
 }
 
 int main() {
-    // init leaper peices
+    // init leaper pieces
     init_leapers_attacks();
 
     for (int square = 0; square < 64; square++) {
