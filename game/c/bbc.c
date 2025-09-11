@@ -59,9 +59,8 @@ const U64 not_gh_file = 4557430888798830399ULL;
 // Attack tables
 // pawn attack table [side][square]
 U64 pawn_attacks[2][64];
-
-// knight attack table
 U64 knight_attacks[64];
+U64 king_attacks[64];
 
 U64 mask_pawn_attacks(enum Side side, enum Square square) {
     // result attacks bitboard
@@ -114,12 +113,38 @@ U64 mask_knight_attacks(enum Square square) {
     return attacks;
 }
 
+U64 mask_king_attacks(enum Square square) {
+    // result attacks bitboard
+    U64 attacks = 0ULL;
+
+    // piece bitboard
+    U64 peice = 0ULL;
+    set_bit(peice, square);
+
+    // king deltas are 1, 8, 7, 9
+    attacks |= (peice >> 8);
+    attacks |= (peice << 8);
+
+    if (peice & not_a_file) attacks |= (peice >> 1);
+    if (peice & not_h_file) attacks |= (peice << 1);
+
+    if (peice & not_a_file) attacks |= (peice >> 9);
+    if (peice & not_h_file) attacks |= (peice >> 7);
+
+    if (peice & not_a_file) attacks |= (peice << 7);
+    if (peice & not_h_file) attacks |= (peice << 9);
+
+    return attacks;
+}
+
 void init_leapers_attacks() {
     for (int square = 0; square < 64; square++) {
         pawn_attacks[white][square] = mask_pawn_attacks(white, square);
         pawn_attacks[black][square] = mask_pawn_attacks(black, square);
 
         knight_attacks[square] = mask_knight_attacks(square);
+
+        king_attacks[square] = mask_king_attacks(square);
     }
 }
 
@@ -128,7 +153,9 @@ int main() {
     init_leapers_attacks();
 
     for (int square = 0; square < 64; square++) {
-        print_bitboard(knight_attacks[square]);
+        print_bitboard(king_attacks[square]);
     }
+
+    // print_bitboard(mask_king_attacks(e4));
     return 0;
 }
