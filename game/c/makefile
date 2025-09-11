@@ -1,5 +1,5 @@
 all:
-	gcc -oFast bbc.c -o bbc
+	gcc -oFast bbc.c -o bbc.o
 
 debug:
-	gcc bbc.c -o bbc
+	gcc bbc.c -o bbc.o
