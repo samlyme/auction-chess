@@ -1,6 +1,10 @@
 from typing import Literal
 import chess
 
+class Bid:
+    amount: int 
+    fold: bool
+    player: chess.Color
 
 class AuctionChess(chess.Board):
     def __init__(self, fen: str | None = None, *, chess960: bool = False) -> None:
@@ -18,9 +22,13 @@ class AuctionChess(chess.Board):
 
         return super().push(move)
 
+    def push_bid(self, bid: Bid) -> None:
+        raise NotImplementedError()
+
     def is_legal(self, move: chess.Move) -> bool:
         return not self.is_variant_end() and self.is_pseudo_legal(move)
 
+    # NOTE: "checkmate" logic is hard because i want to implement contracts down the line.
     def is_variant_win(self) -> bool:
         return not self.king(not self.turn)
 
@@ -38,12 +46,14 @@ class AuctionChess(chess.Board):
         if self.is_variant_draw():
             return chess.Outcome(chess.Termination.VARIANT_DRAW, None)
 
-
 board = AuctionChess(fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1")
 print(board)
-while True:
+while not board.outcome():
     board.push_uci(input("Enter move: "))
     print(board)
+    print("w" if board.turn else "b")
+
+print(board.outcome())
 
 # moves = ["e2e4", "e7e5", "d1h5", "f7f5"]
 
