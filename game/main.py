@@ -130,7 +130,10 @@ class OpenFirstAuctionChess(AuctionChess):
         self.phase = "bid"
 
         self.bid_history: list[list[Bid]] = [[]]
-        
+    
+    def min_bid(self) -> int:
+        # TODO: implement min raise logic
+        return self.prev_bid
 
     def push_bid(self, bid: Bid) -> None:
         if self.phase != "bid":
@@ -158,7 +161,7 @@ class OpenFirstAuctionChess(AuctionChess):
             self.prev_bid = 0
             return
 
-        if bid.amount <= self.prev_bid:
+        if bid.amount <= self.min_bid():
             # TODO: Implement minimum raise amount
             raise chess.IllegalMoveError("Bids must raise price.")
 
