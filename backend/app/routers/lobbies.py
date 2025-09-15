@@ -23,7 +23,7 @@ async def create_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep
 ) -> api.LobbyProfile:
     try:
-        lobby_id: api.LobbyId = await lobby_manager.create(user)
+        lobby_id: api.LobbyId = await lobby_manager.create_lobby(user)
         return lobby_manager.to_profile(lobby_id)
     except LobbyCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
@@ -45,7 +45,7 @@ async def get_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
 ) -> api.LobbyProfile:
     try:
-        lobby = await lobby_manager.get(lobby_id)
+        lobby = await lobby_manager.get_lobby(lobby_id)
         if lobby is None:
             raise LobbyNotFoundError(lobby_id)
 
@@ -66,7 +66,7 @@ async def join_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
 ) -> api.LobbyProfile:
     try:
-        await lobby_manager.join(user, lobby_id)
+        await lobby_manager.join_lobby(user, lobby_id)
         return lobby_manager.to_profile(lobby_id)
     except (LobbyNotFoundError, LobbyJoinError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
@@ -99,7 +99,7 @@ async def delete_lobby(
     user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
 ) -> None:
     try:
-        await lobby_manager.delete(user, lobby_id)
+        await lobby_manager.delete_lobby(user, lobby_id)
     except LobbyNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.detail)
     except LobbyPermissionError as e:

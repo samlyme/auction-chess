@@ -1,9 +1,9 @@
 from typing import Annotated, Generator, TypedDict
 from uuid import UUID
 from fastapi import Depends, WebSocket, status
-from app.core.auction_chess.game import Game
 
-from app.core.auction_chess.game import AuctionChess
+from game.main import AuctionChess, Bid, OpenFirstAuctionChess
+
 import app.schemas.types as api
 from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
 from app.utils.lobbies import generate_lobby_id
@@ -14,7 +14,7 @@ class Lobby(TypedDict):
     host_ws: WebSocket | None
     guest: api.UserProfile | None
     guest_ws: WebSocket | None
-    game: Game | None
+    game: AuctionChess | None
 
 
 # NOTE: In future, this should be in redis
@@ -150,10 +150,7 @@ class LobbyManager:
             raise LobbyStartError(user, lobby_id, "lobby not full")
         
         lobby["status"] = "active"
-        lobby["game"] = AuctionChess(
-            white=lobby["host"].uuid,
-            black=lobby["guest"].uuid
-        )
+        lobby["game"] = AuctionChess()
         await self.broadcast(lobby_id)
         await self.broadcast_game(lobby_id)
     
@@ -207,7 +204,7 @@ class LobbyManager:
         if lobby["game"] is None:
             raise Exception("Game not initialized")
         
-        lobby["game"].user_move(user, move)
+        lobby["game"].push_uci(move.uci())
 
         await self.broadcast_game(lobby_id)
 
@@ -218,7 +215,8 @@ class LobbyManager:
         if lobby["game"] is None:
             raise Exception("Game not initialized")
 
-        lobby["game"].user_bid(user, bid)
+        # TODO: implement bid thing
+        lobby["game"].push_bid(Bid(bid.amount, False, True))
 
         await self.broadcast_game(lobby_id)
         
@@ -242,7 +240,7 @@ class LobbyManager:
         packet: api.GamePacket = api.GamePacket(
             phase=lobby["game"].phase,
             outcome=lobby["game"].outcome,
-            turn=lobby["game"].turn,
+            turn="w" if lobby["game"].turn else "b",
             prev_bid=lobby["game"].prev_bid,
             board=lobby["game"].public_board(),
             moves=lobby["game"].public_moves(),
