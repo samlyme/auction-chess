@@ -16,6 +16,11 @@ class Bid:
     fold: bool
     player: chess.Color
 
+    def __init__(self, amount: int, fold: bool, player: chess.Color) -> None:
+        self.amount = amount
+        self.fold = fold 
+        self.player = player
+
 
 class AuctionChess(chess.Board):
     style: AuctionStyle
@@ -30,7 +35,7 @@ class AuctionChess(chess.Board):
         self.phase: Literal["bid", "move"] = "bid"
 
     def push(self, move: chess.Move) -> None:
-        # The chess.Board base class implicity chess move turn
+        # The chess.Board base class implicity checks move turn
         # by not attaching a player to the Move object. Intead it only checks
         # if the start of the move is the correct turn.
         
