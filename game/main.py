@@ -3,6 +3,7 @@ from typing import Iterator, Literal
 import chess
 from chess import BB_ALL, Bitboard, Move, Outcome, Termination
 
+
 class PseudoChess(chess.Board):
     """
     This class provides a stripped back variant of chess where pseudo-legal moves
@@ -11,11 +12,6 @@ class PseudoChess(chess.Board):
 
     def __init__(self, fen: str | None = None, *, chess960: bool = False) -> None:
         super().__init__(fen, chess960=chess960)
-        self.balances: dict[chess.Color, int] = {
-            chess.WHITE: 1000,
-            chess.BLACK: 1000,
-        }
-
 
     """
     Override all the legality checks.
@@ -42,7 +38,8 @@ class PseudoChess(chess.Board):
         return not self.king(self.turn)
 
     def is_variant_draw(self) -> bool:
-        return self.balances[chess.WHITE] == 0 and self.balances[chess.BLACK] == 0
+        # in this variant, it is logically impossible to draw
+        return False
 
     def outcome(self, *, claim_draw: bool = False) -> chess.Outcome | None:
         if self.is_variant_loss():
@@ -83,9 +80,18 @@ AuctionStyle = Literal[
 
 GamePhase = Literal["move", "bid"]
 
+
 class AuctionChess(PseudoChess, ABC):
     style: AuctionStyle
-    phase: GamePhase
+
+    def __init__(self, fen: str | None = None, *, chess960: bool = False) -> None:
+        super().__init__(fen, chess960=chess960)
+
+        self.phase: GamePhase = "bid"
+        self.balances: dict[chess.Color, int] = {
+            chess.WHITE: 1000,
+            chess.BLACK: 1000,
+        }
 
     @abstractmethod
     def push_bid(self, bid: Bid) -> None:
@@ -95,18 +101,20 @@ class AuctionChess(PseudoChess, ABC):
         super().push(move)
         self.phase = "move" if self.phase == "bid" else "bid"
 
+    def is_variant_draw(self) -> bool:
+        return self.balances[chess.WHITE] == 0 and self.balances[chess.BLACK] == 0
+
 
 class OpenFirstAuctionChess(AuctionChess):
     style: AuctionStyle = "open_first"
 
     def __init__(self, fen: str | None = None, *, chess960: bool = False) -> None:
         super().__init__(fen, chess960=chess960)
-        
+
         self.phase = "bid"
 
         self.bid_history: list[list[Bid]] = [[]]
         self.bid_turn: chess.Color = chess.WHITE
-
 
     def push_bid(self, bid: Bid) -> None:
         if self.phase != "bid":
@@ -130,12 +138,11 @@ class OpenFirstAuctionChess(AuctionChess):
 
             # NOTE: The player who folds starts the next bid so we do not swap self.bid_turn
             bid_stack.append(bid)
-            return 
+            return
 
-        if bid_stack:
-            if bid.amount <= bid_stack[-1].amount:
-                # TODO: Implement minimum raise amount
-                raise chess.IllegalMoveError("Bids must raise price.")
+        if bid_stack and bid.amount <= bid_stack[-1].amount:
+            # TODO: Implement minimum raise amount
+            raise chess.IllegalMoveError("Bids must raise price.")
 
         if bid.amount >= self.balances[not bid.player]:
             self.phase = "move"
@@ -143,17 +150,15 @@ class OpenFirstAuctionChess(AuctionChess):
             self.turn = bid.player
             self.balances[bid.player] -= bid.amount
             bid_stack.append(bid)
-            return 
-        
+            return
+
         bid_stack.append(bid)
         self.bid_turn = not self.bid_turn
 
-
-    
     def __str__(self) -> str:
         phase = f"PHASE: {self.phase}"
-        turn = f"TURN: {"w" if self.turn else "b"}"
-        bid_turn = f"BID_TURN: {"w" if self.bid_turn else "b"}"
+        turn = f"TURN: {'w' if self.turn else 'b'}"
+        bid_turn = f"BID_TURN: {'w' if self.bid_turn else 'b'}"
         w_balance = f"WHITE: {self.balances[chess.WHITE]}"
         b_balance = f"BLACK: {self.balances[chess.BLACK]}"
         if self.bid_history[-1]:
@@ -161,7 +166,10 @@ class OpenFirstAuctionChess(AuctionChess):
         else:
             bid = 0
         prev_bid = f"BID: {bid}"
-        return "\n".join([phase, turn, bid_turn, w_balance, b_balance, prev_bid, super().__str__()])
+        return "\n".join(
+            [phase, turn, bid_turn, w_balance, b_balance, prev_bid, super().__str__()]
+        )
+
 
 def test_pseudo_chess():
     board = PseudoChess(fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1")
@@ -179,8 +187,11 @@ def test_pseudo_chess():
 
     print(board.outcome())
 
+
 def test_open_first_auction_chess():
-    game = OpenFirstAuctionChess(fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1")
+    game = OpenFirstAuctionChess(
+        fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1"
+    )
     print(game)
     while not game.outcome():
         try:
@@ -197,6 +208,8 @@ def test_open_first_auction_chess():
         print(game)
 
     print(game.outcome())
+
+
 if __name__ == "__main__":
     tests = {
         1: test_pseudo_chess,
