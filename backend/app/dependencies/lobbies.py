@@ -2,7 +2,7 @@ from typing import Annotated, Generator, TypedDict
 from uuid import UUID
 from fastapi import Depends, WebSocket, status
 
-from game.main import AuctionChess, Bid, OpenFirstAuctionChess
+from game.main import PseudoChess, Bid, OpenFirstAuctionChess
 
 import app.schemas.types as api
 from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
@@ -14,7 +14,7 @@ class Lobby(TypedDict):
     host_ws: WebSocket | None
     guest: api.UserProfile | None
     guest_ws: WebSocket | None
-    game: AuctionChess | None
+    game: PseudoChess | None
 
 
 # NOTE: In future, this should be in redis
@@ -150,7 +150,7 @@ class LobbyManager:
             raise LobbyStartError(user, lobby_id, "lobby not full")
         
         lobby["status"] = "active"
-        lobby["game"] = AuctionChess()
+        lobby["game"] = PseudoChess()
         await self.broadcast(lobby_id)
         await self.broadcast_game(lobby_id)
     
