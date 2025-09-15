@@ -1,5 +1,6 @@
-from typing import Literal
+from typing import Iterator, Literal
 import chess
+from chess import BB_ALL, Bitboard, Move, Outcome, Termination
 
 AuctionStyle = Literal[
     "open_first",
@@ -23,6 +24,10 @@ class Bid:
 
 
 class AuctionChess(chess.Board):
+    """
+    This class provides a stripped back variant of chess where pseudo-legal moves
+    are legal, and there is no checkmate. You have to capture the king to win.
+    """
     style: AuctionStyle
     
     def __init__(self, fen: str | None = None, *, chess960: bool = False) -> None:
@@ -49,8 +54,18 @@ class AuctionChess(chess.Board):
     def push_bid(self, bid: Bid) -> None:
         raise NotImplementedError()
 
+    """
+    Override all the legality checks.
+    """
     def is_legal(self, move: chess.Move) -> bool:
-        return not self.is_variant_end() and self.is_pseudo_legal(move)
+        return self.is_pseudo_legal(move)
+    def has_legal_en_passant(self) -> bool:
+        return self.has_pseudo_legal_en_passant()
+    def generate_legal_moves(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
+        if self.is_variant_end():
+            return
+        yield from self.generate_pseudo_legal_moves(from_mask, to_mask)
+
 
     # NOTE: "checkmate" logic is hard because i want to implement contracts down the line.
     def is_variant_win(self) -> bool:
@@ -69,6 +84,14 @@ class AuctionChess(chess.Board):
             return chess.Outcome(chess.Termination.VARIANT_WIN, self.turn)
         if self.is_variant_draw():
             return chess.Outcome(chess.Termination.VARIANT_DRAW, None)
+
+        if claim_draw:
+            if self.can_claim_fifty_moves():
+                return Outcome(Termination.FIFTY_MOVES, None)
+            if self.can_claim_threefold_repetition():
+                return Outcome(Termination.THREEFOLD_REPETITION, None)
+
+        return None
 
 
 class OpenFirstAuctionChess(AuctionChess):
@@ -117,7 +140,14 @@ if __name__ == "__main__":
     board = AuctionChess(fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1")
     print(board)
     while not board.outcome():
-        board.push_uci(input("Enter move: "))
+        # NOTE: don't do this in prod lol.
+        board.phase = "move"
+        board.turn = chess.WHITE
+        try:
+            board.push_uci(input("Enter move: "))
+        except Exception as e:
+            print("invalid move", e)
+
         print(board)
         print("w" if board.turn else "b")
 
