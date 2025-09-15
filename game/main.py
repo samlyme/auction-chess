@@ -130,7 +130,7 @@ class OpenFirstAuctionChess(AuctionChess):
         self.phase = "bid"
 
         self.bid_history: list[list[Bid]] = [[]]
-    
+
     def min_bid(self) -> int:
         # TODO: implement min raise logic
         return self.prev_bid
@@ -180,46 +180,47 @@ class OpenFirstAuctionChess(AuctionChess):
         self.bid_turn = not self.bid_turn
 
 
-def test_pseudo_chess():
-    board = PseudoChess(fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1")
-    print(board)
-    while not board.outcome():
-        # NOTE: don't do this in prod lol.
-        board.turn = chess.WHITE
-        try:
-            board.push_uci(input("Enter move: "))
-        except Exception as e:
-            print("invalid move", e)
-
-        print(board)
-        print("w" if board.turn else "b")
-
-    print(board.outcome())
-
-
-def test_open_first_auction_chess():
-    game = OpenFirstAuctionChess(
-        fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1"
-    )
-    print(game)
-    while not game.outcome():
-        try:
-            if game.phase == "bid":
-                s = input("Enter bid: ")
-                amount = 0 if s == "f" else int(s)
-
-                game.push_bid(Bid(amount, s == "f", game.bid_turn))
-            else:
-                game.push_uci(input("Enter move: "))
-        except Exception as e:
-            print("invalid move", e)
-
-        print(game)
-
-    print(game.outcome())
-
-
 if __name__ == "__main__":
+
+    def test_pseudo_chess():
+        board = PseudoChess(
+            fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1"
+        )
+        print(board)
+        while not board.outcome():
+            # NOTE: don't do this in prod lol.
+            board.turn = chess.WHITE
+            try:
+                board.push_uci(input("Enter move: "))
+            except Exception as e:
+                print("invalid move", e)
+
+            print(board)
+            print("w" if board.turn else "b")
+
+        print(board.outcome())
+
+    def test_open_first_auction_chess():
+        game = OpenFirstAuctionChess(
+            fen="rnb1kbnr/ppp2ppp/4q3/8/8/8/PPPP4/RNBQ1K1R w KQkq - 0 1"
+        )
+        print(game)
+        while not game.outcome():
+            try:
+                if game.phase == "bid":
+                    s = input("Enter bid: ")
+                    amount = 0 if s == "f" else int(s)
+
+                    game.push_bid(Bid(amount, s == "f", game.bid_turn))
+                else:
+                    game.push_uci(input("Enter move: "))
+            except Exception as e:
+                print("invalid move", e)
+
+            print(game)
+
+        print(game.outcome())
+
     tests = {
         1: test_pseudo_chess,
         2: test_open_first_auction_chess,
