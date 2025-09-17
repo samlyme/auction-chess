@@ -58,6 +58,7 @@ class BoardPosition(BaseModel):
     col: int = Field(..., ge=0, le=7)  # 0-7
 
 
+# TODO: refactor this to extend from chess move class.
 class Move(BaseModel):
     start: BoardPosition
     end: BoardPosition

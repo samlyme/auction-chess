@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated, Any, Awaitable, Callable
 from uuid import UUID
 from fastapi import Depends, WebSocket, status
 
@@ -116,7 +116,7 @@ class Lobby:
         # TODO: implement game state serialization
         raise NotImplementedError()
 
-    async def make_move(self, move: api.Move):
+    async def make_move(self, user: api.UserProfile, move: api.Move):
         if not self.game:
             raise Exception("Game not started")
 
@@ -124,7 +124,7 @@ class Lobby:
         self.game.push_uci(move.uci())
         await self.broadcast_game()
     
-    async def make_bid(self, bid: api.Bid):
+    async def make_bid(self, user: api.UserProfile, bid: api.Bid):
         if not self.game:
             raise Exception("Game not started")
         
@@ -193,15 +193,33 @@ class LobbyManager:
 
 lobby_manager = LobbyManager()
 
-async def create_lobby(user: CurrentUserDep) -> api.LobbyId:
-    return await lobby_manager.create(user)
-
 async def get_lobby(lobby_id: api.LobbyId) -> Lobby:
     out = await lobby_manager.get(lobby_id)
     if not out:
         raise LobbyNotFoundError(lobby_id)
     return out
+LobbyDep = Annotated[Lobby, Depends(get_lobby)]
 
-CreateLobbyDep = Annotated[api.LobbyId, Depends(create_lobby)]
+def create_lobby_factory(user: CurrentUserDep) -> Callable[[], Awaitable[api.LobbyProfile]]:
+    async def f():
+        lobby_id = await lobby_manager.create(user)
 
-LobbyDep = Annotated[LobbyManager, Depends(get_lobby)]
+        out = await lobby_manager.get(lobby_id)
+        if not out:
+            raise LobbyCreateError(user, lobby_id)
+        
+        return out.to_profile()
+    return f
+CreateLobbyDep = Annotated[Callable[[], Awaitable[api.LobbyProfile]], Depends(create_lobby_factory)]
+
+async def get_user_lobby(user: CurrentUserDep) -> api.LobbyProfile | None:
+    lobby_id: api.LobbyId | None = await lobby_manager.get_lobby_id_by_user_id(user.uuid)
+    if not lobby_id:
+        return None
+
+    lobby: Lobby | None = await lobby_manager.get(lobby_id)
+    if not lobby:
+        raise Exception("Lobby should exist but doesnt")
+
+    return lobby.to_profile()
+UserLobbyDep = Annotated[api.LobbyProfile | None, Depends(get_user_lobby)]
