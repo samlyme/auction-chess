@@ -5,6 +5,11 @@ import chess
 
 
 # TODO: Sometimes we need regular chess, sometimes we need pseudo chess.
+# This should be done by using COMPOSITION. Honestly we should've started off
+# with composition.
+
+# The PsuedoChess and and regular chess board should be injected into the 
+# Auction chess class.
 class PseudoChess(chess.Board):
     """
     This class provides a stripped back variant of chess where pseudo-legal moves
