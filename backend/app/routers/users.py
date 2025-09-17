@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/users")
 
+# TODO: implement username and password validation.
 @router.post("")
 def add_user(db: DBDep, user_in: UserCredentials) -> UserProfile:
     try:
