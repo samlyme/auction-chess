@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Iterator, Literal
 import chess
-from chess import BB_ALL, Bitboard, Move, Outcome, Termination
 
 
 class PseudoChess(chess.Board):
@@ -24,8 +24,8 @@ class PseudoChess(chess.Board):
         return self.has_pseudo_legal_en_passant()
 
     def generate_legal_moves(
-        self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL
-    ) -> Iterator[Move]:
+        self, from_mask: chess.Bitboard = chess.BB_ALL, to_mask: chess.Bitboard = chess.BB_ALL
+    ) -> Iterator[chess.Move]:
         if self.is_variant_end():
             return
         yield from self.generate_pseudo_legal_moves(from_mask, to_mask)
@@ -51,23 +51,18 @@ class PseudoChess(chess.Board):
 
         if claim_draw:
             if self.can_claim_fifty_moves():
-                return Outcome(Termination.FIFTY_MOVES, None)
+                return chess.Outcome(chess.Termination.FIFTY_MOVES, None)
             if self.can_claim_threefold_repetition():
-                return Outcome(Termination.THREEFOLD_REPETITION, None)
+                return chess.Outcome(chess.Termination.THREEFOLD_REPETITION, None)
 
         return None
 
 
+@dataclass(frozen=True)
 class Bid:
     amount: int
     fold: bool
     player: chess.Color
-
-    def __init__(self, amount: int, fold: bool, player: chess.Color) -> None:
-        self.amount = amount
-        self.fold = fold
-        self.player = player
-
 
 AuctionStyle = Literal[
     "open_first",
@@ -102,7 +97,7 @@ class AuctionChess(PseudoChess, ABC):
     def push_bid(self, bid: Bid) -> None:
         pass
 
-    def push(self, move: Move) -> None:
+    def push(self, move: chess.Move) -> None:
         super().push(move)
         self.phase = "move" if self.phase == "bid" else "bid"
 
