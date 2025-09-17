@@ -73,7 +73,9 @@ class Move(BaseModel):
             + str(self.end.row + 1)
         )
 
-
+# TODO: At the api level, bids and moves do not need to include the current user.
+# But somewhere down the line, maybe at the LobbyDep level, we would need to 
+# validate the "source" of the bid and move request.
 @pydantic.dataclasses.dataclass(frozen=True)
 class Bid(GameBid):
     pass
