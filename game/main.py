@@ -4,6 +4,7 @@ from typing import Iterator, Literal
 import chess
 
 
+# TODO: Sometimes we need regular chess, sometimes we need pseudo chess.
 class PseudoChess(chess.Board):
     """
     This class provides a stripped back variant of chess where pseudo-legal moves
