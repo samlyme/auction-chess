@@ -99,6 +99,8 @@ class AuctionChess(PseudoChess, ABC):
         self.bid_turn: chess.Color = chess.WHITE
         self.prev_bid = 0
 
+        self.bid_history: list[list[Bid]] = [[]]
+
     @abstractmethod
     def push_bid(self, bid: Bid) -> None:
         pass
@@ -127,10 +129,6 @@ class OpenFirstAuctionChess(AuctionChess):
 
     def __init__(self, fen: str | None = None) -> None:
         super().__init__(fen)
-
-        self.phase = "bid"
-
-        self.bid_history: list[list[Bid]] = [[]]
 
     def min_bid(self) -> int:
         # TODO: implement min raise logic
