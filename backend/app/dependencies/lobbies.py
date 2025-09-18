@@ -23,13 +23,15 @@ class Lobby:
         guest: api.UserProfile | None = None,
         guest_ws: WebSocket | None = None,
         # TODO: Implement game options
-        game_options: Any = None,
+        game_options: api.GameOptions = api.GameOptions(
+            host_color=api.WHITE
+        ),
         game: AuctionChess | None = None
     ) -> None:
         self.manager: "LobbyManager" = manager
         self.id: api.LobbyId = id
         self.host: api.UserProfile = host
-        self.is_public: Any = lobby_options
+        self.lobby_options: Any = lobby_options
 
         self.status: api.LobbyStatus = status
         self.host_ws: WebSocket | None  = host_ws
@@ -38,15 +40,30 @@ class Lobby:
         self.guest_ws: WebSocket | None = guest_ws
 
         
-        self.game_options: None  = game_options
+        self.game_options: api.GameOptions  = game_options
 
         self.game: AuctionChess | None = game
+
         
     async def delete(self, user: api.UserProfile) -> None:
         if user != self.host:
             raise LobbyPermissionError(user, self.id)
 
         await self.manager._delete(self.id)
+    
+    async def set_lobby_options(self, host: api.UserProfile, lobby_options: Any) -> None:
+        if host != self.host:
+            raise LobbyPermissionError(host, self.id)
+
+        # TODO: make this actually do something.
+        self.lobby_options = lobby_options
+
+    async def set_game_options(self, host: api.UserProfile, game_options: Any) -> None:
+        if host != self.host:
+            raise LobbyPermissionError(host, self.id)
+        
+        # TODO: make this actually do something.
+        self.game_options = game_options
     
     async def join(self, guest: api.UserProfile) -> None:
         if self.guest:
@@ -91,7 +108,7 @@ class Lobby:
         elif user == self.guest:
             self.guest_ws = websocket
         else:
-            raise Exception(f"This user not in lobby {self.id}")
+            raise LobbyPermissionError(user, self.id)
     
     async def remove_websocket(self, user: api.UserProfile) -> None:
         if user == self.host:
@@ -99,11 +116,57 @@ class Lobby:
         elif user == self.guest:
             self.guest_ws = None
         else:
-            raise Exception(f"This user not in lobby {self.id}")
+            raise LobbyPermissionError(user, self.id)
 
     async def broadcast_lobby(self) -> None:
-        packet: api.LobbyPacket = api.LobbyPacket(
-            content=self.to_profile()
+        packet: api.LobbyPacket = api.LobbyPacket(content=self.to_profile())
+
+        data = packet.json()
+        if self.host_ws:
+            await self.host_ws.send_text(data)
+        if self.guest_ws:
+            await self.guest_ws.send_text(data)
+    
+    def serialize_board(self) -> api.BoardPieces:
+        if not self.game:
+            raise Exception("Game not initiallized.")
+            
+        return [
+            [
+                (lambda x: x.symbol() if x else None)
+                (self.game.piece_at(rank*8 + file))
+            ] 
+            for file in range(8)
+            for rank in range(8)
+        ] # type: ignore
+                
+    async def broadcast_game(self):
+        if not self.game:
+            raise Exception("Game not initiallized")
+
+        if not self.guest:
+            raise Exception("Guest is nulled at weird spot.")
+
+        packet: api.GamePacket = api.GamePacket(
+            content=api.GameData(
+                outcome=(lambda o: o.winner if o else None)(self.game.outcome()), # TODO: fix this
+                phase=self.game.phase,
+                bid_turn=self.game.bid_turn,
+                turn=self.game.turn,
+                board=self.serialize_board(),
+                moves=[move.uci() for move in self.game.legal_moves],
+                players={
+                    api.WHITE if self.game_options.host_color else api.BLACK: self.host.uuid, 
+                    api.BLACK if self.game_options.host_color else api.WHITE: self.guest.uuid
+                }, 
+                balances=self.game.balances,
+                auction_data=api.OpenFirst(
+                    bid_history=[
+                        [api.Bid(bid.amount, bid.fold) for bid in bid_stack] 
+                        for bid_stack in self.game.bid_history
+                    ]
+                )
+            )
         )
 
         data = packet.json()
@@ -111,10 +174,8 @@ class Lobby:
             await self.host_ws.send_text(data)
         if self.guest_ws:
             await self.guest_ws.send_text(data)
+
         
-    async def broadcast_game(self):
-        # TODO: implement game state serialization
-        raise NotImplementedError()
 
     async def make_move(self, user: api.UserProfile, move: api.Move):
         if not self.game:

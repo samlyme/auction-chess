@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 import pydantic
 
 from main import AuctionStyle, Bid as GameBid
+from chess import Color, WHITE, BLACK  # noqa: F401
 
 # Users and such
 class UserCredentials(BaseModel):
@@ -42,10 +43,10 @@ class TokenResponse(BaseModel):
 
 # For the love of god please keep types here
 
-Color = Literal["w", "b"]
 PieceType = Literal["p", "r", "n", "b", "q", "k"]
+PeiceSymbols = PieceType | Literal["P", "R", "N", "B", "Q", "K"]
 GamePhase = Literal["bid", "move"]
-GameOutcome = Literal["pending", "draw"] | Color
+GameOutcome = Color | None
 
 
 class Player(BaseModel):
@@ -80,15 +81,10 @@ class Move(BaseModel):
 class Bid(GameBid):
     pass
 
-class Piece(BaseModel):
-    type: PieceType
-    color: Color
-    has_moved: bool = False  # Useful for castling, initial pawn moves
+BoardPieces = list[list[PeiceSymbols | None]]
 
-
-BoardPieces = list[list[Piece | None]]
-
-LegalMoves = list[list[list[BoardPosition]]]
+MoveUCI = str
+LegalMoves = list[MoveUCI]
 
 LobbyIdLength = 5
 LobbyId = str
@@ -101,6 +97,8 @@ class LobbyProfile(BaseModel):
     host: UserProfile
     guest: UserProfile | None
 
+class GameOptions(BaseModel):
+    host_color: Color
 
 PacketType = Literal["lobby_packet", "game_packet"]
 
@@ -113,7 +111,7 @@ class LobbyPacket(BaseModel):
 Players = dict[Color, UUID]
 Balances = dict[Color, int]
 OpenBidHistory = list[list[Bid]]
-class OpenFirst:
+class OpenFirst(BaseModel):
     auction_style: AuctionStyle = "open_first"
     bid_history: OpenBidHistory
     
