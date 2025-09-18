@@ -56,27 +56,6 @@ class Player(BaseModel):
     uuid: UUID
 
 
-class BoardPosition(BaseModel):
-    row: int = Field(..., ge=0, le=7)  # 0-7
-    col: int = Field(..., ge=0, le=7)  # 0-7
-
-
-# TODO: refactor this to extend from chess move class.
-class Move(BaseModel):
-    start: BoardPosition
-    end: BoardPosition
-
-    # TODO: Fix the API to not have to do this jank
-    def uci(self) -> str:
-        files = "ABCDEFGH"
-        return (
-            files[self.start.col]
-            + str(self.start.row + 1)
-            + files[self.end.col]
-            + str(self.end.row + 1)
-        )
-
-
 # TODO: At the api level, bids and moves do not need to include the current user.
 # But somewhere down the line, maybe at the LobbyDep level, we would need to
 # validate the "source" of the bid and move request.
@@ -87,8 +66,8 @@ class Bid(GameBid):
 
 BoardPieces = list[list[PeiceSymbols | None]]
 
-MoveUCI = str
-LegalMoves = list[MoveUCI]
+Move = str
+LegalMoves = list[Move]
 
 LobbyIdLength = 5
 LobbyId = str

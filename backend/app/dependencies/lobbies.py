@@ -1,5 +1,6 @@
 from typing import Annotated, Any, Awaitable, Callable
 from uuid import UUID
+from chess import IllegalMoveError
 from fastapi import Depends, WebSocket, status
 
 from app.dependencies.auth import CurrentUserDep
@@ -68,6 +69,10 @@ class Lobby:
     async def set_game_options(self, host: api.UserProfile, game_options: Any) -> None:
         if host != self.host:
             raise LobbyPermissionError(host, self.id)
+
+        if self.status == "active":
+            # TODO: make exception for this
+            raise Exception("Can't make changes to game options in active lobby.")
 
         # TODO: make this actually do something.
         self.game_options = game_options
@@ -197,17 +202,32 @@ class Lobby:
         if not self.game:
             raise Exception("Game not started")
 
+        if self.user_color(user) != self.game.turn:
+            raise IllegalMoveError("Not your turn.")
+
         # TODO: implement player source validation
-        self.game.push_uci(move.uci())
+        self.game.push_uci(move)
         await self.broadcast_game()
 
     async def make_bid(self, user: api.UserProfile, bid: api.Bid):
         if not self.game:
             raise Exception("Game not started")
 
-        # TODO: implement player source validation
+        if self.user_color(user) != self.game.turn:
+            raise IllegalMoveError("Not your turn.")
+
         self.game.push_bid(bid)
         await self.broadcast_game()
+
+    def user_color(self, user: api.UserProfile) -> api.Color:
+        if user == self.host:
+            user_color = self.game_options.host_color
+        elif user == self.guest:
+            user_color = not self.game_options.host_color
+        else:
+            raise LobbyPermissionError(user, self.id)
+
+        return user_color
 
 
 # NOTE: In future, this should be in redis
