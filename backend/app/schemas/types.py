@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 import pydantic
 
-from main import AuctionStyle, Bid as GameBid
+from game.core.main import AuctionStyle, Bid as GameBid
 from chess import Color, WHITE, BLACK  # noqa: F401
 
 

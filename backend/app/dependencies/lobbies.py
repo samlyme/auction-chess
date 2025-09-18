@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import Depends, WebSocket, status
 
 from app.dependencies.auth import CurrentUserDep
-from game.main import AuctionChess
+from game.core.main import AuctionChess
 
 import app.schemas.types as api
 from app.utils.exceptions import (

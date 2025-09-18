@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from app.schemas.types import LobbyId, LobbyIdLength
-from main import AuctionChess, OpenFirstAuctionChess
+from game.core.main import AuctionChess, OpenFirstAuctionChess
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
