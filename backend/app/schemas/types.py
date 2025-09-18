@@ -66,23 +66,26 @@ class Bid(GameBid):
 
 BoardPieces = list[list[PeiceSymbols | None]]
 
-Move = str
-LegalMoves = list[Move]
+Move = str # must be valid UCI
 
 LobbyIdLength = 5
 LobbyId = str
 LobbyStatus = Literal["active", "pending"]
 
+class LobbyOptions(BaseModel):
+    is_public: bool = True
+
+
+class GameOptions(BaseModel):
+    host_color: Color
 
 class LobbyProfile(BaseModel):
     id: LobbyId
     status: LobbyStatus
     host: UserProfile
     guest: UserProfile | None
-
-
-class GameOptions(BaseModel):
-    host_color: Color
+    lobby_options: LobbyOptions
+    game_options: GameOptions
 
 
 PacketType = Literal["lobby_packet", "game_packet"]
@@ -114,7 +117,7 @@ class GameData(BaseModel):
     turn: Color
 
     board: BoardPieces
-    moves: LegalMoves
+    moves: list[Move]
 
     players: Players
     balances: Balances

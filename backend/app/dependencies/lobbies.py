@@ -27,7 +27,7 @@ class Lobby:
         id: api.LobbyId,
         host: api.UserProfile,
         # TODO: implement lobby_options
-        lobby_options: Any,
+        lobby_options: api.LobbyOptions,
         status: api.LobbyStatus = "pending",
         host_ws: WebSocket | None = None,
         guest: api.UserProfile | None = None,
@@ -39,7 +39,7 @@ class Lobby:
         self.manager: "LobbyManager" = manager
         self.id: api.LobbyId = id
         self.host: api.UserProfile = host
-        self.lobby_options: Any = lobby_options
+        self.lobby_options: api.LobbyOptions = lobby_options
 
         self.status: api.LobbyStatus = status
         self.host_ws: WebSocket | None = host_ws
@@ -58,7 +58,7 @@ class Lobby:
         await self.manager._delete(self.id)
 
     async def set_lobby_options(
-        self, host: api.UserProfile, lobby_options: Any
+        self, host: api.UserProfile, lobby_options: api.LobbyOptions
     ) -> None:
         if host != self.host:
             raise LobbyPermissionError(host, self.id)
@@ -111,7 +111,12 @@ class Lobby:
 
     def to_profile(self) -> api.LobbyProfile:
         return api.LobbyProfile(
-            id=self.id, status=self.status, host=self.host, guest=self.guest
+            id=self.id,
+            status=self.status,
+            host=self.host,
+            guest=self.guest,
+            lobby_options=self.lobby_options,
+            game_options=self.game_options,
         )
 
     async def set_websocket(self, websocket: WebSocket, user: api.UserProfile) -> None:
@@ -278,7 +283,9 @@ class LobbyManager:
         while lobby_id in self.lobbies:
             lobby_id = generate_lobby_id()
 
-        self.lobbies[lobby_id] = Lobby(self, lobby_id, host, {"is_public": True})
+        self.lobbies[lobby_id] = Lobby(
+            self, lobby_id, host, api.LobbyOptions(is_public=True)
+        )
         self._add_user(host, lobby_id)
 
         return lobby_id
