@@ -173,13 +173,15 @@ class OpenFirstAuctionChess(AuctionChess):
         if bid.amount >= self.balances[not self.bid_turn]:
             self.phase = "move"
             self.turn = self.bid_turn
-            self.balances[self.bid_turn] -= (
-                bid.amount
-            )  # Needed to keep min_bid() functional
+
+            # Needed to keep min bid working
+            self.balances[self.bid_turn] -= bid.amount
             bid_stack.append(bid)
 
             self.bid_history.append([])
             self.prev_bid = 0
+            
+            self.bid_turn = not self.bid_turn
             return
 
         bid_stack.append(bid)

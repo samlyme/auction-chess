@@ -97,11 +97,6 @@ function BiddingMenu() {
     }
   }
 
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        setBid({amount: 0, fold: true})
-        makeBid(bid)
-    };
 
     const handleIncrement = (amount: number) => {
         setBid((prev) => {
@@ -116,9 +111,20 @@ function BiddingMenu() {
       setBid({ amount: opponentLastBidAmount, fold: false})
     }
     const handleAllIn = () => {
-      setBid({ amount: userBalance < opponentBalance ? userBalance : opponentBalance, fold: false })
+      if (opponentLastBidAmount == opponentBalance) {
+        // TODO: fix this unsafe state.
+        setBid({ amount: opponentLastBidAmount + 1, fold: false})
+      }
+      else {
+        setBid({ amount: userBalance < opponentBalance ? userBalance : opponentBalance, fold: false })
+      }
     }
 
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        handleReset()
+        makeBid(bid)
+    };
 
   return (
     <form className={`bidding-menu ${game.phase === "move" ? "lowlight" : ""}`} onSubmit={handleSubmit}>
