@@ -1,24 +1,26 @@
 import { useNavigate, useParams } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
-import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useGame from "../hooks/useGame";
 import useLobbies from "../hooks/useLobbies";
+import useAuth from "../hooks/useAuth";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function PostGameModal() {
-    const { outcome, userColor } = useGame()
-    const { user } = useAuthContext()
+    const { game, userColor } = useGame()
+
+    if (!game || !game.outcome) throw new Error("PostGameModal only to be used after outcome.")
+    
+    const { user } = useAuth()
     const {startLobby, deleteLobby, leaveLobby} = useLobbies()
-    const { lobby } = useServerUpdatesContext()
+    const { lobby } = useServerUpdates()
     const { lobbyId } = useParams()
 
     const navigate = useNavigate()
 
-    if (outcome == "pending") throw new Error("Modal only for finished games")
+    let title: string = ""
+    if (game.outcome == "draw") title = "Draw."
+    else if (game.outcome == userColor) title = "You win."
+    else title = "You lose."
 
-        let title: string = ""
-        if (outcome == "draw") title = "Draw."
-        else if (outcome == userColor) title = "You lose."
-        else title = "You win."
     return (
         <div className="modal">
             <h1>{title}</h1>

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useAuthContext } from "../contexts/Auth";
 import { useNavigate } from "react-router";
+import useAuth from "../hooks/useAuth";
 
 function Auth() {
-    const { token } = useAuthContext();
+    const { token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,7 +24,7 @@ function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const { login } = useAuthContext();
+    const { login } = useAuth();
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -71,7 +71,7 @@ function SignUp() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const { signup } = useAuthContext();
+    const { signup } = useAuth();
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

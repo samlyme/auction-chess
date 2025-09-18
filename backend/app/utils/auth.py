@@ -16,12 +16,15 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+    )
+
 
 def get_password_hash(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
 
 def encode_jwt(data: User, expires_delta: timedelta | None = None) -> str:
     if expires_delta:
@@ -35,6 +38,7 @@ def encode_jwt(data: User, expires_delta: timedelta | None = None) -> str:
     payload_dict["sub"] = payload_dict["sub"].__str__()
     encoded_jwt = jwt.encode(payload_dict, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-    
+
+
 def decode_jwt(token: str) -> JWTPayload:
     return JWTPayload(**jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]))

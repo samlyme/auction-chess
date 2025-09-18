@@ -2,7 +2,7 @@
   auto_https off
 }
 
-:80 {
+:3000 {
   # Strip /api and proxy EVERYTHING (http + ws) to port 8000
   handle_path /api* {
     reverse_proxy localhost:8000
@@ -10,6 +10,6 @@
 
   # Everything else → Vite
   handle {
-    reverse_proxy localhost:3000
+    reverse_proxy localhost:5173
   }
 }
