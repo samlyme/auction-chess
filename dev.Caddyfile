@@ -1,12 +1,9 @@
 {
   auto_https off
-  log {
-    level INFO
-    format console
-  }
 }
 
 :3000 {
+  # Strip /api and proxy EVERYTHING (http + ws) to port 8000
   handle_path /api* {
     reverse_proxy localhost:8000
   }
