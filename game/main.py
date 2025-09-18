@@ -68,7 +68,6 @@ class PseudoChess(chess.Board):
 class Bid:
     amount: int
     fold: bool
-    player: chess.Color
 
 AuctionStyle = Literal[
     "open_first",
@@ -82,6 +81,7 @@ AuctionStyle = Literal[
 GamePhase = Literal["move", "bid"]
 
 
+# TODO: Later this will be the "main" game class.
 class AuctionChess(PseudoChess, ABC):
     style: AuctionStyle
 
@@ -140,10 +140,7 @@ class OpenFirstAuctionChess(AuctionChess):
         if self.phase != "bid":
             raise chess.IllegalMoveError("Can't make bids during move phase.")
 
-        if bid.player != self.bid_turn:
-            raise chess.IllegalMoveError("Not your bidding turn.")
-
-        if bid.amount > self.balances[bid.player]:
+        if bid.amount > self.balances[self.bid_turn]:
             raise chess.IllegalMoveError("Can't bid more than your balance.")
 
         bid_stack: list[Bid] = self.bid_history[-1]
@@ -152,8 +149,8 @@ class OpenFirstAuctionChess(AuctionChess):
             # Initiate move phase for opponent.
             self.phase = "move"
 
-            self.turn = not bid.player
-            self.balances[not bid.player] -= bid_stack[-1].amount
+            self.turn = not self.bid_turn
+            self.balances[not self.bid_turn] -= bid_stack[-1].amount
 
             # NOTE: The player who folds starts the next bid so we do not swap self.bid_turn
             bid_stack.append(bid)
@@ -166,10 +163,10 @@ class OpenFirstAuctionChess(AuctionChess):
             # TODO: Implement minimum raise amount
             raise chess.IllegalMoveError("Bids must raise price.")
 
-        if bid.amount >= self.balances[not bid.player]:
+        if bid.amount >= self.balances[not self.bid_turn]:
             self.phase = "move"
-            self.turn = bid.player
-            self.balances[bid.player] -= bid.amount
+            self.turn = self.bid_turn
+            self.balances[self.bid_turn] -= bid.amount # Needed to keep min_bid() functional
             bid_stack.append(bid)
 
             self.bid_history.append([])
@@ -212,7 +209,7 @@ if __name__ == "__main__":
                     s = input("Enter bid: ")
                     amount = 0 if s == "f" else int(s)
 
-                    game.push_bid(Bid(amount, s == "f", game.bid_turn))
+                    game.push_bid(Bid(amount, s == "f"))
                 else:
                     game.push_uci(input("Enter move: "))
             except Exception as e:
