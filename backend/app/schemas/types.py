@@ -4,7 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from game.core.main import AuctionStyle, Bid as GameBid
-from chess import Color, WHITE, BLACK  # noqa: F401
 import pydantic
 
 
@@ -44,7 +43,7 @@ class TokenResponse(BaseModel):
 
 
 # For the love of god please keep types here
-
+Color = Literal["w", "b"]
 PeiceSymbols = Literal["p", "r", "n", "b", "q", "k", "P", "R", "N", "B", "Q", "K"]
 GamePhase = Literal["bid", "move"]
 GameOutcome = Color | Literal["draw"] | None

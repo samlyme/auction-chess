@@ -33,7 +33,7 @@ class Lobby:
         guest: api.UserProfile | None = None,
         guest_ws: WebSocket | None = None,
         # TODO: Implement game options
-        game_options: api.GameOptions = api.GameOptions(host_color=api.WHITE),
+        game_options: api.GameOptions = api.GameOptions(host_color="w"),
         game: AuctionChess | None = None,
     ) -> None:
         self.manager: "LobbyManager" = manager
@@ -171,23 +171,23 @@ class Lobby:
 
         packet: api.GamePacket = api.GamePacket(
             content=api.GameData(
-                outcome=(lambda o: o.winner if o else None)(
+                outcome=(lambda o: ("w" if o.winner else "b") if o else None)(
                     self.game.outcome()
                 ),  # TODO: fix this
                 phase=self.game.phase,
-                bid_turn=self.game.bid_turn,
-                turn=self.game.turn,
+                bid_turn="w" if self.game.bid_turn else "b",
+                turn="w" if self.game.turn else "b",
                 board=self.serialize_board(),
                 moves=[move.uci() for move in self.game.legal_moves],
                 players={
-                    api.WHITE
+                    "w"
                     if self.game_options.host_color
-                    else api.BLACK: self.host.uuid,
-                    api.BLACK
+                    else "b": self.host.uuid,
+                    "b"
                     if self.game_options.host_color
-                    else api.WHITE: self.guest.uuid,
+                    else "w": self.guest.uuid,
                 },
-                balances=self.game.balances,
+                balances={"w" if color else "b" : balance for color, balance in self.game.balances.items()},
                 auction_data=api.OpenFirst(
                     bid_history=[
                         [api.Bid(amount=bid.amount, fold=bid.fold) for bid in bid_stack]
@@ -232,7 +232,7 @@ class Lobby:
         else:
             raise LobbyPermissionError(user, self.id)
 
-        return user_color
+        return "w" if user_color else "b"
 
 
 # NOTE: In future, this should be in redis
