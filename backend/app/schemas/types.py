@@ -3,7 +3,7 @@ from typing import Annotated, Literal, Union
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-from game.core.main import AuctionStyle, Bid as GameBid
+from game.main import AuctionStyle, Bid as GameBid
 import pydantic
 
 

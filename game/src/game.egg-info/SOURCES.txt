@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
-setup.py
+src/game/__init__.py
+src/game/main.py
 src/game.egg-info/PKG-INFO
 src/game.egg-info/SOURCES.txt
 src/game.egg-info/dependency_links.txt

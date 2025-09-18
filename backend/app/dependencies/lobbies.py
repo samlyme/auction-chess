@@ -4,7 +4,7 @@ from chess import IllegalMoveError
 from fastapi import Depends, WebSocket, status
 
 from app.dependencies.auth import CurrentUserDep
-from game.core.main import AuctionChess
+from game.main import AuctionChess
 
 import app.schemas.types as api
 from app.utils.exceptions import (

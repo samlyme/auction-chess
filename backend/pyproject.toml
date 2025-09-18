@@ -8,6 +8,7 @@ dependencies = [
     "bcrypt>=4.3.0",
     "chess>=1.11.2",
     "fastapi[standard]",
+    "game",
     "pyjwt>=2.10.1",
     "python-dotenv>=1.1.0",
     "sqlalchemy>=2.0.41",
@@ -15,3 +16,6 @@ dependencies = [
 
 [dependency-groups]
 dev = ["ruff"]
+
+[tool.uv.sources]
+game = { path = "../game", editable = true }
