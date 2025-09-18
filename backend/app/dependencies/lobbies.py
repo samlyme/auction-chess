@@ -99,7 +99,9 @@ class Lobby:
         if not self.guest:
             raise LobbyStartError(user, self.id, "Lobby not full. Need guest.")
 
+        self.status = "active"
         self.game = game_factory(self.game_options)
+        await self.broadcast_lobby()
 
     def to_profile(self) -> api.LobbyProfile:
         return api.LobbyProfile(
