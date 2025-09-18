@@ -110,6 +110,9 @@ class AuctionChess(PseudoChess, ABC):
         pass
 
     def push(self, move: chess.Move) -> None:
+        if self.phase != "move":
+            raise chess.IllegalMoveError("Can't make moves during bid phase.")
+
         super().push(move)
         self.phase = "move" if self.phase == "bid" else "bid"
 
