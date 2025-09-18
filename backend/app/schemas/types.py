@@ -3,41 +3,8 @@ from typing import Annotated, Literal, Union
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-# For the love of god please keep types here
-
-Color = Literal["w", "b"]
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-GamePhase = Literal["bid", "move"]
-GameOutcome = Literal["pending", "draw"] | Color
-
-class Player(BaseModel):
-    color: Color
-    uuid: UUID
-
-
-class BoardPosition(BaseModel):
-    row: int = Field(..., ge=0, le=7)  # 0-7
-    col: int = Field(..., ge=0, le=7)  # 0-7
-
-
-class Move(BaseModel):
-    start: BoardPosition
-    end: BoardPosition
-
-class Bid(BaseModel):
-    amount: int
-
-
-class Piece(BaseModel):
-    type: PieceType
-    color: Color
-    has_moved: bool = False  # Useful for castling, initial pawn moves
-
-
-BoardPieces = list[list[Piece | None]]
-
-LegalMoves = list[list[list[BoardPosition]]]
-
+from game.core.main import AuctionStyle, Bid as GameBid
+import pydantic
 
 
 # Users and such
@@ -55,7 +22,7 @@ class UserProfile(BaseModel):
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, UserProfile):
             return NotImplemented
-        
+
         return self.uuid == value.uuid
 
 
@@ -75,43 +42,89 @@ class TokenResponse(BaseModel):
     token_type: str
 
 
+# For the love of god please keep types here
+Color = Literal["w", "b"]
+PeiceSymbols = Literal["p", "r", "n", "b", "q", "k", "P", "R", "N", "B", "Q", "K"]
+GamePhase = Literal["bid", "move"]
+GameOutcome = Color | Literal["draw"] | None
+
+
+BoardPieces = list[list[PeiceSymbols | None]]
+Move = str  # must be valid UCI
+
+
+@pydantic.dataclasses.dataclass(frozen=True)
+class Bid(GameBid):
+    """
+    # The inheritance takes care of it. A lil cursed ik.
+    amount: int
+    fold: bool
+    """
+
+
 LobbyIdLength = 5
 LobbyId = str
 LobbyStatus = Literal["active", "pending"]
+
+
+class LobbyOptions(BaseModel):
+    is_public: bool
+
+
+class GameOptions(BaseModel):
+    host_color: Color
+
 
 class LobbyProfile(BaseModel):
     id: LobbyId
     status: LobbyStatus
     host: UserProfile
     guest: UserProfile | None
-    
+    lobby_options: LobbyOptions
+    game_options: GameOptions
+
 
 PacketType = Literal["lobby_packet", "game_packet"]
+
 
 class LobbyPacket(BaseModel):
     type: PacketType = "lobby_packet"
     content: LobbyProfile
 
-Players = dict[Color, UUID]
+
+Players = dict[Color, UserProfile]
 Balances = dict[Color, int]
+OpenBidHistory = list[list[Bid]]
 
-class GamePacket(BaseModel):
-    type: PacketType = "game_packet"
 
+class OpenFirst(BaseModel):
+    auction_style: AuctionStyle = "open_first"
+    bid_history: OpenBidHistory
+
+
+AuctionData = Annotated[Union[OpenFirst], Field(discriminator="auction_style")]
+
+
+class GameData(BaseModel):
     outcome: GameOutcome
 
     phase: GamePhase
+    bid_turn: Color
     turn: Color
 
-    prev_bid: int
-    
     board: BoardPieces
-    moves: LegalMoves
+    moves: list[Move]
 
     players: Players
     balances: Balances
 
-Packet = Annotated[ 
-    Union[LobbyPacket, GamePacket],
-    Field(discriminator="type")
-]
+    auction_data: AuctionData
+
+
+class GamePacket(BaseModel):
+    type: PacketType = "game_packet"
+
+    content: GameData
+
+
+Packet = Annotated[Union[LobbyPacket, GamePacket], Field(discriminator="type")]

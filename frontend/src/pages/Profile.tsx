@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
 import { useEffect } from "react";
 import Header from "../components/Header";
+import useAuth from "../hooks/useAuth";
 
 function Profile() {
-    const { token } = useAuthContext();
+    const { token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {

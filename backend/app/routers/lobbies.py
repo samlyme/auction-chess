@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.dependencies.auth import CurrentUserDep
-from app.dependencies.lobbies import LobbyDep
+from app.dependencies.lobbies import CreateLobbyDep, LobbyDep, UserLobbyDep
 
 import app.schemas.types as api
 from app.utils.exceptions import (
@@ -19,87 +19,55 @@ router = APIRouter(prefix="/lobbies")
 
 # Once a lobby is created, the host must stay connected to the websocket
 @router.post("")
-async def create_lobby(
-    user: CurrentUserDep, lobby_manager: LobbyDep
-) -> api.LobbyProfile:
+async def create_lobby(dep: CreateLobbyDep) -> api.LobbyProfile:
     try:
-        lobby_id: api.LobbyId = await lobby_manager.create(user)
-        return lobby_manager.to_profile(lobby_id)
+        return await dep()
     except LobbyCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
 @router.get("")
-async def get_lobby_by_user_id(
-    user: CurrentUserDep, lobby_manager: LobbyDep
-) -> api.LobbyProfile | None:
-    lobby_id = await lobby_manager.get_lobby_id_by_user_id(user.uuid)
-    if lobby_id is None:
-        return None
-
-    return lobby_manager.to_profile(lobby_id)
+async def get_lobby_by_user_id(lobby: UserLobbyDep) -> api.LobbyProfile | None:
+    return lobby
 
 
 @router.get("/{lobby_id}")
-async def get_lobby(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
-) -> api.LobbyProfile:
-    try:
-        lobby = await lobby_manager.get(lobby_id)
-        if lobby is None:
-            raise LobbyNotFoundError(lobby_id)
-
-        if user == lobby["host"] or user == lobby["guest"]:
-            return lobby_manager.to_profile(lobby_id)
-
-        if lobby["guest"] is None:
-            return await join_lobby(user, lobby_manager, lobby_id)
-
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    except LobbyNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.detail)
+async def get_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile:
+    return lobby.to_profile()
 
 
 @router.post("/{lobby_id}/join")
-async def join_lobby(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
-) -> api.LobbyProfile:
+async def join_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile:
     try:
-        await lobby_manager.join(user, lobby_id)
-        return lobby_manager.to_profile(lobby_id)
-    except (LobbyNotFoundError, LobbyJoinError) as e:
+        await lobby.join(user)
+        return lobby.to_profile()
+    # TODO: Refactor to use app-level exception handlers.
+    except LobbyJoinError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
 @router.post("/{lobby_id}/start")
-async def start_lobby(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
-) -> api.LobbyProfile:
+async def start_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile:
     try:
-        await lobby_manager.start(user, lobby_id)
-        return lobby_manager.to_profile(lobby_id)
+        await lobby.start(user)
+        return lobby.to_profile()
     except (LobbyPermissionError, LobbyStartError) as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
 
 
 @router.post("/{lobby_id}/leave")
-async def leave_lobby(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
-) -> api.LobbyProfile:
+async def leave_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile:
     try:
-        await lobby_manager.leave(user, lobby_id)
-        return lobby_manager.to_profile(lobby_id)
+        await lobby.leave(user)
+        return lobby.to_profile()
     except LobbyLeaveError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
 @router.delete("/{lobby_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_lobby(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId
-) -> None:
+async def delete_lobby(user: CurrentUserDep, lobby: LobbyDep) -> None:
     try:
-        await lobby_manager.delete(user, lobby_id)
+        await lobby.delete(user)
     except LobbyNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.detail)
     except LobbyPermissionError as e:
@@ -107,19 +75,18 @@ async def delete_lobby(
 
 
 @router.post("/{lobby_id}/move")
-async def move(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId, move: api.Move
-) -> None:
+async def move(user: CurrentUserDep, lobby: LobbyDep, move: api.Move) -> None:
+    print("🟡 making move at", lobby.id)
     try:
-        await lobby_manager.make_move(lobby_id, user, move)
+        await lobby.make_move(user, move)
     except IllegalMoveException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
+
 @router.post("/{lobby_id}/bid")
-async def bid(
-    user: CurrentUserDep, lobby_manager: LobbyDep, lobby_id: api.LobbyId, bid: api.Bid
-) -> None:
+async def bid(user: CurrentUserDep, lobby: LobbyDep, bid: api.Bid) -> None:
+    print("🟡 making bid at", lobby.id)
     try:
-        await lobby_manager.make_bid(lobby_id, user, bid)
+        await lobby.make_bid(user, bid)
     except IllegalMoveException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)

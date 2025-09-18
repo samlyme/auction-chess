@@ -3,6 +3,7 @@ import type { LobbyId, LobbyProfile } from "../schemas/types";
 const URL = "/api/lobbies";
 
 export function userLobby(access_token: string): Promise<LobbyProfile | null> {
+    console.trace()
   return fetch(`${URL}`, {
     method: "GET",
     headers: {
@@ -14,6 +15,7 @@ export function userLobby(access_token: string): Promise<LobbyProfile | null> {
 }
 
 export function getLobby(access_token: string, lobbyId: LobbyId): Promise<LobbyProfile> {
+    console.trace()
   return fetch(`${URL}/${lobbyId}`, {
     method: "GET",
     headers: {
@@ -30,6 +32,7 @@ export function getLobby(access_token: string, lobbyId: LobbyId): Promise<LobbyP
 
 // TODO: Add error handling
 export function createLobby(access_token: string): Promise<LobbyProfile | null> {
+    console.trace()
   console.log("Creating lobby with token:", access_token);
 
   return fetch(`${URL}`, {
@@ -47,6 +50,7 @@ export function startLobby(
   access_token: string,
   lobbyId: string
 ): Promise<void> {
+    console.trace()
   return fetch(`${URL}/${lobbyId}/start`, {
     method: "POST",
     headers: {
@@ -63,6 +67,7 @@ export function deleteLobby(
   access_token: string,
   lobbyId: string
 ): Promise<void> {
+    console.trace()
   return fetch(`${URL}/${lobbyId}`, {
     method: "DELETE",
     headers: {
@@ -79,6 +84,7 @@ export function joinLobby(
   access_token: string,
   lobbyId: string
 ): Promise<LobbyProfile> {
+    console.trace()
   return fetch(`${URL}/${lobbyId}/join`, {
     method: "POST",
     headers: {
@@ -92,6 +98,7 @@ export function leaveLobby(
   access_token: string,
   lobbyId: string
 ): Promise<void> {
+    console.trace()
   return fetch(`${URL}/${lobbyId}/leave`, {
     method: "POST",
     headers: {

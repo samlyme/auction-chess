@@ -1,20 +1,18 @@
 import { Link, useNavigate } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
 import { useEffect } from "react";
-import Header from "../components/Header";
+import useAuth from "../hooks/useAuth";
 
 function Home() {
-    const { token } = useAuthContext();
+    const { token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
         if (token) navigate("/lobbies")
-    } ,[])
+    }, [navigate, token])
 
     return (
         <div className="home">
-            <Header />
-            <h1>Welcom to Auction Chess</h1>
+            <h1>Welcome to Auction Chess</h1>
             <Link to="/auth">
                 <h1>login/signup</h1>
             </Link>

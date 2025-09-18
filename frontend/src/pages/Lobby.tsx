@@ -1,49 +1,50 @@
 import { useNavigate, useParams } from "react-router";
-import { useAuthContext } from "../contexts/Auth";
-import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useLobbies from "../hooks/useLobbies";
 import Board from "../components/Board";
 import Menu from "../components/Menu";
 import useGame from "../hooks/useGame";
 import PostGameModal from "../components/PostGameModal";
+import useAuth from "../hooks/useAuth";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function Lobby() {
     const navigate = useNavigate();
     const { lobbyId } = useParams();
     const {startLobby, deleteLobby, leaveLobby} = useLobbies()
 
-    const { phase, outcome } = useGame()
+    const { game } = useGame()
 
-    function getData() {
-        const {user, isLoading: userLoading} = useAuthContext()
-        const { lobby } = useServerUpdatesContext()
 
-        const isLoading = userLoading || !lobby
-        
-        return { isLoading, user, lobby}
-    }
+    const {user, isLoading: userLoading} = useAuth()
+    const {lobby} = useServerUpdates()
+    const isLoading = userLoading || !lobby 
 
-    const {isLoading, user, lobby} = getData()
 
     // Last two are redundant, just to make typechecker happy
     if (isLoading || !lobby || !user) return (
         <div>Loading</div>
     )
 
-    if (lobby.status == "active") return (
-        <div className="lobby">
-            {outcome != "pending" 
-            && <PostGameModal />}
-            <div className="game">
-                <div className={phase === "move" ? "" : "lowlight"}>
-                    <Board />
-                </div>
-                <div className={phase === "bid" ? "" : "lowlight"}>
-                    <Menu />
+
+    if (lobby.status == "active") {
+        if (!game) return (
+            <div>Loading</div>
+        )
+        const { phase, outcome } = game;
+        return (
+            <div className="lobby">
+                {outcome && <PostGameModal />}
+                <div className="game">
+                    <div className={phase === "move" ? "" : "lowlight"}>
+                        <Board />
+                    </div>
+                    <div className={phase === "bid" ? "" : "lowlight"}>
+                        <Menu />
+                    </div>
                 </div>
             </div>
-        </div>
-    )
+        )
+    }
 
     return (
             <div>

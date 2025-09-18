@@ -1,20 +1,24 @@
 import { useState, type FormEvent } from "react";
-import { useAuthContext } from "../contexts/Auth";
-import { useServerUpdatesContext } from "../contexts/ServerUpdates";
 import useGame from "../hooks/useGame";
-import type { Color, UserProfile } from "../schemas/types";
+import type { Bid, Color, UserProfile } from "../schemas/types";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function Menu() {
-  const { lobby } = useServerUpdatesContext();
-  const { user } = useAuthContext();
-  const { userColor, opponentColor, userBalance, opponentBalance, turn } =
-    useGame();
+  const { lobby } = useServerUpdates();
+  const { userColor, game } = useGame();
 
-  if (!lobby || !user) return <div>Loading</div>;
 
-  const opponentProfile: UserProfile | null =
-    userColor == "w" ? lobby.guest : lobby.host;
+  if (!game || !userColor || !lobby) return <div>Loading</div>;
 
+  const opponentColor = userColor == "w" ? "b" : "w";
+  const turn = game.phase == "bid" ? game.bid_turn : game.turn;
+
+
+  const userProfile: UserProfile = userColor == "w" ? game.players.w : game.players.b;
+  const opponentProfile: UserProfile = userColor == "w" ? game.players.b : game.players.w;
+
+  const userBalance: number = userColor == "w" ? game.balances.w : game.balances.b;
+  const opponentBalance: number = userColor == "w" ? game.balances.b : game.balances.w;
   return (
     <div className="menu">
       <div className={turn === opponentColor ? "highlight" : ""}>
@@ -33,7 +37,7 @@ function Menu() {
 
       <div className={turn === userColor ? "highlight" : ""}>
         <PlayerProfile
-          username={user.username}
+          username={userProfile.username}
           color={userColor}
           balance={userBalance}
         />
@@ -63,51 +67,96 @@ function PlayerProfile({
 }
 
 function BiddingMenu() {
-    const { prevBid, phase, userBalance, makeBid } = useGame()
-    const [raiseAmount, setNewRaise] = useState<number>(1)
+    const { makeBid, userColor, game } = useGame()
+    const [bid, setBid] = useState<Bid>({ amount: 0, fold: false })
+
+    if (!game) return (
+      <div>Loading</div>
+    )
+
+    const userBalance = userColor == "w" ? game.balances.w : game.balances.b;
+    const opponentBalance = userColor == "w" ? game.balances.b : game.balances.w;
+  const bidStack = game.auction_data.bid_history[game.auction_data.bid_history.length - 1];
+  let userLastBidAmount = 0;
+  let opponentLastBidAmount = 0;
+  if (bidStack.length >= 1) {
+    if (game.bid_turn == userColor) {
+      opponentLastBidAmount = bidStack[bidStack.length - 1].amount;
+    }
+    else {
+      userLastBidAmount = bidStack[bidStack.length - 1].amount;
+    }
+  }
+
+  if (bidStack.length >= 2) {
+    if (game.bid_turn == userColor) {
+      userLastBidAmount = bidStack[bidStack.length - 2].amount;
+    }
+    else {
+      opponentLastBidAmount = bidStack[bidStack.length - 2].amount;
+    }
+  }
+
+
+    const handleIncrement = (amount: number) => {
+        setBid((prev) => {
+            if (prev.amount + amount > userBalance) {
+              return {amount: userBalance, fold: false}
+            }
+            return {amount: prev.amount + amount, fold: false}
+        });
+    }
+
+    const handleReset = () => {
+      setBid({ amount: opponentLastBidAmount, fold: false})
+    }
+    const handleAllIn = () => {
+      if (opponentLastBidAmount == opponentBalance) {
+        // TODO: fix this unsafe state.
+        setBid({ amount: opponentLastBidAmount + 1, fold: false})
+      }
+      else {
+        setBid({ amount: userBalance < opponentBalance ? userBalance : opponentBalance, fold: false })
+      }
+    }
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        makeBid(prevBid + raiseAmount)
-        setNewRaise(1)
+        handleReset()
+        makeBid(bid)
     };
 
-    const handleIncrement = (amount: number) => {
-        setNewRaise((prev) => {
-            if (prevBid + amount > userBalance) return userBalance - prevBid
-            return prev + amount
-        });
-    }
-    
   return (
-    <form className={`bidding-menu ${phase === "move" ? "lowlight" : ""}`} onSubmit={handleSubmit}>
-      <h3>Last bid: ${prevBid}</h3>
+    <form className={`bidding-menu ${game.phase === "move" ? "lowlight" : ""}`} onSubmit={handleSubmit}>
+      <h3>Your bid: ${userLastBidAmount}</h3>
+      <h3>Opponent bid: ${opponentLastBidAmount}</h3>
 
       <label>
-        <h4>New bid: ${raiseAmount}</h4>
+        <h4>New bid: ${bid.amount}</h4>
         <input
           type="number"
           min="0"
-          value={raiseAmount}
+          value={bid.amount}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const val = parseInt(e.target.value, 10);
-            setNewRaise(isNaN(val) ? 1 : val);
+            setBid({amount: isNaN(val) ? 0 : val, fold: false});
           }}
           placeholder="Raise bid"
         />
       </label>
 
+          {/* TODO: Implement button disable for invalid bid options. */}
       <div>
-        <button type="button" onClick={() => handleIncrement(1)}>
-          +1
+        <button type="button" onClick={() => handleIncrement(-10)}>
+          -10
         </button>
-        <button type="button" onClick={() => handleIncrement(5)}>
-          +5
+        <button type="button" onClick={() => handleReset()}>
+          r
         </button>
-        <button type="button" onClick={() => handleIncrement(20)}>
-          +20
+        <button type="button" onClick={() => handleIncrement(10)}>
+          +10
         </button>
-        <button type="button" onClick={() => handleIncrement(9999999)}>
+        <button type="button" onClick={() => handleAllIn()}>
           ALL IN!!!
         </button>
       </div>
@@ -115,8 +164,8 @@ function BiddingMenu() {
       <div>
         <button type="submit">Bid</button>
         <button type="button" onClick={() => {
-            makeBid(-1)
-            setNewRaise(0)
+            makeBid({amount: 0, fold: true})
+            setBid({amount: 0, fold: false})
         }}>
           Fold
         </button>
