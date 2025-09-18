@@ -5,7 +5,10 @@ import useAuth from "../hooks/useAuth";
 import useServerUpdates from "../hooks/useServerUpdates";
 
 function PostGameModal() {
-    const { outcome, userColor } = useGame()
+    const { game, userColor } = useGame()
+
+    if (!game || !game.outcome) throw new Error("PostGameModal only to be used after outcome.")
+    
     const { user } = useAuth()
     const {startLobby, deleteLobby, leaveLobby} = useLobbies()
     const { lobby } = useServerUpdates()
@@ -13,11 +16,9 @@ function PostGameModal() {
 
     const navigate = useNavigate()
 
-    if (outcome == "pending") throw new Error("Modal only for finished games")
-
     let title: string = ""
-    if (outcome == "draw") title = "Draw."
-    else if (outcome == userColor) title = "You win."
+    if (game.outcome == "draw") title = "Draw."
+    else if (game.outcome == userColor) title = "You win."
     else title = "You lose."
 
     return (

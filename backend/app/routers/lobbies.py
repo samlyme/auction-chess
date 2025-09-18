@@ -75,16 +75,18 @@ async def delete_lobby(user: CurrentUserDep, lobby: LobbyDep) -> None:
 
 
 @router.post("/{lobby_id}/move")
-async def move(user: CurrentUserDep, lobby_manager: LobbyDep, move: api.Move) -> None:
+async def move(user: CurrentUserDep, lobby: LobbyDep, move: api.Move) -> None:
+    print("🟡 making move at", lobby.id)
     try:
-        await lobby_manager.make_move(user, move)
+        await lobby.make_move(user, move)
     except IllegalMoveException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 
 @router.post("/{lobby_id}/bid")
-async def bid(user: CurrentUserDep, lobby_manager: LobbyDep, bid: api.Bid) -> None:
+async def bid(user: CurrentUserDep, lobby: LobbyDep, bid: api.Bid) -> None:
+    print("🟡 making bid at", lobby.id)
     try:
-        await lobby_manager.make_bid(user, bid)
+        await lobby.make_bid(user, bid)
     except IllegalMoveException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)

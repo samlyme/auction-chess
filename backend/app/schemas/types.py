@@ -92,7 +92,7 @@ class LobbyPacket(BaseModel):
     content: LobbyProfile
 
 
-Players = dict[Color, UUID]
+Players = dict[Color, UserProfile]
 Balances = dict[Color, int]
 OpenBidHistory = list[list[Bid]]
 

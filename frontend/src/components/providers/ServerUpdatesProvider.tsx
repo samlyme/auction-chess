@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router"
 import useLobbies from "../../hooks/useLobbies"
-import type { Balances, BoardPieces, Color, GameOutcome, GamePhase, LegalMoves, LobbyProfile, Packet, Players } from "../../schemas/types"
+import type { GameData, LobbyProfile, Packet } from "../../schemas/types"
 import useAuth from "../../hooks/useAuth"
 import { ServerUpdatesContext, type ServerUpdatesContextType } from "../../contexts/ServerUpdates"
 import { parsePacket, websocketFactory } from "../../services/websocket"
@@ -14,18 +14,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: {
     const navigate = useNavigate()
     const { getLobby } = useLobbies()
     const [lobby, setLobby] = useState<LobbyProfile | null>(null)
-    const [board, setBoard] = useState<BoardPieces | null>(null)
-    const [moves, setMoves] = useState<LegalMoves | null>(null)
-
-    const [players, setPlayers] = useState<Players | null>(null)
-    const [balances, setBalances] = useState<Balances | null>(null)
-
-    const [outcome, setOutcome] = useState<GameOutcome>("pending")
-
-    const [phase, setPhase] = useState<GamePhase>("bid")
-    const [turn, setTurn] = useState<Color>("w")
-
-    const [prevBid, setPrevBid] = useState<number>(0)
+    const [game, setGame] = useState<GameData | null>(null)
 
     const {token} = useAuth()
     const wsRef = useRef<WebSocket | null>(null)
@@ -49,18 +38,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: {
                         setLobby(data.content)
                     }
                     else if (data.type == "game_packet") {
-                        setPhase(data.phase)
-                        setTurn(data.turn)
-
-                        setOutcome(data.outcome)
-
-                        setPrevBid(data.prev_bid)
-
-                        setBoard(data.board)
-                        setMoves(data.moves)
-                        
-                        setPlayers(data.players)
-                        setBalances(data.balances)
+                        setGame(data.content)
                     }
                 }
 
@@ -76,7 +54,7 @@ export function ServerUpdatesProvider({ lobbyId, children }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const context: ServerUpdatesContextType = { lobby, phase, turn, outcome, board, moves, prevBid, players, balances }
+    const context: ServerUpdatesContextType = { lobby, game }
 
     return (
         <ServerUpdatesContext value={context}>

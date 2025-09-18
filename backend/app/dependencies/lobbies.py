@@ -182,10 +182,10 @@ class Lobby:
                 players={
                     "w"
                     if self.game_options.host_color
-                    else "b": self.host.uuid,
+                    else "b": self.host,
                     "b"
                     if self.game_options.host_color
-                    else "w": self.guest.uuid,
+                    else "w": self.guest,
                 },
                 balances={"w" if color else "b" : balance for color, balance in self.game.balances.items()},
                 auction_data=api.OpenFirst(
@@ -207,32 +207,32 @@ class Lobby:
         if not self.game:
             raise Exception("Game not started")
 
-        if self.user_color(user) != self.game.turn:
+        if self.user_color(user) != ("w" if self.game.turn else "b"):
             raise IllegalMoveError("Not your turn.")
 
         # TODO: implement player source validation
+        print("🟡 pushing move", move)
         self.game.push_uci(move)
         await self.broadcast_game()
 
     async def make_bid(self, user: api.UserProfile, bid: api.Bid):
         if not self.game:
             raise Exception("Game not started")
-
-        if self.user_color(user) != self.game.turn:
+        
+        print("🟡 User color in make_bid:", self.user_color(user))
+        if self.user_color(user) != ("w" if self.game.bid_turn else "b"):
             raise IllegalMoveError("Not your turn.")
 
         self.game.push_bid(bid)
         await self.broadcast_game()
 
-    def user_color(self, user: api.UserProfile) -> api.Color:
+    def user_color(self, user: api.UserProfile) -> api.Color: # TODO: implement better typing
         if user == self.host:
-            user_color = self.game_options.host_color
+            return self.game_options.host_color
         elif user == self.guest:
-            user_color = not self.game_options.host_color
+            return "w" if self.game_options.host_color == "b" else "b"
         else:
             raise LobbyPermissionError(user, self.id)
-
-        return "w" if user_color else "b"
 
 
 # NOTE: In future, this should be in redis

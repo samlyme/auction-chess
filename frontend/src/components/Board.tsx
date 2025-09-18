@@ -1,12 +1,13 @@
 import useGame from "../hooks/useGame";
-import type { BoardPosition, Piece } from "../schemas/types";
-import { pieceSVGMap } from "../utils/chess";
+import type { Move, PieceSymbol } from "../schemas/types";
+import { boardPositionToIndex, indexToBoardPosition, pieceSVGMap, pieceSymbolColor } from "../utils/chess";
 import "./Board.css";
 import useMoves from "../hooks/useMoves";
 
 function Board() {
-  const { board, moves, userColor } = useGame();
-  const { selectedSquare, handleSquareClick } = useMoves();
+  const { game, userColor } = useGame();
+  const {board, moves} = game!;
+  const { selectedPosition, handleSquareClick } = useMoves();
 
   if (!board || !moves) return (
     <div>Loading board</div>
@@ -17,9 +18,23 @@ function Board() {
     for (let col = 0; col <= 7; col++) {
       const colorClass = (row + col) % 2 == 0 ? "light-square" : "dark-square";
 
-      const legalMoves: BoardPosition[] | null = selectedSquare && moves[selectedSquare.row][selectedSquare.col]
 
       const piece = board[row][col];
+
+      let isSelected: boolean = false;
+      let isLegal: boolean = false;
+      if (selectedPosition) {
+        const {row: selectedRow, col: selectedCol} = boardPositionToIndex(selectedPosition)
+        if (row === selectedRow && col == selectedCol) {
+          isSelected = true;
+        }
+
+        const moveUCI: Move = selectedPosition + indexToBoardPosition(row, col);
+        if (moves.includes(moveUCI)) {
+          isLegal = true;
+        }
+      }
+
 
       squares.push(
         <Square
@@ -27,18 +42,13 @@ function Board() {
           colorClass={colorClass}
           piece={piece}
           isSelected={
-            selectedSquare != null &&
-            selectedSquare.row == row &&
-            selectedSquare.col == col
+            isSelected
           }
           isLegal={
-            legalMoves != null &&
-            legalMoves.some(
-              (elem: BoardPosition) => elem.row == row &&  elem.col == col
-            )
+            isLegal
           }
 
-          onClick={() => handleSquareClick({ row, col })}
+          onClick={() => handleSquareClick(indexToBoardPosition(row, col))}
         />
       );
     }
@@ -62,7 +72,7 @@ function Square({
 }: {
   key: string;
   colorClass: string;
-  piece: Piece | null;
+  piece: PieceSymbol | null;
   isSelected: boolean;
   isLegal: boolean;
   onClick: () => void;
@@ -75,8 +85,8 @@ function Square({
     >
       {piece && (
         <img
-          src={pieceSVGMap[`${piece.type}${piece.color}`]}
-          alt={`${piece.color}-${piece.type}`} // Provide good alt text
+          src={pieceSVGMap[`${piece.toLowerCase()}${pieceSymbolColor(piece)}`]}
+          alt={`${piece}`} // Provide good alt text
           className="piece-image"
         />
       )}

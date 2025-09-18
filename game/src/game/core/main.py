@@ -155,7 +155,9 @@ class OpenFirstAuctionChess(AuctionChess):
             self.phase = "move"
 
             self.turn = not self.bid_turn
-            self.balances[not self.bid_turn] -= bid_stack[-1].amount
+
+            if bid_stack:
+                self.balances[not self.bid_turn] -= bid_stack[-1].amount
 
             # NOTE: The player who folds starts the next bid so we do not swap self.bid_turn
             bid_stack.append(bid)

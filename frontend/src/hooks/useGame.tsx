@@ -1,10 +1,8 @@
 import { useCallback } from "react";
 import type {
-  BoardPieces,
+  Bid,
   Color,
-  GameOutcome,
-  GamePhase,
-  LegalMoves,
+  GameData,
   Move,
 } from "../schemas/types";
 import { sendBid, sendMove } from "../services/game";
@@ -13,23 +11,15 @@ import useAuth from "./useAuth";
 import useServerUpdates from "./useServerUpdates";
 
 interface UseGameReturn {
-  board: BoardPieces | null;
-  moves: LegalMoves | null;
   makeMove: (move: Move) => void;
-  makeBid: (amount: number) => void;
-  prevBid: number;
-  outcome: GameOutcome;
-  userColor: Color;
-  opponentColor: Color;
-  userBalance: number;
-  opponentBalance: number;
-  phase: GamePhase;
-  turn: Color;
+  makeBid: (bid: Bid) => void;
+  game: GameData | null;
+  userColor: Color | null;
 }
 
 function useGame(): UseGameReturn {
-  const { board, moves, outcome, players, prevBid, balances, phase, turn } =
-    useServerUpdates();
+  const { game } = useServerUpdates();
+
   const { token, user } = useAuth();
   const { lobbyId } = useParams();
 
@@ -46,9 +36,9 @@ function useGame(): UseGameReturn {
       });
   }, [lobbyId, token]);
 
-  const makeBid = useCallback((amount: number): void => {
-    console.log("Making bid", amount);
-    sendBid(token!, lobbyId, { amount })
+  const makeBid = useCallback((bid: Bid): void => {
+    console.log("Making bid", bid);
+    sendBid(token!, lobbyId, bid)
       .then((res: unknown) => {
         console.log("Sent bid", res);
       })
@@ -57,46 +47,9 @@ function useGame(): UseGameReturn {
       });
   }, [lobbyId, token]);
 
-  if (!players || !balances)
-    return {
-      board,
-      moves,
-      makeMove,
-      makeBid,
-      outcome,
-      prevBid,
-      userColor: "w",
-      userBalance: 0,
-      opponentColor: "b",
-      opponentBalance: 0,
-      phase,
-      turn,
-    };
+  if (game && user) return {makeMove, makeBid, game, userColor: user.uuid === game.players.w.uuid ? "w" : "b"}
 
-  if (user!.uuid !== players.w && user!.uuid !== players.b)
-    throw new Error("User not in right game.");
-
-  const userColor: Color = user!.uuid == players.w ? "w" : "b";
-  const opponentColor: Color = user!.uuid == players.w ? "b" : "w";
-
-  const userBalance: number = user!.uuid == players.w ? balances.w : balances.b;
-  const opponentBalance: number =
-    user!.uuid == players.w ? balances.b : balances.w;
-
-  return {
-    board,
-    moves,
-    makeMove,
-    makeBid,
-    outcome,
-    prevBid,
-    userColor,
-    opponentColor,
-    userBalance,
-    opponentBalance,
-    phase,
-    turn,
-  };
+  return {makeMove, makeBid, game, userColor: null}
 }
 
 export default useGame;

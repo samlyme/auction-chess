@@ -12,7 +12,8 @@ function Lobby() {
     const { lobbyId } = useParams();
     const {startLobby, deleteLobby, leaveLobby} = useLobbies()
 
-    const { phase, outcome } = useGame()
+    const { game } = useGame()
+
 
     const {user, isLoading: userLoading} = useAuth()
     const {lobby} = useServerUpdates()
@@ -24,20 +25,26 @@ function Lobby() {
         <div>Loading</div>
     )
 
-    if (lobby.status == "active") return (
-        <div className="lobby">
-            {outcome != "pending" 
-            && <PostGameModal />}
-            <div className="game">
-                <div className={phase === "move" ? "" : "lowlight"}>
-                    <Board />
-                </div>
-                <div className={phase === "bid" ? "" : "lowlight"}>
-                    <Menu />
+
+    if (lobby.status == "active") {
+        if (!game) return (
+            <div>Loading</div>
+        )
+        const { phase, outcome } = game;
+        return (
+            <div className="lobby">
+                {outcome && <PostGameModal />}
+                <div className="game">
+                    <div className={phase === "move" ? "" : "lowlight"}>
+                        <Board />
+                    </div>
+                    <div className={phase === "bid" ? "" : "lowlight"}>
+                        <Menu />
+                    </div>
                 </div>
             </div>
-        </div>
-    )
+        )
+    }
 
     return (
             <div>

@@ -1,59 +1,68 @@
 // src/hooks/useChessMoves.ts
 import { useState, useCallback } from "react";
-import type { BoardPosition, Piece } from "../schemas/types"; // Import your types
+import type { BoardPosition, Move, PieceSymbol } from "../schemas/types"; // Import your types
 import useGame from "./useGame";
+import { boardPositionToIndex, pieceSymbolColor } from "../utils/chess";
 
 interface UseMovesReturn {
-  selectedSquare: BoardPosition | null;
+  selectedPosition: BoardPosition | null;
   handleSquareClick: (p: BoardPosition) => void;
 }
 
 function useMoves(): UseMovesReturn {
-  const { board, moves, makeMove, userColor } = useGame()
-  const [selectedSquare, setSelectedSquare] = useState<BoardPosition | null>(
+  const { game, makeMove, userColor } = useGame()
+  const {board, moves} = game!;
+  const [selectedPosition, setSelectedPosition] = useState<BoardPosition | null>(
     null
   );
 
   const handleSquareClick = useCallback(
-    ({ row, col }: BoardPosition) => {
-      console.log("Clicked sqaure: ", row, col);
+    (pos: BoardPosition) => {
+      console.log("Clicked sqaure: ", pos);
 
       if (!board || !moves) return;
 
-      const piece: Piece | null = board[row][col]
-      if (!selectedSquare && !piece) return
-      if (!selectedSquare && piece && piece.color !== userColor) return
+      const {row: newRow, col: newCol} = boardPositionToIndex(pos)
+
+      const piece: PieceSymbol | null = board[newRow][newCol]
+      if (!selectedPosition && !piece) return
+
+      // if player is white, and selected piece is not white, early return
+      // similarly, if player is black, and selected piece is not black, early return.
+      if (!selectedPosition && piece && userColor !== pieceSymbolColor(piece)) return
 
       // Base case, nothing is currently selected and clicked on own piece
-      if (!selectedSquare && piece && piece.color === userColor) {
-        setSelectedSquare({ row, col })
+      if (!selectedPosition && piece && pieceSymbolColor(piece) === userColor) {
+        setSelectedPosition(pos)
         return;
       }
 
       // Clicked on currently selected square
-      if (selectedSquare && selectedSquare.row == row && selectedSquare.col == col) {
-        setSelectedSquare(null);
-        return;
+      if (selectedPosition) {
+        const {row: oldRow, col: oldCol} = boardPositionToIndex(selectedPosition)
+        if (oldRow == newRow && oldCol == newCol){
+          setSelectedPosition(null);
+          return;
+        }
       }
 
       // Something has been selected, and you clicked on another square.
       // This "tries" to make a move. If move is legal, a request is made.
       // Either case, sets the selected back to null.
-      if (selectedSquare){
-        const legalMoves: BoardPosition[] = moves[selectedSquare.row][selectedSquare.col]
-        if (legalMoves.some((elem: BoardPosition) => elem.row === row && elem.col === col)) {
-          makeMove({
-            start: selectedSquare,
-            end: { row, col },
-          });
+      if (selectedPosition){
+
+        const moveUCI: Move = selectedPosition + pos;
+        if (moves.includes(moveUCI)) {
+          makeMove(moveUCI)
         }
-        setSelectedSquare(null);
+        setSelectedPosition(null);
       }
     },
-    [board, selectedSquare, makeMove]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [board, selectedPosition, makeMove]
   );
 
-  return { selectedSquare, handleSquareClick };
+  return {  selectedPosition, handleSquareClick };
 }
 
 export default useMoves;

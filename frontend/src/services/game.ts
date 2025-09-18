@@ -4,14 +4,13 @@ const URL = "/api/lobbies"
 
 export function sendMove(access_token: string, lobbyId: LobbyId, move: Move) {
     console.trace()
-  return fetch(`${URL}/${lobbyId}/move`, {
+  return fetch(`${URL}/${lobbyId}/move?move=${move}`, {
     method: "POST",
     headers: {
       accept: "application/json",
       Authorization: `Bearer ${access_token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(move),
   }).then((res: Response) => res.json());
 }
 
