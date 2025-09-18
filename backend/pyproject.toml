@@ -17,4 +17,4 @@ dependencies = [
 dev = ["ruff"]
 
 [tool.uv.sources]
-game = { path = "../game" }
+game = { path = "../game", editable = true }
