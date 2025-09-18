@@ -190,7 +190,7 @@ class Lobby:
                 balances=self.game.balances,
                 auction_data=api.OpenFirst(
                     bid_history=[
-                        [api.Bid(bid.amount, bid.fold) for bid in bid_stack]
+                        [api.Bid(amount=bid.amount, fold=bid.fold) for bid in bid_stack]
                         for bid_stack in self.game.bid_history
                     ]
                 ),

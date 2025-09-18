@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import Annotated, Literal, Union
 from uuid import UUID
 from pydantic import BaseModel, Field
-import pydantic
 
 from game.core.main import AuctionStyle, Bid as GameBid
 from chess import Color, WHITE, BLACK  # noqa: F401
+import pydantic
 
 
 # Users and such
@@ -51,26 +51,23 @@ GamePhase = Literal["bid", "move"]
 GameOutcome = Color | None
 
 
-class Player(BaseModel):
-    color: Color
-    uuid: UUID
+BoardPieces = list[list[PeiceSymbols | None]]
+Move = str  # must be valid UCI
 
 
-# TODO: At the api level, bids and moves do not need to include the current user.
-# But somewhere down the line, maybe at the LobbyDep level, we would need to
-# validate the "source" of the bid and move request.
 @pydantic.dataclasses.dataclass(frozen=True)
 class Bid(GameBid):
-    pass
+    """
+    # The inheritance takes care of it. A lil cursed ik.
+    amount: int
+    fold: bool
+    """
 
-
-BoardPieces = list[list[PeiceSymbols | None]]
-
-Move = str # must be valid UCI
 
 LobbyIdLength = 5
 LobbyId = str
 LobbyStatus = Literal["active", "pending"]
+
 
 class LobbyOptions(BaseModel):
     is_public: bool = True
@@ -78,6 +75,7 @@ class LobbyOptions(BaseModel):
 
 class GameOptions(BaseModel):
     host_color: Color
+
 
 class LobbyProfile(BaseModel):
     id: LobbyId
