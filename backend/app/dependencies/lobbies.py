@@ -102,6 +102,7 @@ class Lobby:
         self.status = "active"
         self.game = game_factory(self.game_options)
         await self.broadcast_lobby()
+        await self.broadcast_game()
 
     def to_profile(self) -> api.LobbyProfile:
         return api.LobbyProfile(
@@ -115,6 +116,10 @@ class Lobby:
             self.guest_ws = websocket
         else:
             raise LobbyPermissionError(user, self.id)
+
+        await self.broadcast_lobby()
+        if self.game:
+            await self.broadcast_game()
 
     async def remove_websocket(self, user: api.UserProfile) -> None:
         if user == self.host:
@@ -138,8 +143,12 @@ class Lobby:
             raise Exception("Game not initiallized.")
 
         return [
-            [(lambda x: x.symbol() if x else None)(self.game.piece_at(rank * 8 + file))]
-            for file in range(8)
+            [
+                (lambda x: x.symbol() if x else None)(
+                    self.game.piece_at(rank * 8 + file)
+                )
+                for file in range(8)
+            ]
             for rank in range(8)
         ]  # type: ignore
 
