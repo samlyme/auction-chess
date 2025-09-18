@@ -45,10 +45,9 @@ class TokenResponse(BaseModel):
 
 # For the love of god please keep types here
 
-PieceType = Literal["p", "r", "n", "b", "q", "k"]
-PeiceSymbols = PieceType | Literal["P", "R", "N", "B", "Q", "K"]
+PeiceSymbols = Literal["p", "r", "n", "b", "q", "k", "P", "R", "N", "B", "Q", "K"]
 GamePhase = Literal["bid", "move"]
-GameOutcome = Color | None
+GameOutcome = Color | Literal["draw"] | None
 
 
 BoardPieces = list[list[PeiceSymbols | None]]
@@ -70,7 +69,7 @@ LobbyStatus = Literal["active", "pending"]
 
 
 class LobbyOptions(BaseModel):
-    is_public: bool = True
+    is_public: bool
 
 
 class GameOptions(BaseModel):
