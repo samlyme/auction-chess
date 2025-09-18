@@ -6,11 +6,20 @@ from app.dependencies.auth import CurrentUserDep
 from game.main import AuctionChess
 
 import app.schemas.types as api
-from app.utils.exceptions import LobbyCreateError, LobbyJoinError, LobbyLeaveError, LobbyNotFoundError, LobbyPermissionError, LobbyStartError
+from app.utils.exceptions import (
+    LobbyCreateError,
+    LobbyJoinError,
+    LobbyLeaveError,
+    LobbyNotFoundError,
+    LobbyPermissionError,
+    LobbyStartError,
+)
 from app.utils.lobbies import game_factory, generate_lobby_id
+
 
 class Lobby:
     """Recommended to use named function args"""
+
     def __init__(
         self,
         manager: "LobbyManager",
@@ -23,10 +32,8 @@ class Lobby:
         guest: api.UserProfile | None = None,
         guest_ws: WebSocket | None = None,
         # TODO: Implement game options
-        game_options: api.GameOptions = api.GameOptions(
-            host_color=api.WHITE
-        ),
-        game: AuctionChess | None = None
+        game_options: api.GameOptions = api.GameOptions(host_color=api.WHITE),
+        game: AuctionChess | None = None,
     ) -> None:
         self.manager: "LobbyManager" = manager
         self.id: api.LobbyId = id
@@ -34,24 +41,24 @@ class Lobby:
         self.lobby_options: Any = lobby_options
 
         self.status: api.LobbyStatus = status
-        self.host_ws: WebSocket | None  = host_ws
-        
-        self.guest: api.UserProfile | None  = guest
+        self.host_ws: WebSocket | None = host_ws
+
+        self.guest: api.UserProfile | None = guest
         self.guest_ws: WebSocket | None = guest_ws
 
-        
-        self.game_options: api.GameOptions  = game_options
+        self.game_options: api.GameOptions = game_options
 
         self.game: AuctionChess | None = game
 
-        
     async def delete(self, user: api.UserProfile) -> None:
         if user != self.host:
             raise LobbyPermissionError(user, self.id)
 
         await self.manager._delete(self.id)
-    
-    async def set_lobby_options(self, host: api.UserProfile, lobby_options: Any) -> None:
+
+    async def set_lobby_options(
+        self, host: api.UserProfile, lobby_options: Any
+    ) -> None:
         if host != self.host:
             raise LobbyPermissionError(host, self.id)
 
@@ -61,21 +68,21 @@ class Lobby:
     async def set_game_options(self, host: api.UserProfile, game_options: Any) -> None:
         if host != self.host:
             raise LobbyPermissionError(host, self.id)
-        
+
         # TODO: make this actually do something.
         self.game_options = game_options
-    
+
     async def join(self, guest: api.UserProfile) -> None:
         if self.guest:
             raise LobbyJoinError(guest, self.id, "Lobby already full")
-        
-        self.guest = guest 
+
+        self.guest = guest
         self.manager._add_user(guest, self.id)
 
     async def leave(self, user: api.UserProfile) -> None:
         if user == self.host:
             raise LobbyLeaveError(user, self.id, "Host can not leave lobby.")
-        
+
         if user != self.guest:
             raise LobbyLeaveError(user, self.id, "User is not guest of this lobby.")
 
@@ -96,10 +103,7 @@ class Lobby:
 
     def to_profile(self) -> api.LobbyProfile:
         return api.LobbyProfile(
-            id=self.id,
-            status=self.status,
-            host=self.host,
-            guest=self.guest
+            id=self.id, status=self.status, host=self.host, guest=self.guest
         )
 
     async def set_websocket(self, websocket: WebSocket, user: api.UserProfile) -> None:
@@ -109,7 +113,7 @@ class Lobby:
             self.guest_ws = websocket
         else:
             raise LobbyPermissionError(user, self.id)
-    
+
     async def remove_websocket(self, user: api.UserProfile) -> None:
         if user == self.host:
             self.host_ws = None
@@ -126,20 +130,17 @@ class Lobby:
             await self.host_ws.send_text(data)
         if self.guest_ws:
             await self.guest_ws.send_text(data)
-    
+
     def serialize_board(self) -> api.BoardPieces:
         if not self.game:
             raise Exception("Game not initiallized.")
-            
+
         return [
-            [
-                (lambda x: x.symbol() if x else None)
-                (self.game.piece_at(rank*8 + file))
-            ] 
+            [(lambda x: x.symbol() if x else None)(self.game.piece_at(rank * 8 + file))]
             for file in range(8)
             for rank in range(8)
-        ] # type: ignore
-                
+        ]  # type: ignore
+
     async def broadcast_game(self):
         if not self.game:
             raise Exception("Game not initiallized")
@@ -149,23 +150,29 @@ class Lobby:
 
         packet: api.GamePacket = api.GamePacket(
             content=api.GameData(
-                outcome=(lambda o: o.winner if o else None)(self.game.outcome()), # TODO: fix this
+                outcome=(lambda o: o.winner if o else None)(
+                    self.game.outcome()
+                ),  # TODO: fix this
                 phase=self.game.phase,
                 bid_turn=self.game.bid_turn,
                 turn=self.game.turn,
                 board=self.serialize_board(),
                 moves=[move.uci() for move in self.game.legal_moves],
                 players={
-                    api.WHITE if self.game_options.host_color else api.BLACK: self.host.uuid, 
-                    api.BLACK if self.game_options.host_color else api.WHITE: self.guest.uuid
-                }, 
+                    api.WHITE
+                    if self.game_options.host_color
+                    else api.BLACK: self.host.uuid,
+                    api.BLACK
+                    if self.game_options.host_color
+                    else api.WHITE: self.guest.uuid,
+                },
                 balances=self.game.balances,
                 auction_data=api.OpenFirst(
                     bid_history=[
-                        [api.Bid(bid.amount, bid.fold) for bid in bid_stack] 
+                        [api.Bid(bid.amount, bid.fold) for bid in bid_stack]
                         for bid_stack in self.game.bid_history
                     ]
-                )
+                ),
             )
         )
 
@@ -175,8 +182,6 @@ class Lobby:
         if self.guest_ws:
             await self.guest_ws.send_text(data)
 
-        
-
     async def make_move(self, user: api.UserProfile, move: api.Move):
         if not self.game:
             raise Exception("Game not started")
@@ -184,15 +189,14 @@ class Lobby:
         # TODO: implement player source validation
         self.game.push_uci(move.uci())
         await self.broadcast_game()
-    
+
     async def make_bid(self, user: api.UserProfile, bid: api.Bid):
         if not self.game:
             raise Exception("Game not started")
-        
+
         # TODO: implement player source validation
         self.game.push_bid(bid)
         await self.broadcast_game()
-        
 
 
 # NOTE: In future, this should be in redis
@@ -203,7 +207,7 @@ class LobbyManager:
 
     async def get(self, lobby_id: api.LobbyId) -> Lobby | None:
         return self.lobbies.get(lobby_id)
-    
+
     async def get_lobby_id_by_user_id(self, user_id: UUID) -> api.LobbyId | None:
         return self.active_users.get(user_id)
 
@@ -214,9 +218,11 @@ class LobbyManager:
 
     def _remove_user(self, user: api.UserProfile):
         if user.uuid not in self.active_users:
-            raise Exception("_remove_user called with user that is not currently active.")
+            raise Exception(
+                "_remove_user called with user that is not currently active."
+            )
         del self.active_users[user.uuid]
-            
+
     async def _delete(self, lobby_id: api.LobbyId):
         lobby = await self.get(lobby_id)
         if not lobby:
@@ -235,15 +241,11 @@ class LobbyManager:
 
     async def create(self, host: api.UserProfile) -> api.LobbyId:
         if host.uuid in self.active_users:
-            raise LobbyCreateError(
-                user=host, 
-                lobby_id=self.active_users[host.uuid]
-            )
+            raise LobbyCreateError(user=host, lobby_id=self.active_users[host.uuid])
 
         lobby_id = generate_lobby_id()
         while lobby_id in self.lobbies:
             lobby_id = generate_lobby_id()
-
 
         self.lobbies[lobby_id] = Lobby(self, lobby_id, host, {"is_public": True})
         self._add_user(host, lobby_id)
@@ -251,30 +253,43 @@ class LobbyManager:
         return lobby_id
 
 
-
 lobby_manager = LobbyManager()
+
 
 async def get_lobby(lobby_id: api.LobbyId) -> Lobby:
     out = await lobby_manager.get(lobby_id)
     if not out:
         raise LobbyNotFoundError(lobby_id)
     return out
+
+
 LobbyDep = Annotated[Lobby, Depends(get_lobby)]
 
-def create_lobby_factory(user: CurrentUserDep) -> Callable[[], Awaitable[api.LobbyProfile]]:
+
+def create_lobby_factory(
+    user: CurrentUserDep,
+) -> Callable[[], Awaitable[api.LobbyProfile]]:
     async def f():
         lobby_id = await lobby_manager.create(user)
 
         out = await lobby_manager.get(lobby_id)
         if not out:
             raise LobbyCreateError(user, lobby_id)
-        
+
         return out.to_profile()
+
     return f
-CreateLobbyDep = Annotated[Callable[[], Awaitable[api.LobbyProfile]], Depends(create_lobby_factory)]
+
+
+CreateLobbyDep = Annotated[
+    Callable[[], Awaitable[api.LobbyProfile]], Depends(create_lobby_factory)
+]
+
 
 async def get_user_lobby(user: CurrentUserDep) -> api.LobbyProfile | None:
-    lobby_id: api.LobbyId | None = await lobby_manager.get_lobby_id_by_user_id(user.uuid)
+    lobby_id: api.LobbyId | None = await lobby_manager.get_lobby_id_by_user_id(
+        user.uuid
+    )
     if not lobby_id:
         return None
 
@@ -283,4 +298,6 @@ async def get_user_lobby(user: CurrentUserDep) -> api.LobbyProfile | None:
         raise Exception("Lobby should exist but doesnt")
 
     return lobby.to_profile()
+
+
 UserLobbyDep = Annotated[api.LobbyProfile | None, Depends(get_user_lobby)]

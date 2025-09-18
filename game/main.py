@@ -8,7 +8,8 @@ import chess
 # This should be done by using COMPOSITION. Honestly we should've started off
 # with composition.
 
-# The PsuedoChess and and regular chess board should be injected into the 
+
+# The PsuedoChess and and regular chess board should be injected into the
 # Auction chess class.
 class PseudoChess(chess.Board):
     """
@@ -30,7 +31,9 @@ class PseudoChess(chess.Board):
         return self.has_pseudo_legal_en_passant()
 
     def generate_legal_moves(
-        self, from_mask: chess.Bitboard = chess.BB_ALL, to_mask: chess.Bitboard = chess.BB_ALL
+        self,
+        from_mask: chess.Bitboard = chess.BB_ALL,
+        to_mask: chess.Bitboard = chess.BB_ALL,
     ) -> Iterator[chess.Move]:
         if self.is_variant_end():
             return
@@ -68,6 +71,7 @@ class PseudoChess(chess.Board):
 class Bid:
     amount: int
     fold: bool
+
 
 AuctionStyle = Literal[
     "open_first",
@@ -164,7 +168,9 @@ class OpenFirstAuctionChess(AuctionChess):
         if bid.amount >= self.balances[not self.bid_turn]:
             self.phase = "move"
             self.turn = self.bid_turn
-            self.balances[self.bid_turn] -= bid.amount # Needed to keep min_bid() functional
+            self.balances[self.bid_turn] -= (
+                bid.amount
+            )  # Needed to keep min_bid() functional
             bid_stack.append(bid)
 
             self.bid_history.append([])

@@ -65,9 +65,7 @@ async def leave_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile
 
 
 @router.delete("/{lobby_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_lobby(
-    user: CurrentUserDep, lobby: LobbyDep
-) -> None:
+async def delete_lobby(user: CurrentUserDep, lobby: LobbyDep) -> None:
     try:
         await lobby.delete(user)
     except LobbyNotFoundError as e:
@@ -82,6 +80,7 @@ async def move(user: CurrentUserDep, lobby_manager: LobbyDep, move: api.Move) ->
         await lobby_manager.make_move(user, move)
     except IllegalMoveException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
 
 @router.post("/{lobby_id}/bid")
 async def bid(user: CurrentUserDep, lobby_manager: LobbyDep, bid: api.Bid) -> None:
