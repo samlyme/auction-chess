@@ -139,6 +139,7 @@ function BiddingMenu() {
         />
       </label>
 
+          {/* TODO: Implement button disable for invalid bid options. */}
       <div>
         <button type="button" onClick={() => handleIncrement(-10)}>
           -10
