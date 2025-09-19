@@ -76,7 +76,6 @@ async def delete_lobby(user: CurrentUserDep, lobby: LobbyDep) -> None:
 
 @router.post("/{lobby_id}/move")
 async def move(user: CurrentUserDep, lobby: LobbyDep, move: api.Move) -> None:
-    print("🟡 making move at", lobby.id)
     try:
         await lobby.make_move(user, move)
     except IllegalMoveException as e:
@@ -85,7 +84,6 @@ async def move(user: CurrentUserDep, lobby: LobbyDep, move: api.Move) -> None:
 
 @router.post("/{lobby_id}/bid")
 async def bid(user: CurrentUserDep, lobby: LobbyDep, bid: api.Bid) -> None:
-    print("🟡 making bid at", lobby.id)
     try:
         await lobby.make_bid(user, bid)
     except IllegalMoveException as e:

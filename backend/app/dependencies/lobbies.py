@@ -210,8 +210,6 @@ class Lobby:
         if self.user_color(user) != ("w" if self.game.turn else "b"):
             raise IllegalMoveError("Not your turn.")
 
-        # TODO: implement player source validation
-        print("🟡 pushing move", move)
         self.game.push_uci(move)
         await self.broadcast_game()
 
@@ -219,7 +217,6 @@ class Lobby:
         if not self.game:
             raise Exception("Game not started")
         
-        print("🟡 User color in make_bid:", self.user_color(user))
         if self.user_color(user) != ("w" if self.game.bid_turn else "b"):
             raise IllegalMoveError("Not your turn.")
 
