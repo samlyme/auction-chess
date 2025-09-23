@@ -1,5 +1,3 @@
-$schema = "https://railway.com/railway.schema.json"
-
 [build]
 # Optional: which files should trigger a rebuild
 watchPatterns = [
