@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13"
 
 [manifest]
@@ -60,7 +60,7 @@ requires-dist = [
     { name = "bcrypt", specifier = ">=4.3.0" },
     { name = "chess", specifier = ">=1.11.2" },
     { name = "fastapi", extras = ["standard"] },
-    { name = "game", virtual = "game" },
+    { name = "game", editable = "game" },
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
@@ -242,7 +242,7 @@ wheels = [
 [[package]]
 name = "game"
 version = "0.1.0"
-source = { virtual = "game" }
+source = { editable = "game" }
 dependencies = [
     { name = "chess" },
 ]
