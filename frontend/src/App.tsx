@@ -12,9 +12,16 @@ import LayoutWithHeader from "./layouts/LayoutWithHeader";
 
 function App() {
   return (
-    <MainContext>
-      <Content/>
-    </MainContext>
+    // The wrapper divs are used for the sizing.
+    <div className="fullscreen-container">
+      <div className="app-scaler">
+        <div className="app">
+          <MainContext>
+            <Content/>
+          </MainContext>
+        </div>
+      </div>
+    </div>
   )
 }
 

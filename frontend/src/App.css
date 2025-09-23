@@ -13,8 +13,9 @@
 
 
 /* pin the menu to the right of the board */
-.game .menu {
+.menu {
   display: flex;
+  width: 40vmin; 
   flex-direction: column;
   flex: 0 0 300px;            /* fixed width (adjust as needed) */
   margin-left: 20px;          /* gap between board & menu */
@@ -27,7 +28,6 @@
 }
 
 .lowlight {
-  background:#000;
   opacity:0.5;
   cursor: not-allowed;
 }
