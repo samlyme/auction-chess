@@ -4,11 +4,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 import jwt
 from sqlalchemy import select
 
-from app.schemas.types import JWTPayload, TokenResponse
-from app.dependencies.auth import AuthDep
-from app.dependencies.db import DBDep
-from app.models.models import User
-from app.utils.auth import decode_jwt, encode_jwt, verify_password
+from backend.app.schemas.types import JWTPayload, TokenResponse
+from backend.app.dependencies.auth import AuthDep
+from backend.app.dependencies.db import DBDep
+from backend.app.models.models import User
+from backend.app.utils.auth import decode_jwt, encode_jwt, verify_password
 
 router = APIRouter(prefix="")
 

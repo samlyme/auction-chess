@@ -2,8 +2,8 @@ from datetime import datetime
 import uuid as uuid_
 from sqlalchemy import UUID, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from app.schemas.types import UserProfile
-from app.dependencies.db import Base
+from backend.app.schemas.types import UserProfile
+from backend.app.dependencies.db import Base
 
 class User(Base):
     __tablename__ = "User"

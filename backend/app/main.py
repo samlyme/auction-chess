@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import lobbies, users, websocket
-from app.dependencies.db import init_db
-from app.routers import auth
+from backend.app.routers import lobbies, users, websocket
+from backend.app.dependencies.db import init_db
+from backend.app.routers import auth
+
+import game
+print("🟡",game)
 
 app = FastAPI()
 

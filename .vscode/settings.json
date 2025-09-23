@@ -1,4 +1,3 @@
 {
-  "python.analysis.extraPaths": ["./backend", "./game"],
   "python.analysis.autoImportCompletions": true
 }

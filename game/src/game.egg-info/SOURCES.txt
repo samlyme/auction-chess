@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/game/__init__.py
-src/game/main.py
-src/game.egg-info/PKG-INFO
-src/game.egg-info/SOURCES.txt
-src/game.egg-info/dependency_links.txt
-src/game.egg-info/requires.txt
-src/game.egg-info/top_level.txt

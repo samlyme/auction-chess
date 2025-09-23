@@ -7,7 +7,3 @@ requires-python = ">=3.13"
 dependencies = [
     "chess>=1.11.2",
 ]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["game*"]

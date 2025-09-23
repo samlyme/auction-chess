@@ -1,4 +1,4 @@
-import app.schemas.types as api
+import backend.app.schemas.types as api
 
 
 class LobbyError(Exception):

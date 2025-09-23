@@ -1,11 +1,11 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
-from app.dependencies.auth import CurrentUserDep
-from app.dependencies.db import DBDep
-from app.models.models import User
-from app.schemas.types import UserCredentials, UserProfile
-from app.utils.auth import get_password_hash
+from backend.app.dependencies.auth import CurrentUserDep
+from backend.app.dependencies.db import DBDep
+from backend.app.models.models import User
+from backend.app.schemas.types import UserCredentials, UserProfile
+from backend.app.utils.auth import get_password_hash
 
 from sqlalchemy.exc import IntegrityError
 

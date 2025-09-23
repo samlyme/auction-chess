@@ -3,11 +3,11 @@ from uuid import UUID
 from chess import IllegalMoveError
 from fastapi import Depends, WebSocket, status
 
-from app.dependencies.auth import CurrentUserDep
+from backend.app.dependencies.auth import CurrentUserDep
 from game.main import AuctionChess
 
-import app.schemas.types as api
-from app.utils.exceptions import (
+import backend.app.schemas.types as api
+from backend.app.utils.exceptions import (
     LobbyCreateError,
     LobbyJoinError,
     LobbyLeaveError,
@@ -15,7 +15,7 @@ from app.utils.exceptions import (
     LobbyPermissionError,
     LobbyStartError,
 )
-from app.utils.lobbies import game_factory, generate_lobby_id
+from backend.app.utils.lobbies import game_factory, generate_lobby_id
 
 
 class Lobby:

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.dependencies.auth import CurrentUserDep
-from app.dependencies.lobbies import CreateLobbyDep, LobbyDep, UserLobbyDep
+from backend.app.dependencies.auth import CurrentUserDep
+from backend.app.dependencies.lobbies import CreateLobbyDep, LobbyDep, UserLobbyDep
 
-import app.schemas.types as api
-from app.utils.exceptions import (
+import backend.app.schemas.types as api
+from backend.app.utils.exceptions import (
     IllegalMoveException,
     LobbyCreateError,
     LobbyJoinError,

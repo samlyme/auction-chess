@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, status
 
-from app.dependencies.auth import get_current_user
-from app.dependencies.db import DBDep
-from app.dependencies.lobbies import LobbyDep
+from backend.app.dependencies.auth import get_current_user
+from backend.app.dependencies.db import DBDep
+from backend.app.dependencies.lobbies import LobbyDep
 
-import app.schemas.types as api
+import backend.app.schemas.types as api
 
 
 router = APIRouter(prefix="/ws")

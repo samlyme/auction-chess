@@ -4,8 +4,8 @@ import jwt
 from dotenv import load_dotenv
 import os
 
-from app.schemas.types import JWTPayload
-from app.models.models import User
+from backend.app.schemas.types import JWTPayload
+from backend.app.models.models import User
 
 load_dotenv()
 SECRET_KEY = os.environ["JWT_SECRET"]

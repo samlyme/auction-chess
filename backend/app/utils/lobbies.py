@@ -1,7 +1,7 @@
 import random
 from typing import Any
 
-from app.schemas.types import LobbyId, LobbyIdLength
+from backend.app.schemas.types import LobbyId, LobbyIdLength
 from game.main import AuctionChess, OpenFirstAuctionChess
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
