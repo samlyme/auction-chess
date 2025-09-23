@@ -1,0 +1,14 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "watchPatterns": [
+      "/backend/**",
+      "/game/**",
+      "/railway-backend.json"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": ["uv sync --frozen"],
+    "startCommand": "uv run --package backend uvicorn backend.app.main:app --host :: --port $PORT"
+  }
+}
