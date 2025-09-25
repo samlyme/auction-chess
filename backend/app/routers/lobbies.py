@@ -5,7 +5,7 @@ from backend.app.dependencies.lobbies import CreateLobbyDep, LobbyDep, UserLobby
 
 import backend.app.schemas.types as api
 from backend.app.utils.exceptions import (
-    IllegalMoveException,
+    IllegalMoveError,
     LobbyCreateError,
     LobbyJoinError,
     LobbyLeaveError,
@@ -78,13 +78,13 @@ async def delete_lobby(user: CurrentUserDep, lobby: LobbyDep) -> None:
 async def move(user: CurrentUserDep, lobby: LobbyDep, move: api.Move) -> None:
     try:
         await lobby.make_move(user, move)
-    except IllegalMoveException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except IllegalMoveError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
 
 
 @router.post("/{lobby_id}/bid")
 async def bid(user: CurrentUserDep, lobby: LobbyDep, bid: api.Bid) -> None:
     try:
         await lobby.make_bid(user, bid)
-    except IllegalMoveException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    except IllegalMoveError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)

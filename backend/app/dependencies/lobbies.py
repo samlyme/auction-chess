@@ -53,22 +53,22 @@ class Lobby:
 
     async def delete(self, user: api.UserProfile) -> None:
         if user != self.host:
-            raise LobbyPermissionError(user, self.id)
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
         await self.manager._delete(self.id)
 
     async def set_lobby_options(
-        self, host: api.UserProfile, lobby_options: api.LobbyOptions
+        self, user: api.UserProfile, lobby_options: api.LobbyOptions
     ) -> None:
-        if host != self.host:
-            raise LobbyPermissionError(host, self.id)
+        if user != self.host:
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
         # TODO: make this actually do something.
         self.lobby_options = lobby_options
 
-    async def set_game_options(self, host: api.UserProfile, game_options: Any) -> None:
-        if host != self.host:
-            raise LobbyPermissionError(host, self.id)
+    async def set_game_options(self, user: api.UserProfile, game_options: Any) -> None:
+        if user != self.host:
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
         if self.status == "active":
             # TODO: make exception for this
@@ -77,19 +77,19 @@ class Lobby:
         # TODO: make this actually do something.
         self.game_options = game_options
 
-    async def join(self, guest: api.UserProfile) -> None:
+    async def join(self, user: api.UserProfile) -> None:
         if self.guest:
-            raise LobbyJoinError(guest, self.id, "Lobby already full")
+            raise LobbyJoinError(user=user, lobby_id=self.id, reason="Lobby already full")
 
-        self.guest = guest
-        self.manager._add_user(guest, self.id)
+        self.guest = user
+        self.manager._add_user(user, self.id)
 
     async def leave(self, user: api.UserProfile) -> None:
         if user == self.host:
-            raise LobbyLeaveError(user, self.id, "Host can not leave lobby.")
+            raise LobbyLeaveError(user=user, lobby_id=self.id, reason="Host can not leave lobby.")
 
         if user != self.guest:
-            raise LobbyLeaveError(user, self.id, "User is not guest of this lobby.")
+            raise LobbyLeaveError(user=user, lobby_id=self.id, reason="User is not guest of this lobby.")
 
         self.guest = None
         if self.guest_ws:
@@ -99,10 +99,10 @@ class Lobby:
 
     async def start(self, user: api.UserProfile) -> None:
         if user != self.host:
-            raise LobbyPermissionError(user, self.id)
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
         if not self.guest:
-            raise LobbyStartError(user, self.id, "Lobby not full. Need guest.")
+            raise LobbyStartError(user=user, lobby_id=self.id, reason="Lobby not full. Need guest.")
 
         self.status = "active"
         self.game = game_factory(self.game_options)
@@ -125,7 +125,7 @@ class Lobby:
         elif user == self.guest:
             self.guest_ws = websocket
         else:
-            raise LobbyPermissionError(user, self.id)
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
         await self.broadcast_lobby()
         if self.game:
@@ -137,7 +137,7 @@ class Lobby:
         elif user == self.guest:
             self.guest_ws = None
         else:
-            raise LobbyPermissionError(user, self.id)
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
     async def broadcast_lobby(self) -> None:
         packet: api.LobbyPacket = api.LobbyPacket(content=self.to_profile())
@@ -229,7 +229,7 @@ class Lobby:
         elif user == self.guest:
             return "w" if self.game_options.host_color == "b" else "b"
         else:
-            raise LobbyPermissionError(user, self.id)
+            raise LobbyPermissionError(user=user, lobby_id=self.id)
 
 
 # NOTE: In future, this should be in redis
@@ -259,7 +259,7 @@ class LobbyManager:
     async def _delete(self, lobby_id: api.LobbyId):
         lobby = await self.get(lobby_id)
         if not lobby:
-            raise LobbyNotFoundError(lobby_id)
+            raise LobbyNotFoundError(lobby_id=lobby_id)
 
         del self.lobbies[lobby_id]
 
@@ -274,7 +274,7 @@ class LobbyManager:
 
     async def create(self, host: api.UserProfile) -> api.LobbyId:
         if host.uuid in self.active_users:
-            raise LobbyCreateError(user=host, lobby_id=self.active_users[host.uuid])
+            raise LobbyCreateError(user=host, existing_lobby_id=self.active_users[host.uuid])
 
         lobby_id = generate_lobby_id()
         while lobby_id in self.lobbies:
@@ -294,7 +294,7 @@ lobby_manager = LobbyManager()
 async def get_lobby(lobby_id: api.LobbyId) -> Lobby:
     out = await lobby_manager.get(lobby_id)
     if not out:
-        raise LobbyNotFoundError(lobby_id)
+        raise LobbyNotFoundError(lobby_id=lobby_id)
     return out
 
 
@@ -309,7 +309,10 @@ def create_lobby_factory(
 
         out = await lobby_manager.get(lobby_id)
         if not out:
-            raise LobbyCreateError(user, lobby_id)
+            # This case should never be reached because the lobby_manager.create
+            # method already handles errors in lobby creation. If an error 
+            # occurs  here, that means that the lboby was created, but not saved.
+            raise Exception("Critical error in lobby dependency.")
 
         return out.to_profile()
 
