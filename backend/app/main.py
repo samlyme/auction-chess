@@ -5,9 +5,6 @@ from backend.app.routers import lobbies, users, websocket
 from backend.app.dependencies.db import init_db
 from backend.app.routers import auth
 
-import game
-print("🟡",game)
-
 app = FastAPI()
 
 # This flag will save you from a lot of gray hairs.
