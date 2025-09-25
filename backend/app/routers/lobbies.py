@@ -23,7 +23,7 @@ async def create_lobby(dep: CreateLobbyDep) -> api.LobbyProfile:
     try:
         return await dep()
     except LobbyCreateError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.detail)
 
 
 @router.get("")
@@ -43,7 +43,7 @@ async def join_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile:
         return lobby.to_profile()
     # TODO: Refactor to use app-level exception handlers.
     except LobbyJoinError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.detail)
 
 
 @router.post("/{lobby_id}/start")
@@ -51,8 +51,10 @@ async def start_lobby(user: CurrentUserDep, lobby: LobbyDep) -> api.LobbyProfile
     try:
         await lobby.start(user)
         return lobby.to_profile()
-    except (LobbyPermissionError, LobbyStartError) as e:
+    except LobbyPermissionError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
+    except LobbyStartError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.detail)
 
 
 @router.post("/{lobby_id}/leave")
