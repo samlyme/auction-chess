@@ -5,6 +5,19 @@
   text-align: center;
 }
 
+@font-face {
+  font-family: 'Balatro';
+  src: url('./assets/fonts/balatro.otf.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  background-color: #F2F0EF;
+  color: #1E1E1E;
+  font-family: 'Balatro';
+}
+
 /* make the container a flex row */
 .game {
   display: flex;
