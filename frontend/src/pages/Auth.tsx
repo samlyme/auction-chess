@@ -12,9 +12,9 @@ function Auth() {
 
     return (
         <div className="auth-page">
-            <h1>Login</h1>
+            <h2>Login</h2>
             <Login />
-            <h1>Signup</h1>
+            <h2>Signup</h2>
             <SignUp />
         </div>
     )
