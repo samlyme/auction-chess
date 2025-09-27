@@ -1,4 +1,4 @@
-#root {
+/* #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -10,13 +10,13 @@
   src: url('./assets/fonts/balatro.otf.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
-}
+} */
 
-body {
+/* body {
   background-color: #1E1E1E;
   color: #F2F0EF;
-  font-family: 'Balatro';
-}
+  font-family: 'Balatro', 'Inter';
+} */
 
 h1 {
   font-size: 4rem;
@@ -42,7 +42,7 @@ h6 {
   font-size: 1.5rem;
 }
 
-button {
+/* button {
   margin: 1rem;
   padding: 0.5rem;
   border: none;
@@ -58,7 +58,7 @@ button {
 
 .red {
   background-color: #F35043;
-}
+} */
 
 /* make the container a flex row */
 .game {

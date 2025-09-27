@@ -34,7 +34,7 @@ function ServerUpdatesContext({ children }: { children: ReactNode }) {
 
 function Content() {
   return (
-    <div>
+    <>
       <BrowserRouter>
         <Routes>
           
@@ -58,7 +58,7 @@ function Content() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </div>
+    </>
   );
 }
 
