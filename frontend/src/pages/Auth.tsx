@@ -15,6 +15,7 @@ export default function Auth() {
 
     return (
         <div className="auth-page">
+<<<<<<< HEAD
             <Tabs.Root className={styles.Tabs}>
                 <Tabs.List className={styles.List}>
                     <Tabs.Tab className={styles.Tab} value={"login"}>Login</Tabs.Tab>
@@ -30,6 +31,12 @@ export default function Auth() {
                     <Signup />
                 </Tabs.Panel>
             </Tabs.Root>
+=======
+            <h1>Login</h1>
+            <Login />
+            <h1>Signup</h1>
+            <SignUp />
+>>>>>>> parent of 76144dd (use balatro font)
         </div>
     )
 }

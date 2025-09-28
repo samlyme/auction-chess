@@ -12,53 +12,11 @@
   font-style: normal;
 } */
 
-/* body {
-  background-color: #1E1E1E;
-  color: #F2F0EF;
-  font-family: 'Balatro', 'Inter';
-} */
-
-h1 {
-  font-size: 4rem;
-}
-
-h2 {
-  font-size: 3.5rem;
-}
-
-h3 {
-  font-size: 3rem;
-}
-
-h4 {
-  font-size: 2.5rem;
-}
-
-h5 {
-  font-size: 2rem;
-}
-
-h6 {
-  font-size: 1.5rem;
-}
-
-/* button {
-  margin: 1rem;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 0.25rem;
-  color: #F2F0EF;
+body {
+  background-color: #F2F0EF;
+  color: #1E1E1E;
   font-family: 'Balatro';
-  font-size: large;
 }
-
-.green {
-  background-color: #60BB64;
-}
-
-.red {
-  background-color: #F35043;
-} */
 
 /* make the container a flex row */
 .game {
