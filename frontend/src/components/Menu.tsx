@@ -135,8 +135,8 @@ function BiddingMenu() {
       className={`bidding-menu ${game.phase === "move" ? "lowlight" : ""}`}
       onSubmit={handleSubmit}
     >
-      <h3>Your bid: ${userLastBidAmount}</h3>
       <h3>Opponent bid: ${opponentLastBidAmount}</h3>
+      <h3>Your bid: ${userLastBidAmount}</h3>
 
       <label>
         <h4>New bid: ${bid.amount}</h4>
