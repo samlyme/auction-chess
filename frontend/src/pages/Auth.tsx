@@ -1,11 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import useAuth from "../hooks/useAuth";
-import { Field, Form, Tabs } from "@base-ui-components/react";
 
-import styles from "../index.module.css";
-
-export default function Auth() {
+function Auth() {
     const { token } = useAuth();
     const navigate = useNavigate();
 
@@ -15,82 +12,106 @@ export default function Auth() {
 
     return (
         <div className="auth-page">
-<<<<<<< HEAD
-            <Tabs.Root className={styles.Tabs}>
-                <Tabs.List className={styles.List}>
-                    <Tabs.Tab className={styles.Tab} value={"login"}>Login</Tabs.Tab>
-                    <Tabs.Tab className={styles.Tab} value={"signup"}>Sign Up</Tabs.Tab>
-                    <Tabs.Indicator className={styles.Indicator}/>
-
-                </Tabs.List>
-
-                <Tabs.Panel className={styles.Panel} value={"login"}>
-                    <Login />
-                </Tabs.Panel>
-                <Tabs.Panel className={styles.Panel} value={"singup"}>
-                    <Signup />
-                </Tabs.Panel>
-            </Tabs.Root>
-=======
-            <h1>Login</h1>
+            <h2>Login</h2>
             <Login />
-            <h1>Signup</h1>
+            <h2>Signup</h2>
             <SignUp />
->>>>>>> parent of 76144dd (use balatro font)
         </div>
     )
 }
 
 function Login() {
-    return (
-        <Form className={styles.Form}>
-            <Field.Root className={styles.Field} name="username">
-                <Field.Label className={styles.Label}>Username</Field.Label>
-                <Field.Control
-                    className={styles.Input}
-                    type="text"
-                    // defaultValue="johnsmith"
-                    placeholder="johnsmith"
-                />
-            </Field.Root>
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
-            <Field.Root className={styles.Field} name="password">
-                <Field.Label className={styles.Label}>Password</Field.Label>
-                <Field.Control
-                    className={styles.Input}
-                    type="password"
-                    // defaultValue="johnsmith"
-                    placeholder="asdf123"
+    const { login } = useAuth();
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        console.log('Attempting to log in with:');
+        console.log('Username:', username);
+        console.log('Password:', password);
+
+        login({
+            username: username,
+            password: password,
+        })
+    }
+
+    return (
+        <div>
+            <form onSubmit={handleSubmit}>
+                <div>
+                <label htmlFor="username">Username:</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
                 />
-            </Field.Root>
-            <button type="submit">
-                Submit
-            </button>
-        </Form>
-    )
+                </div>
+                <div>
+                <label htmlFor="password">Password:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                />
+                </div>
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+    );
 }
 
-function Signup() {
+function SignUp() {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    const { signup } = useAuth();
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        console.log('Attempting to signup with:');
+        console.log('Username:', username);
+        console.log('Password:', password);
+
+        signup({
+            username: username,
+            password: password,
+        })
+    }
+
     return (
-        <Form>
-            <Field.Root>
-                <Field.Label>Username</Field.Label>
-                <Field.Control
-                    type="text"
-                    // defaultValue="johnsmith"
-                    placeholder="johnsmith"
+        <div>
+            <form onSubmit={handleSubmit}>
+                <div>
+                <label htmlFor="username">Username:</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
                 />
-                <Field.Label>Password</Field.Label>
-                <Field.Control
-                    type="Password"
-                    // defaultValue="johnsmith"
-                    placeholder="johnsmith"
+                </div>
+                <div>
+                <label htmlFor="password">Password:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
                 />
-                <Field.Error />
-            </Field.Root>
-            <button type="submit">
-                Submit
-            </button>
-        </Form>
-    )
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    );
+
 }
+export default Auth;
