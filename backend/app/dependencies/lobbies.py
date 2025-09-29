@@ -171,7 +171,7 @@ class Lobby:
 
         packet: api.GamePacket = api.GamePacket(
             content=api.GameData(
-                outcome=(lambda o: ("w" if o.winner else "b") if o else None)(
+                outcome=(lambda o: ("draw" if o.winner is None else ("w" if o.winner else "b")) if o else None)(
                     self.game.outcome()
                 ),  # TODO: fix this
                 phase=self.game.phase,

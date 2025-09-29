@@ -114,6 +114,10 @@ class AuctionChess(PseudoChess, ABC):
             raise chess.IllegalMoveError("Can't make moves during bid phase.")
 
         super().push(move)
+        if self.balances[self.turn] == 0:
+            self.turn = not self.turn
+            self.balances[self.turn] -= 1
+            return
         self.phase = "move" if self.phase == "bid" else "bid"
 
     def is_variant_draw(self) -> bool:
