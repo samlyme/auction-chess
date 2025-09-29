@@ -117,8 +117,11 @@ class AuctionChess(PseudoChess, ABC):
         if self.balances[self.turn] == 0:
             self.turn = not self.turn
             self.balances[self.turn] -= 1
-            return
-        self.phase = "move" if self.phase == "bid" else "bid"
+        elif self.balances[not self.turn] == 0:
+            self.balances[self.turn] -= 1
+            self.phase = "move"
+        else:
+            self.phase = "bid"
 
     def is_variant_draw(self) -> bool:
         return self.balances[chess.WHITE] == 0 and self.balances[chess.BLACK] == 0
