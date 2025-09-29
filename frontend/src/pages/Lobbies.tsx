@@ -1,75 +1,82 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { LobbyProfile } from "../schemas/types";
 import { useNavigate } from "react-router";
 import useLobbies from "../hooks/useLobbies";
+import { Form } from "radix-ui";
+import useAuth from "../hooks/useAuth";
 
 function Lobbies() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [lobbyId, setLobbyId] = useState("");
 
-    const {userLobby, createLobby, joinLobby} = useLobbies()
+  const { userLobby, createLobby } = useLobbies();
 
-    useEffect(() => {
+  useEffect(() => {
+    userLobby().then((lobby: LobbyProfile | null) => {
+      if (lobby) {
+        console.log("user lobby", lobby);
+        navigate(`/lobbies/${lobby.id}`);
+      }
+    });
+  }, [navigate, userLobby]);
 
-        userLobby()
-        .then(
-            (lobby: LobbyProfile | null) => {
-                if (lobby) {
-                    console.log("user lobby", lobby);
-                    navigate(`/lobbies/${lobby.id}`)
-                }
-            }
-        )
-    }, [navigate, userLobby])
+  const handleCreate = () => {
+    createLobby().then((res: LobbyProfile | null) => {
+      console.log("Created lobby:", res);
+      if (res) {
+        navigate(`/lobbies/${res.id}`);
+      }
+    });
+  };
 
-    const handleJoin = (e: React.FormEvent) => {
-        e.preventDefault();
+  return (
+    <div>
+      <CreateLobbyMenu handleCreate={handleCreate} />
 
-        joinLobby(lobbyId)
-        .then((res: LobbyProfile) => {
-            console.log("Joined lobby:", res);
-            navigate(`/lobbies/${res.id}`)
-        })
-        .catch((err) => {
-            console.error("Error joining lobby:", err);
-        });
+      <JoinLobbyMenu />
+    </div>
+  );
+}
 
-        console.log("Joining lobby with ID:", lobbyId);
+function CreateLobbyMenu({ handleCreate }: { handleCreate: () => void }) {
+  return (
+    <div>
+      <h1>Create Lobby</h1>
+      <button onClick={handleCreate}>Create Lobby</button>
+    </div>
+  );
+}
 
-    }
+// TODO: fix this entire component lol
+function JoinLobbyMenu() {
+  useAuth()
+  const {joinLobby} = useLobbies();
+  const handleSubmit = (event) => {
+    // event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const lobbyCode = formData.get("lobbyId");
+    joinLobby(String(lobbyCode!));
+  };
 
-    const handleCreate = () => {
-        createLobby()
-        .then((res: LobbyProfile | null) => {
-            console.log("Created lobby:", res);
-            if (res) {
-                navigate(`/lobbies/${res.id}`)
-            }
-        })
-    }
+  return (
+    <Form.Root onSubmit={handleSubmit}>
+      <Form.Field name="lobbyId">
+        <Form.Label>Lobby Code</Form.Label>
+        <Form.Control asChild>
+          <input
+            type="text"
+            name="lobbyId"
+            placeholder="Enter lobby code"
+            required
+          />
+        </Form.Control>
+      </Form.Field>
 
-    return (
-        <div>
-            <h1>Create Lobby</h1>
-            <button onClick={handleCreate}>Create Lobby</button>
-
-            <h1>Join Lobby</h1>
-            <form onSubmit={handleJoin}>
-                <div>
-                    <label htmlFor="lobbyId">Lobby ID:</label>
-                    <input 
-                        type="text" 
-                        id="lobbyId" 
-                        name="lobbyId" 
-                        value={lobbyId}
-                        onChange={e => setLobbyId(e.target.value)}
-                    />
-                </div>
-                <button type="submit">Join</button>
-            </form>
-        </div>
-    )
-} 
+      <Form.Submit asChild>
+        <button type="submit">Join Lobby</button>
+      </Form.Submit>
+    </Form.Root>
+  );
+}
 
 export default Lobbies;
