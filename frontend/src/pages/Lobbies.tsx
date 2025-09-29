@@ -2,12 +2,11 @@ import { useEffect } from "react";
 import type { LobbyProfile } from "../schemas/types";
 import { useNavigate } from "react-router";
 import useLobbies from "../hooks/useLobbies";
-import { Form } from "radix-ui";
+import { Form, Tabs } from "radix-ui";
 import useAuth from "../hooks/useAuth";
 
 function Lobbies() {
   const navigate = useNavigate();
-
 
   const { userLobby, createLobby } = useLobbies();
 
@@ -31,9 +30,20 @@ function Lobbies() {
 
   return (
     <div>
-      <CreateLobbyMenu handleCreate={handleCreate} />
-
-      <JoinLobbyMenu />
+      <Tabs.Root defaultValue="create">
+        <Tabs.List>
+          <Tabs.Trigger value="create">Create Lobby</Tabs.Trigger>
+          <Tabs.Trigger value="join">Join Lobby</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="create">
+          <h1>Create Lobby</h1>
+          <CreateLobbyMenu handleCreate={handleCreate} />
+        </Tabs.Content>
+        <Tabs.Content value="join">
+          <h1>Join Lobby</h1>
+          <JoinLobbyMenu />
+        </Tabs.Content>
+      </Tabs.Root>
     </div>
   );
 }
@@ -41,7 +51,7 @@ function Lobbies() {
 function CreateLobbyMenu({ handleCreate }: { handleCreate: () => void }) {
   return (
     <div>
-      <h1>Create Lobby</h1>
+      <h3>lobby options go here</h3>
       <button onClick={handleCreate}>Create Lobby</button>
     </div>
   );
@@ -49,8 +59,8 @@ function CreateLobbyMenu({ handleCreate }: { handleCreate: () => void }) {
 
 // TODO: fix this entire component lol
 function JoinLobbyMenu() {
-  useAuth()
-  const {joinLobby} = useLobbies();
+  useAuth();
+  const { joinLobby } = useLobbies();
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // event.preventDefault();
     const formData = new FormData(event.currentTarget);
