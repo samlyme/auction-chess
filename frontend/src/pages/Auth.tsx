@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import useAuth from "../hooks/useAuth";
+import { Tabs } from "radix-ui";
 
 function Auth() {
     const { token } = useAuth();
@@ -12,10 +13,26 @@ function Auth() {
 
     return (
         <div className="auth-page">
-            <h2>Login</h2>
+            {/* <h2>Login</h2>
             <Login />
             <h2>Signup</h2>
-            <SignUp />
+            <SignUp /> */}
+            <Tabs.Root defaultValue="login">
+                <Tabs.List>
+                    <Tabs.Trigger value="login">
+                        Login
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="signup">
+                        Signup
+                    </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="login">
+                    <Login />
+                </Tabs.Content>
+                <Tabs.Content value="signup">
+                    <SignUp />
+                </Tabs.Content>
+            </Tabs.Root>
         </div>
     )
 }
@@ -40,6 +57,7 @@ function Login() {
 
     return (
         <div>
+            <h4>Welcome back!</h4>
             <form onSubmit={handleSubmit}>
                 <div>
                 <label htmlFor="username">Username:</label>
@@ -61,7 +79,7 @@ function Login() {
                     onChange={e => setPassword(e.target.value)}
                 />
                 </div>
-                <button type="submit">Log In</button>
+                <button type="submit">Submit</button>
             </form>
         </div>
     );
@@ -87,6 +105,7 @@ function SignUp() {
 
     return (
         <div>
+            <h4>Create new account.</h4>
             <form onSubmit={handleSubmit}>
                 <div>
                 <label htmlFor="username">Username:</label>
@@ -108,7 +127,7 @@ function SignUp() {
                     onChange={e => setPassword(e.target.value)}
                 />
                 </div>
-                <button type="submit">Sign Up</button>
+                <button type="submit">Submit</button>
             </form>
         </div>
     );

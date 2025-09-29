@@ -13,6 +13,7 @@ function Home() {
     return (
         <div className="home">
             <h1>Welcome to Auction Chess</h1>
+            <h2>A novel chess variant with pricing, bluffing, and illegal moves.</h2>
             <Link to="/auth">
                 <h1>login/signup</h1>
             </Link>

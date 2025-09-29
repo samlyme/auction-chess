@@ -9,18 +9,15 @@ import Lobbies from "./pages/Lobbies";
 import Lobby from "./pages/Lobby";
 import { ServerUpdatesProvider } from "./components/providers/ServerUpdatesProvider";
 import LayoutWithHeader from "./layouts/LayoutWithHeader";
+import { AspectRatio } from "radix-ui";
 
 function App() {
   return (
     // The wrapper divs are used for the sizing.
-    <div className="fullscreen-container">
-      <div className="app-scaler">
-        <div className="app">
-          <MainContext>
-            <Content />
-          </MainContext>
-        </div>
-      </div>
+    <div className="app">
+        <MainContext>
+          <Content />
+        </MainContext>
     </div>
   );
 }
@@ -38,7 +35,7 @@ function ServerUpdatesContext({ children }: { children: ReactNode }) {
 
 function Content() {
   return (
-    <div>
+    <AspectRatio.Root ratio={16 / 9}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -60,7 +57,7 @@ function Content() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </div>
+    </AspectRatio.Root>
   );
 }
 
