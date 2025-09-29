@@ -51,7 +51,7 @@ function CreateLobbyMenu({ handleCreate }: { handleCreate: () => void }) {
 function JoinLobbyMenu() {
   useAuth()
   const {joinLobby} = useLobbies();
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const lobbyCode = formData.get("lobbyId");
