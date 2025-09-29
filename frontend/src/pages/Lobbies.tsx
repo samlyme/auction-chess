@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import type { LobbyProfile } from "../schemas/types";
-import { useNavigate } from "react-router";
-import useLobbies from "../hooks/useLobbies";
-import { Form, Tabs } from "radix-ui";
-import useAuth from "../hooks/useAuth";
+import { useEffect } from 'react';
+import type { LobbyProfile } from '../schemas/types';
+import { useNavigate } from 'react-router';
+import useLobbies from '../hooks/useLobbies';
+import { Form, Tabs } from 'radix-ui';
+import useAuth from '../hooks/useAuth';
 
 function Lobbies() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ function Lobbies() {
   useEffect(() => {
     userLobby().then((lobby: LobbyProfile | null) => {
       if (lobby) {
-        console.log("user lobby", lobby);
+        console.log('user lobby', lobby);
         navigate(`/lobbies/${lobby.id}`);
       }
     });
@@ -21,7 +21,7 @@ function Lobbies() {
 
   const handleCreate = () => {
     createLobby().then((res: LobbyProfile | null) => {
-      console.log("Created lobby:", res);
+      console.log('Created lobby:', res);
       if (res) {
         navigate(`/lobbies/${res.id}`);
       }
@@ -64,7 +64,7 @@ function JoinLobbyMenu() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const lobbyCode = formData.get("lobbyId");
+    const lobbyCode = formData.get('lobbyId');
     joinLobby(String(lobbyCode!));
   };
 

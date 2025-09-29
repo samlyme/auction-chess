@@ -15,8 +15,8 @@
 body {
   margin: 0;
   padding: 5rem;
-  background-color: #F2F0EF;
-  color: #1E1E1E;
+  background-color: #f2f0ef;
+  color: #1e1e1e;
   font-family: 'Balatro';
 }
 
@@ -26,14 +26,13 @@ body {
   align-items: center;
 }
 
-
 /* pin the menu to the right of the board */
 .menu {
   display: flex;
-  width: 40vmin; 
+  width: 40vmin;
   flex-direction: column;
-  flex: 0 0 300px;            /* fixed width (adjust as needed) */
-  margin-left: 20px;          /* gap between board & menu */
+  flex: 0 0 300px; /* fixed width (adjust as needed) */
+  margin-left: 20px; /* gap between board & menu */
   justify-content: space-between;
   position: relative;
 }
@@ -43,6 +42,6 @@ body {
 }
 
 .lowlight {
-  opacity:0.5;
+  opacity: 0.5;
   cursor: not-allowed;
 }

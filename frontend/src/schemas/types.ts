@@ -1,4 +1,4 @@
-import type { UUIDTypes } from "uuid";
+import type { UUIDTypes } from 'uuid';
 
 // Users and such
 export interface UserCredentials {
@@ -29,10 +29,22 @@ export interface TokenResponse {
   token_type: string;
 }
 
-export type Color = "w" | "b"; 
-export type PieceSymbol = "p" | "r" | "n" | "b" | "q" | "k" | "P" | "R" | "N" | "B" | "Q" | "K";
-export type GamePhase = "bid" | "move";
-export type GameOutcome = Color | "draw" | null;
+export type Color = 'w' | 'b';
+export type PieceSymbol =
+  | 'p'
+  | 'r'
+  | 'n'
+  | 'b'
+  | 'q'
+  | 'k'
+  | 'P'
+  | 'R'
+  | 'N'
+  | 'B'
+  | 'Q'
+  | 'K';
+export type GamePhase = 'bid' | 'move';
+export type GameOutcome = Color | 'draw' | null;
 
 export type BoardPieces = (PieceSymbol | null)[][];
 export type Move = string; // Must be valid UCI
@@ -42,11 +54,10 @@ export interface Bid {
   fold: boolean;
 }
 
-
 // Lobbies and such
 export type LobbyIdLength = 5;
 export type LobbyId = string;
-export type LobbyStatus = "active" | "pending";
+export type LobbyStatus = 'active' | 'pending';
 
 export interface LobbyOptions {
   is_public: boolean;
@@ -55,7 +66,6 @@ export interface LobbyOptions {
 export interface GameOptions {
   host_color: Color;
 }
-
 
 export interface LobbyProfile {
   id: LobbyId;
@@ -66,21 +76,26 @@ export interface LobbyProfile {
   game_options: GameOptions;
 }
 
-
 // Websocket packets !!!!
-export type PacketType = "lobby_packet" | "game_packet"
+export type PacketType = 'lobby_packet' | 'game_packet';
 export interface LobbyPacket {
-  type: "lobby_packet"
-  content: LobbyProfile
+  type: 'lobby_packet';
+  content: LobbyProfile;
 }
 
-export type AuctionStyle = "open_first" | "open_second" | "closed_first" | "closed_second" | "open-all" | "closed-all";
-export type Players = Record<Color, UserProfile>
-export type Balances = Record<Color, number>
+export type AuctionStyle =
+  | 'open_first'
+  | 'open_second'
+  | 'closed_first'
+  | 'closed_second'
+  | 'open-all'
+  | 'closed-all';
+export type Players = Record<Color, UserProfile>;
+export type Balances = Record<Color, number>;
 export type OpenBidHistory = Bid[][];
 
 export interface OpenFirst {
-  auction_style: "open_first";
+  auction_style: 'open_first';
   bid_history: OpenBidHistory;
 }
 
@@ -104,14 +119,14 @@ export interface GameData {
 }
 // TODO: handle this
 export interface GamePacket {
-  type: "game_packet"
+  type: 'game_packet';
 
-  content: GameData
+  content: GameData;
 }
 
-export type Packet = LobbyPacket | GamePacket
+export type Packet = LobbyPacket | GamePacket;
 
 // THIS SECTION IS CLIENT-EXCLUSIVE. THE UI NEEDS THIS.
-export type File = 'a'|'b'|'c'|'d'|'e'|'f'|'g'|'h';
-export type Rank = '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8';
+export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
+export type Rank = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
 export type BoardPosition = `${File}${Rank}`;
