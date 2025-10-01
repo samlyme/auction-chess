@@ -20,6 +20,11 @@ body {
   font-family: 'Balatro';
 }
 
+button {
+  padding: 0.5rem;
+  font-family: 'Balatro';
+}
+
 /* make the container a flex row */
 .game {
   display: flex;
