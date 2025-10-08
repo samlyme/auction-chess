@@ -1,11 +1,5 @@
-:root {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Balatro'
 }
-
-
-body {
-  margin: 0;
-  place-items: center;
-}
-
