@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import type { LobbyProfile } from '../schemas/types';
 import { useNavigate } from 'react-router';
 import useLobbies from '../hooks/useLobbies';
-import { Form, Tabs } from 'radix-ui';
-import useAuth from '../hooks/useAuth';
+import { Tabs } from 'radix-ui';
 
 function Lobbies() {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ function Lobbies() {
     });
   }, [navigate, userLobby]);
 
-  const handleCreate = () => {
+ const handleCreate = () => {
     createLobby().then((res: LobbyProfile | null) => {
       console.log('Created lobby:', res);
       if (res) {
@@ -29,37 +28,38 @@ function Lobbies() {
   };
 
   return (
-    <div>
-      <Tabs.Root defaultValue="create">
-        <Tabs.List>
-          <Tabs.Trigger value="create">Create Lobby</Tabs.Trigger>
-          <Tabs.Trigger value="join">Join Lobby</Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Content value="create">
-          <h1>Create Lobby</h1>
-          <CreateLobbyMenu handleCreate={handleCreate} />
-        </Tabs.Content>
-        <Tabs.Content value="join">
-          <h1>Join Lobby</h1>
-          <JoinLobbyMenu />
-        </Tabs.Content>
-      </Tabs.Root>
-    </div>
+    <Tabs.Root defaultValue="create" className="">
+      <Tabs.List className="flex w-full justify-center space-x-4">
+        <Tabs.Trigger value="create">Create Lobby</Tabs.Trigger>
+        <Tabs.Trigger value="join">Join Lobby</Tabs.Trigger>
+      </Tabs.List>
+
+      <Tabs.Content value="create">
+        <CreateLobbyMenu handleCreate={handleCreate} />
+      </Tabs.Content>
+      <Tabs.Content value="join">
+        <JoinLobbyMenu />
+      </Tabs.Content>
+    </Tabs.Root>
   );
 }
 
 function CreateLobbyMenu({ handleCreate }: { handleCreate: () => void }) {
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center space-y-7 p-7">
       <h3>lobby options go here</h3>
-      <button onClick={handleCreate}>Create Lobby</button>
+      <button
+        className="rounded bg-green-500 px-4 py-2 text-white"
+        onClick={handleCreate}
+      >
+        Create Lobby
+      </button>
     </div>
   );
 }
 
-// TODO: fix this entire component lol
 function JoinLobbyMenu() {
-  useAuth();
+  // TODO: fix this entire component lol function JoinLobbyMenu() {
   const { joinLobby } = useLobbies();
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // event.preventDefault();
@@ -69,24 +69,12 @@ function JoinLobbyMenu() {
   };
 
   return (
-    <Form.Root onSubmit={handleSubmit}>
-      <Form.Field name="lobbyId">
-        <Form.Label>Lobby Code</Form.Label>
-        <Form.Control asChild>
-          <input
-            type="text"
-            name="lobbyId"
-            placeholder="Enter lobby code"
-            required
-          />
-        </Form.Control>
-      </Form.Field>
-
-      <Form.Submit asChild>
-        <button type="submit">Join Lobby</button>
-      </Form.Submit>
-    </Form.Root>
+    <div className="flex flex-col items-center justify-center space-y-7 p-7">
+      <form onSubmit={handleSubmit}>
+        <input className="m-2 rounded border-2 bg-gray-300" type="text" />
+        <button type="submit" className='rounded bg-green-500 px-4 py-2 text-white'>Join</button>
+      </form>
+    </div>
   );
 }
-
 export default Lobbies;

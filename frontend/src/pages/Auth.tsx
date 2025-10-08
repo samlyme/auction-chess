@@ -2,42 +2,42 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import useAuth from '../hooks/useAuth';
 import { Tabs } from 'radix-ui';
+import type { UserCredentials } from '../schemas/types';
 
 function Auth() {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const {login, signup} = useAuth()
 
   useEffect(() => {
     if (token) navigate('/lobbies');
   });
 
+
   return (
-    <div className="auth-page">
-      {/* <h2>Login</h2>
-            <Login />
-            <h2>Signup</h2>
-            <SignUp /> */}
+    // TODO: show currently selected tab.
+    <div className="flex justify-center">
       <Tabs.Root defaultValue="login">
-        <Tabs.List>
+        <Tabs.List className='justify-self-center space-x-4'>
           <Tabs.Trigger value="login">Login</Tabs.Trigger>
           <Tabs.Trigger value="signup">Signup</Tabs.Trigger>
         </Tabs.List>
+
         <Tabs.Content value="login">
-          <Login />
+          <AuthMenu title="Welcome back!" submitCredentials={login}/>
         </Tabs.Content>
         <Tabs.Content value="signup">
-          <SignUp />
+          <AuthMenu title="Create account." submitCredentials={signup}/>
         </Tabs.Content>
       </Tabs.Root>
     </div>
   );
 }
 
-function Login() {
+function AuthMenu({ title, submitCredentials }: { title: string, submitCredentials: (credentials: UserCredentials) => void}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const { login } = useAuth();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,19 +45,20 @@ function Login() {
     console.log('Username:', username);
     console.log('Password:', password);
 
-    login({
+    submitCredentials({
       username: username,
       password: password,
     });
   };
 
   return (
-    <div>
-      <h4>Welcome back!</h4>
+    <div className='flex flex-col items-center justify-center space-y-7 p-7'>
+      <h1 className='text-3xl'>{title}</h1>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>
           <input
+            className='bg-gray-300 border-2 rounded m-2'
             type="text"
             id="username"
             name="username"
@@ -68,6 +69,7 @@ function Login() {
         <div>
           <label htmlFor="password">Password:</label>
           <input
+            className='bg-gray-300 border-2 rounded m-2'
             type="password"
             id="password"
             name="password"
@@ -75,57 +77,12 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button type="submit">Submit</button>
+        <div className="flex justify-center">
+          <button type="submit" className='rounded bg-green-500 px-4 py-2 text-white'>Submit</button>
+        </div>
       </form>
     </div>
   );
 }
 
-function SignUp() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const { signup } = useAuth();
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log('Attempting to signup with:');
-    console.log('Username:', username);
-    console.log('Password:', password);
-
-    signup({
-      username: username,
-      password: password,
-    });
-  };
-
-  return (
-    <div>
-      <h4>Create new account.</h4>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username:</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-  );
-}
 export default Auth;

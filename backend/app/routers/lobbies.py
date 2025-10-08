@@ -76,6 +76,7 @@ async def delete_lobby(user: CurrentUserDep, lobby: LobbyDep) -> None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=e.detail)
 
 
+# TODO: validate lobby membership
 @router.post("/{lobby_id}/move")
 async def move(user: CurrentUserDep, lobby: LobbyDep, move: api.Move) -> None:
     try:
