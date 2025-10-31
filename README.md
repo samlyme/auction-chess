@@ -1,17 +1,21 @@
-# Auction chess
-Auction Chess is a personal project exploring a chess variant where players bid for the right to make moves. This repository includes the game logic, bidding mechanics, and a web-based interface.
+# bun-react-template
 
-## Features
+To install dependencies:
 
-- Real-time bidding for moves
-- Standard chess rules enforcement
-- Multiplayer support
-- Web-based interface
+```bash
+bun install
+```
 
-## Contributing
+To start a development server:
 
-Currently, this project is not open for external contributions.
+```bash
+bun dev
+```
 
-## License
+To run for production:
 
-This project is for personal use and does not have an open source license.
+```bash
+bun start
+```
+
+This project was created using `bun init` in bun v1.2.22. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
