@@ -9,6 +9,7 @@
     "start": "NODE_ENV=production bun src/index.tsx"
   },
   "dependencies": {
+    "chessops": "^0.15.0",
     "react": "^19",
     "react-chessboard": "^5.8.3",
     "react-dom": "^19"
