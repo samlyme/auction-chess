@@ -22,7 +22,8 @@ const movePiece: Move<ChessState> = ({ G }, move: NormalMove) => {
   const setup: Setup = setupRes.unwrap();
   const chessLogic: PseudoChess = new PseudoChess(setup);
 
-  if (!chessLogic.isLegal(move)) return INVALID_MOVE;
+  // TODO: Implement pseudomove isLegal
+  // if (!chessLogic.isLegal(move)) return INVALID_MOVE;
 
   chessLogic.play(move);
   G.fen = makeFen(chessLogic.toSetup());
