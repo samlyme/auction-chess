@@ -1,6 +1,13 @@
-import { Position, type Color, type Context, type Outcome } from "chessops";
+import type { Result } from "@badrap/result";
+import { Position, PositionError, type Color, type Context, type Outcome, type Setup } from "chessops";
 
-class PseudoChess extends Position {
+export class PseudoChess extends Position {
+
+    constructor (setup: Setup) {
+        super("chess")
+        super.setupUnchecked(setup)
+    }
+    
     override hasInsufficientMaterial(color: Color): boolean {
         return false
     }
