@@ -16,8 +16,6 @@ export interface ChessState {
 
 
 const movePiece: Move<ChessState> = ({ G }, move: NormalMove) => {
-  console.log("movePiece", {G, move});
-  
   const setupRes = parseFen(G.fen);
   const setup: Setup = setupRes.unwrap();
   const chessLogic: PseudoChess = new PseudoChess(setup);
@@ -55,6 +53,7 @@ export const PseudoChessGame: Game<ChessState> = {
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
   return (
+    // TODO: fix animation
     <Chessboard options={{
       position: G.fen,
       onPieceDrop: ({sourceSquare, targetSquare}): boolean => {
