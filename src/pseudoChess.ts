@@ -1,5 +1,5 @@
 import type { Result } from "@badrap/result";
-import { Position, PositionError, type Color, type Context, type Outcome, type Setup } from "chessops";
+import { Position, PositionError, type Color, type Context, type Move, type Outcome, type Setup } from "chessops";
 
 export class PseudoChess extends Position {
 
@@ -22,6 +22,10 @@ export class PseudoChess extends Position {
 
     override isVariantEnd(): boolean {
         return this.board.king.size() < 2
+    }
+
+    override isLegal(move: Move, ctx?: Context): boolean {
+        return true;
     }
 
     override variantOutcome(_ctx?: Context): Outcome | undefined {
