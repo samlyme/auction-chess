@@ -1,6 +1,7 @@
-import { Chessboard, type PieceDropHandlerArgs } from "react-chessboard";
+import { Chessboard, type PieceDropHandlerArgs, type SquareHandlerArgs } from "react-chessboard";
 import {
   Chess,
+  makeSquare,
   parseSquare,
   SquareSet,
   type NormalMove,
@@ -27,6 +28,11 @@ export function App() {
   const [chessPosition, setChessPosition] = useState(
     makeFen(chessGame.toSetup())
   );
+
+  const [optionSquares, setOptionSquares] = useState({})
+
+  const [moveFrom, setMoveFrom] = useState('');
+
 
   function makeRandomMove() {
     const validMoves = validMovesGenerator(chessGame.allDests());
@@ -55,25 +61,90 @@ export function App() {
 
     const validMoves = validMovesGenerator(chessGame.allDests());
 
-    if (
-      !validMoves.some(
-        (value: NormalMove) => value.from === move.from && value.to === move.to
-      )
-    ) {
+    const validMove = validMoves.find(
+      (value: NormalMove) => value.from === move.from && value.to == move.to
+    );
+
+    if (!validMove) return false;
+
+    // always promo to queen
+    if (validMove.promotion) validMove.promotion = "queen"
+    chessGame.play(validMove);
+    setChessPosition(makeFen(chessGame.toSetup()));
+    makeRandomMove();
+    return true;
+  }
+
+  function getMoveOptions(square: string): boolean {
+    const moves: SquareSet | undefined = chessGame.allDests().get(parseSquare(square)!)
+
+    if (!moves) {
+      setOptionSquares({});
       return false;
     }
 
-    chessGame.play(move);
+    const newSquares: Record<string, React.CSSProperties> = {};
 
-    setChessPosition(makeFen(chessGame.toSetup()));
+    for (const move of moves) {
+      newSquares[makeSquare(move)] = {
+        background: 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
+        borderRadius: '50%'
+      }
+    }
 
-    makeRandomMove();
+    newSquares[square] = {
+      background: 'rgba(255, 255, 0, 0.4)'
+    }
+
+    setOptionSquares(newSquares);
+
     return true;
+  }
+
+  function onSquareClick({square, piece}: SquareHandlerArgs): void {
+    if (!moveFrom && piece) {
+      const hasMoveOptions = getMoveOptions(square);
+
+      if (hasMoveOptions) setMoveFrom(square);
+
+      return;
+    }
+
+    const parsedSquare = parseSquare(square)!;
+
+    const validMoves = [...validMovesGenerator(chessGame.allDests())];
+    
+    if (!validMoves.find((value) => value.to === parsedSquare)) {
+      const hasMoveOptions = getMoveOptions(square);
+
+      setMoveFrom(hasMoveOptions ? square : "");
+      return;
+    }
+
+    const move: NormalMove = {
+      from: parseSquare(moveFrom)!,
+      to: parseSquare(square)!,
+    }
+
+    const validMove = validMoves.find(
+      (value: NormalMove) => value.from === move.from && value.to == move.to
+    );
+
+    if (!validMove) return;
+
+    // always promo to queen
+    if (validMove.promotion) validMove.promotion = "queen";
+    chessGame.play(validMove);
+    setOptionSquares({})
+    setChessPosition(makeFen(chessGame.toSetup()));
+    makeRandomMove();
   }
 
   const chessboardOptions = {
     position: chessPosition,
     onPieceDrop,
+    onSquareClick,
+    squareStyles: optionSquares,
     id: "play-vs-random",
   };
 
