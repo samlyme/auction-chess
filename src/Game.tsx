@@ -3,8 +3,9 @@ import { PseudoChess } from "./pseudoChess";
 import { makeBoardFen, makeFen, parseFen } from "chessops/fen";
 import { parseSquare, type NormalMove, type Setup } from "chessops";
 import { INVALID_MOVE } from "boardgame.io/core";
-import { Chessboard } from "react-chessboard";
+import { Chessboard, type SquareHandlerArgs } from "react-chessboard";
 import type { BoardProps } from "boardgame.io/dist/types/packages/react";
+import { useState } from "react";
 
 // At the top level, use react-chessboard's square type
 // Since the game state can't include classes, we need use closures to access
@@ -52,6 +53,24 @@ export const PseudoChessGame: Game<ChessState> = {
 };
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
+    const [moveFrom, setMoveFrom] = useState("");
+
+  function onSquareClick({ square, piece }: SquareHandlerArgs) {
+    if (moveFrom == "" && piece) {
+      setMoveFrom(square)
+    }
+    else if (square == moveFrom) setMoveFrom("");
+    else {
+      const move: NormalMove = {
+        from: parseSquare(moveFrom)!,
+        to: parseSquare(square)!
+      }
+      console.log("attemping click move", {moveFrom, square, move});
+      setMoveFrom("")
+      moves.movePiece!(move);
+    }
+  }
+
   return (
     // TODO: fix animation
     <Chessboard options={{
@@ -59,7 +78,8 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
       onPieceDrop: ({sourceSquare, targetSquare}): boolean => {
         moves.movePiece!({from: parseSquare(sourceSquare), to: parseSquare(targetSquare!)})
         return true
-      }
+      },
+      onSquareClick,
     }} />
   )
 }
