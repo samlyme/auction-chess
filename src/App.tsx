@@ -148,13 +148,17 @@ export function App() {
     id: "play-vs-random",
   };
 
-  return (
-    <div className="app">
-      <div className="game" style={{ width: "50%", margin: "auto" }}>
-        <Chessboard options={chessboardOptions} />
-      </div>
-    </div>
-  );
+  // return (
+  //   <div className="app">
+  //     <div className="game" style={{ width: "50%", margin: "auto" }}>
+  //       <Chessboard options={chessboardOptions} />
+  //     </div>
+
+  //     <div className="boardgameio">
+      
+  //     </div>
+  //   </div>
+  // );
 }
 
 export default App;
