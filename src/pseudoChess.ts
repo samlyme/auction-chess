@@ -1,10 +1,15 @@
 import {
   attacks,
   between,
+  bishopAttacks,
   Board,
+  kingAttacks,
   kingCastlesTo,
+  knightAttacks,
   makeSquare,
   opposite,
+  pawnAttacks,
+  rookAttacks,
   squareFile,
   squareRank,
   SquareSet,
@@ -16,6 +21,24 @@ import {
 } from "chessops";
 import { makeFen, parseBoardFen, parseFen } from "chessops/fen";
 import { parseSquare, rookCastlesTo, squareFromCoords } from "chessops/util";
+
+const attacksTo = (
+  square: Square,
+  attacker: Color,
+  board: Board
+): SquareSet => {
+  const occupied = board.occupied;
+  return board[attacker].intersect(
+    rookAttacks(square, occupied)
+      .intersect(board.rooksAndQueens())
+      .union(
+        bishopAttacks(square, occupied).intersect(board.bishopsAndQueens())
+      )
+      .union(knightAttacks(square).intersect(board.knight))
+      .union(kingAttacks(square).intersect(board.king))
+      .union(pawnAttacks(opposite(attacker), square).intersect(board.pawn))
+  );
+};
 
 export class PseudoChess {
   setup: Setup;
@@ -68,17 +91,32 @@ export class PseudoChess {
     const piece = this.setup.board.get(from);
     if (!piece || piece.role !== "king") throw new Error("not king square");
 
-    let moves = attacks(piece, from, this.setup.board.occupied)
+    let moves = attacks(piece, from, this.setup.board.occupied);
 
-    const legalRooks = this.setup.castlingRights.intersect(SquareSet.backrank(piece.color));
+    if (!this.isCheck(piece.color)) {
+      const legalRooks = this.setup.castlingRights.intersect(
+        SquareSet.backrank(piece.color)
+      );
 
-    for (const rook of legalRooks) {
-      if (between(from, rook).intersect(this.setup.board.occupied).isEmpty()) {
-        moves = moves.with(kingCastlesTo(piece.color, from < rook ? "h" : "a"))
+      for (const rook of legalRooks) {
+        if (
+          between(from, rook).intersect(this.setup.board.occupied).isEmpty()
+        ) {
+          moves = moves.with(
+            kingCastlesTo(piece.color, from < rook ? "h" : "a")
+          );
+        }
       }
     }
 
-    return moves
+    return moves;
+  }
+
+  isCheck(color: Color): boolean {
+    const king = this.setup.board.kingOf(color);
+    if (!king) return true;
+
+    return !attacksTo(king, opposite(color), this.setup.board).isEmpty();
   }
 
   legalDests(from: Square): SquareSet {
@@ -108,8 +146,7 @@ export class PseudoChess {
     }
   }
 
-
-movePiece(move: NormalMove): boolean {
+  movePiece(move: NormalMove): boolean {
     if (this.legalDests(move.from).has(move.to)) {
       const piece = this.setup.board.take(move.from)!;
 
@@ -117,21 +154,26 @@ movePiece(move: NormalMove): boolean {
         const isCastling = Math.abs(move.to - move.from) == 2;
         const castlingSide: "a" | "h" = move.to - move.from > 0 ? "h" : "a";
         console.log("castlingSide", castlingSide);
-        
+
         if (isCastling) {
-          const rookFrom = squareFromCoords(castlingSide === "a" ? 0: 7, piece.color === "white" ? 0 : 7)!;
+          const rookFrom = squareFromCoords(
+            castlingSide === "a" ? 0 : 7,
+            piece.color === "white" ? 0 : 7
+          )!;
           const rookTo = rookCastlesTo(piece.color, castlingSide);
 
           const rook = this.setup.board.take(rookFrom)!;
           this.setup.board.set(rookTo, rook);
         }
-        
+
         this.setup.castlingRights = this.setup.castlingRights.diff(
           SquareSet.backrank(piece.color).intersect(SquareSet.corners())
         );
       }
       if (piece.role === "rook") {
-        this.setup.castlingRights = this.setup.castlingRights.without(move.from)
+        this.setup.castlingRights = this.setup.castlingRights.without(
+          move.from
+        );
       }
 
       if (piece.role === "pawn" && move.to === this.setup.epSquare) {
