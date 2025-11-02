@@ -44,17 +44,21 @@ export class PseudoChess {
 
     const potentialAttacks = attacks(piece, from, this.setup.board.occupied);
 
-    const opps = this.setup.board[opposite(piece.color)];
+    let opps = this.setup.board[opposite(piece.color)];
     // check for ep Square color
+    console.log("epSquare", this.setup.epSquare);
     if (this.setup.epSquare) {
-      console.log("can en passant");
       
       const rank = squareRank(this.setup.epSquare);
+      console.log("epSquare rank", rank);
+      
       if (
-        (piece.color === "white" && rank === 6) ||
-        (piece.color === "black" && rank == 3)
+        (piece.color === "white" && rank === 5) ||
+        (piece.color === "black" && rank == 2)
       ) {
-        opps.with(this.setup.epSquare);
+        console.log("add ep square");
+        
+        opps = opps.with(this.setup.epSquare);
       }
     }
 
@@ -65,7 +69,11 @@ export class PseudoChess {
     const piece = this.setup.board.get(from);
     if (!piece) return SquareSet.empty();
 
-    if (piece.role === "pawn") return this.pawnMoves(from);
+    if (piece.role === "pawn") {
+      console.log("moving pawn");
+      
+      return this.pawnMoves(from);
+    }
 
     return attacks(piece, from, this.setup.board.occupied).diff(
       this.setup.board[piece.color]
@@ -83,9 +91,28 @@ export class PseudoChess {
   }
 
   movePiece(move: NormalMove): boolean {
+    console.log(move);
+    
     if (this.legalDests(move.from).has(move.to)) {
-      const peice = this.setup.board.take(move.from)!;
-      this.setup.board.set(move.to, peice);
+      const piece = this.setup.board.take(move.from)!;
+
+      if (piece.role === "pawn" && move.to === this.setup.epSquare) {
+        const delta = piece.color === "white" ? 8 : -8;
+
+        const taken = this.setup.board.take(move.to - delta);
+        if (!taken || taken.role !== "pawn" || taken.color === piece.color) {
+          throw new Error("broken en passant");
+        }
+      }
+
+      this.setup.epSquare = undefined;
+      if (piece.role === "pawn") {
+        if (Math.abs(move.to - move.from) == 16) {
+          console.log("played double move");
+          this.setup.epSquare = (move.to + move.from) / 2;
+        }
+      }
+      this.setup.board.set(move.to, piece);
       return true;
     }
 
