@@ -17,15 +17,13 @@ export interface ChessState {
 
 
 const movePiece: Move<ChessState> = ({ G }, move: NormalMove) => {
-  const setupRes = parseFen(G.fen);
-  const setup: Setup = setupRes.unwrap();
-  const chessLogic: PseudoChess = new PseudoChess(setup);
+  const chessLogic = new PseudoChess(G.fen);
 
   // TODO: Implement pseudomove isLegal
   // if (!chessLogic.isLegal(move)) return INVALID_MOVE;
 
-  chessLogic.play(move);
-  G.fen = makeFen(chessLogic.toSetup());
+  chessLogic.movePiece(move);
+  G.fen = chessLogic.toFen();
 };
 
 export const PseudoChessGame: Game<ChessState> = {
@@ -43,12 +41,10 @@ export const PseudoChessGame: Game<ChessState> = {
   },
 
   endIf: ({G, ctx}) => {
-    const setupRes = parseFen(G.fen);
-    const setup: Setup = setupRes.unwrap();
-    const chessLogic: PseudoChess = new PseudoChess(setup);
+    const chessLogic: PseudoChess = new PseudoChess(G.fen);
     
     const outcome = chessLogic.outcome();
-    if (outcome) return { winner: outcome.winner }
+    if (outcome.winner) return outcome;
   }
 };
 
