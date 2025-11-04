@@ -46,10 +46,6 @@ export class PseudoChess {
 
   constructor(fen: string) {
     this.setup = parseFen(fen).unwrap();
-    console.log(
-      "castling rights",
-      [...this.setup.castlingRights].map(makeSquare)
-    );
   }
 
   get(square: Square): Piece | undefined {
@@ -165,7 +161,6 @@ export class PseudoChess {
       if (piece.role === "king") {
         const isCastling = Math.abs(move.to - move.from) == 2;
         const castlingSide: "a" | "h" = move.to - move.from > 0 ? "h" : "a";
-        console.log("castlingSide", castlingSide);
 
         if (isCastling) {
           const rookFrom = squareFromCoords(

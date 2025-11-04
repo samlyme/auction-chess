@@ -46,8 +46,6 @@ export const PseudoChessGame: Game<ChessState> = {
 };
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
-  // TODO: current code setup creates a lot of invalid moves. maybe add checks
-  // to onPieceDrop and onSquareClick functions.
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
 
   const chessLogic = new PseudoChess(G.fen);
@@ -56,6 +54,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     ? chessLogic.legalDests(parseSquare(moveFrom)!)
     : [];
   const squareStyles: Record<string, React.CSSProperties> = {};
+  // TODO: Extract CSS to module. 
   if (moveFrom) {
     squareStyles[moveFrom] = {
       background: "rgba(255, 255, 0, 0.4)",
@@ -98,15 +97,18 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
   }
 
   function onSquareClick({ square, piece }: SquareHandlerArgs): void {
-    console.log("moveFrom", moveFrom);
-
     if (moveFrom !== null) {
       const move = {
         from: parseSquare(moveFrom)!,
         to: parseSquare(square)!,
       };
-      if (chessLogic.isLegal(move)) moves.movePiece!(move);
-      setMoveFrom(null);
+      if (chessLogic.isLegal(move)) {
+        moves.movePiece!(move);
+        setMoveFrom(null);
+      }
+      else {
+        setMoveFrom(square);
+      }
     } else if (piece !== null) {
       setMoveFrom(square);
     } else {
