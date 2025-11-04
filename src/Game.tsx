@@ -1,7 +1,7 @@
 // TODO: for multiplayer, think about browser to browser connections.
 import type { Game, Move } from "boardgame.io";
 import { PseudoChess } from "./pseudoChess";
-import { makeSquare, parseSquare, type Color, type NormalMove } from "chessops";
+import { makeSquare, parseSquare, type NormalMove } from "chessops";
 import { INVALID_MOVE, TurnOrder } from "boardgame.io/core";
 import {
   Chessboard,
@@ -120,7 +120,6 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
   }
 
   return (
-    // TODO: fix animation
     <Chessboard
       options={{
         position: G.fen,
