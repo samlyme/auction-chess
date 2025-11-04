@@ -1,8 +1,8 @@
 // TODO: for multiplayer, think about browser to browser connections.
 import type { Game, Move } from "boardgame.io";
 import { PseudoChess } from "./pseudoChess";
-import { makeSquare, parseSquare, type NormalMove } from "chessops";
-import { INVALID_MOVE } from "boardgame.io/core";
+import { makeSquare, parseSquare, type Color, type NormalMove } from "chessops";
+import { INVALID_MOVE, TurnOrder } from "boardgame.io/core";
 import {
   Chessboard,
   type PieceDropHandlerArgs,
@@ -29,6 +29,7 @@ export const PseudoChessGame: Game<ChessState> = {
   }),
 
   turn: {
+    order: TurnOrder.CUSTOM(["white", "black"]),
     minMoves: 1,
     maxMoves: 1,
   },
@@ -47,6 +48,7 @@ export const PseudoChessGame: Game<ChessState> = {
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
+  console.log(moveFrom);
 
   const chessLogic = new PseudoChess(G.fen);
 
@@ -54,7 +56,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     ? chessLogic.legalDests(parseSquare(moveFrom)!)
     : [];
   const squareStyles: Record<string, React.CSSProperties> = {};
-  // TODO: Extract CSS to module. 
+  // TODO: Extract CSS to module.
   if (moveFrom) {
     squareStyles[moveFrom] = {
       background: "rgba(255, 255, 0, 0.4)",
@@ -86,7 +88,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     const move = {
       from: parseSquare(sourceSquare)!,
       to: parseSquare(targetSquare)!,
-    }
+    };
     if (chessLogic.isLegal(move)) {
       moves.movePiece!(move);
       return true;
@@ -97,22 +99,23 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
   }
 
   function onSquareClick({ square, piece }: SquareHandlerArgs): void {
-    if (moveFrom !== null) {
-      const move = {
-        from: parseSquare(moveFrom)!,
-        to: parseSquare(square)!,
-      };
-      if (chessLogic.isLegal(move)) {
-        moves.movePiece!(move);
-        setMoveFrom(null);
-      }
-      else {
-        setMoveFrom(square);
-      }
-    } else if (piece !== null) {
-      setMoveFrom(square);
-    } else {
+    if (moveFrom === null) {
+      setMoveFrom(piece === null ? null : square);
+      return;
+    }
+
+    if (moveFrom === square) {
       setMoveFrom(null);
+      return;
+    }
+
+    const move = { from: parseSquare(moveFrom)!, to: parseSquare(square)! };
+    if (chessLogic.isLegal(move)) {
+      moves.movePiece!(move);
+      setMoveFrom(null);
+    }
+    else {
+      setMoveFrom(piece === null ? null : square);
     }
   }
 

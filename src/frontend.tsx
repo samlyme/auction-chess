@@ -8,15 +8,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
-import BoardGame from "./BoardGame";
 
 const elem = document.getElementById("root")!;
 const app = (
   <StrictMode>
-    {/* <App /> */}
-    <div className="board-container" style={{height: "90vmin", width:"90vmin"}}>
-      <BoardGame />
-    </div>
+    <App />
   </StrictMode>
 );
 
