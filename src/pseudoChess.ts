@@ -53,7 +53,7 @@ export class PseudoChess {
   }
 
   get(square: Square): Piece | undefined {
-    return this.setup.board.get(square)
+    return this.setup.board.get(square);
   }
 
   //   Need this because pawn moves and attacks are different
@@ -96,7 +96,9 @@ export class PseudoChess {
     const piece = this.setup.board.get(from);
     if (!piece || piece.role !== "king") throw new Error("not king square");
 
-    let moves = attacks(piece, from, this.setup.board.occupied);
+    let moves = attacks(piece, from, this.setup.board.occupied).diff(
+      this.setup.board[piece.color]
+    );
 
     if (!this.isCheck(piece.color)) {
       const legalRooks = this.setup.castlingRights.intersect(
@@ -149,6 +151,11 @@ export class PseudoChess {
         yield { from, to };
       }
     }
+  }
+
+  isLegal(move: NormalMove): boolean {
+    const dests = this.legalDests(move.from);
+    return dests.has(move.to);
   }
 
   movePiece(move: NormalMove): boolean {
