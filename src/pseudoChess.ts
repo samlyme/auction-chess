@@ -16,6 +16,7 @@ import {
   type Color,
   type NormalMove,
   type Outcome,
+  type Piece,
   type Setup,
   type Square,
 } from "chessops";
@@ -41,7 +42,7 @@ const attacksTo = (
 };
 
 export class PseudoChess {
-  setup: Setup;
+  private setup: Setup;
 
   constructor(fen: string) {
     this.setup = parseFen(fen).unwrap();
@@ -49,6 +50,10 @@ export class PseudoChess {
       "castling rights",
       [...this.setup.castlingRights].map(makeSquare)
     );
+  }
+
+  get(square: Square): Piece | undefined {
+    return this.setup.board.get(square)
   }
 
   //   Need this because pawn moves and attacks are different
