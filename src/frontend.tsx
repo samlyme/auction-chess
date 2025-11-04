@@ -14,7 +14,9 @@ const elem = document.getElementById("root")!;
 const app = (
   <StrictMode>
     {/* <App /> */}
-    <BoardGame />
+    <div className="board-container" style={{height: "90vmin", width:"90vmin"}}>
+      <BoardGame />
+    </div>
   </StrictMode>
 );
 
