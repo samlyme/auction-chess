@@ -11,10 +11,6 @@ import {
 import type { BoardProps } from "boardgame.io/dist/types/packages/react";
 import { useState } from "react";
 
-// At the top level, use react-chessboard's square type
-// Since the game state can't include classes, we need use closures to access
-// our chess logic.
-
 export interface ChessState {
   fen: string;
 }
@@ -49,6 +45,8 @@ export const PseudoChessGame: Game<ChessState> = {
 };
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
+  // TODO: current code setup creates a lot of invalid moves. maybe add checks
+  // to onPieceDrop and onSquareClick functions. 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
 
   const chessLogic = new PseudoChess(G.fen);
