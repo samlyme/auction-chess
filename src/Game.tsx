@@ -22,7 +22,7 @@ export interface ChessState {
 const movePiece: Move<ChessState> = ({ G }, move: NormalMove) => {
   // Consider a refactor. Recreating the class per move COULD be a bottleneck.
   const chessLogic = new PseudoChess(G.fen);
-  chessLogic.movePiece(move);
+  if (!chessLogic.movePiece(move)) return INVALID_MOVE;
   G.fen = chessLogic.toFen();
 };
 
@@ -37,7 +37,7 @@ export const PseudoChessGame: Game<ChessState> = {
   },
 
   moves: {
-    movePiece: movePiece,
+    movePiece,
   },
 
   endIf: ({ G, ctx }) => {
@@ -76,6 +76,10 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
         };
   }
 
+  function onPieceDrag({ square }: {square: string}) {
+    setMoveFrom(square);
+  }
+
   const onPieceDrop = ({
     sourceSquare,
     targetSquare,
@@ -86,6 +90,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
       from: parseSquare(sourceSquare),
       to: parseSquare(targetSquare),
     });
+    setMoveFrom(null);
     return true;
   };
 
@@ -112,6 +117,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     <Chessboard
       options={{
         position: G.fen,
+        onPieceDrag,
         onPieceDrop,
         onSquareClick,
         squareStyles,
