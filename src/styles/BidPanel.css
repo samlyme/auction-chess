@@ -1,8 +1,11 @@
 /* Dev colors */
 .bid-panel  {
     border: solid;
-    width: 30vw;
-    margin: 0;
+    width: 30vmin;
+}
+
+.bid-panel h1, h2, h3, h4, h5, h6 {
+    margin: 8px;
 }
 
 .item {
