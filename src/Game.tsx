@@ -1,6 +1,6 @@
 // TODO: for multiplayer, think about browser to browser connections.
 import type { Game, Move } from "boardgame.io";
-import { PseudoChess } from "./pseudoChess";
+import { PseudoChess } from "./game/pseudoChess";
 import { makeSquare, parseSquare, type NormalMove } from "chessops";
 import { INVALID_MOVE, TurnOrder } from "boardgame.io/core";
 import {
@@ -53,7 +53,6 @@ export const PseudoChessGame: Game<ChessState> = {
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
-  console.log(moveFrom);
 
   const chessLogic = new PseudoChess(G.fen);
 
