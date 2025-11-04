@@ -1,11 +1,11 @@
 import type { Game, Move, MoveMap } from "boardgame.io";
 import { PseudoChess } from "./pseudoChess";
-import { makeBoardFen, makeFen, parseFen } from "chessops/fen";
-import { makeSquare, parseSquare, type NormalMove, type Setup } from "chessops";
+import { makeSquare, parseSquare, type NormalMove } from "chessops";
 import { INVALID_MOVE } from "boardgame.io/core";
 import {
   Chessboard,
   type PieceDropHandlerArgs,
+  type PieceHandlerArgs,
   type SquareHandlerArgs,
 } from "react-chessboard";
 import type { BoardProps } from "boardgame.io/dist/types/packages/react";
@@ -76,14 +76,14 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
         };
   }
 
-  function onPieceDrag({ square }: {square: string}) {
+  function onPieceDrag({ square }: PieceHandlerArgs) {
     setMoveFrom(square);
   }
 
-  const onPieceDrop = ({
+  function onPieceDrop({
     sourceSquare,
     targetSquare,
-  }: PieceDropHandlerArgs): boolean => {
+  }: PieceDropHandlerArgs): boolean {
     if (!targetSquare) return false;
 
     moves.movePiece!({
@@ -92,7 +92,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     });
     setMoveFrom(null);
     return true;
-  };
+  }
 
   function onSquareClick({ square, piece }: SquareHandlerArgs): void {
     console.log("moveFrom", moveFrom);
