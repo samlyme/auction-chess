@@ -1,0 +1,6 @@
+.board-container {
+  display: flex;
+  flex-direction: row; /* default, but explicit for clarity */
+  justify-content: center; /* don’t stretch or resize */
+  align-items: flex-start; /* keeps their natural heights */
+}
