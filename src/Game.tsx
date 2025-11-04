@@ -11,6 +11,11 @@ import {
 } from "react-chessboard";
 import type { BoardProps } from "boardgame.io/dist/types/packages/react";
 import { useState } from "react";
+import {
+  availableCapture,
+  availableMove,
+  selectedSquare,
+} from "./styles/BoardStyle";
 
 export interface ChessState {
   fen: string;
@@ -56,24 +61,13 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     ? chessLogic.legalDests(parseSquare(moveFrom)!)
     : [];
   const squareStyles: Record<string, React.CSSProperties> = {};
-  // TODO: Extract CSS to module.
   if (moveFrom) {
-    squareStyles[moveFrom] = {
-      background: "rgba(255, 255, 0, 0.4)",
-    };
+    squareStyles[moveFrom] = selectedSquare;
   }
   for (const moveOption of moveOptions) {
     squareStyles[makeSquare(moveOption)] = chessLogic.get(moveOption)
-      ? {
-          background:
-            "radial-gradient(circle, rgba(0,0,0,.2) 85%, transparent 85%)",
-          borderRadius: "50%",
-        }
-      : {
-          background:
-            "radial-gradient(circle, rgba(0,0,0,.2) 25%, transparent 25%)",
-          borderRadius: "50%",
-        };
+      ? availableCapture
+      : availableMove;
   }
 
   function onPieceDrag({ square }: PieceHandlerArgs): void {
@@ -113,8 +107,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     if (chessLogic.isLegal(move)) {
       moves.movePiece!(move);
       setMoveFrom(null);
-    }
-    else {
+    } else {
       setMoveFrom(piece === null ? null : square);
     }
   }
