@@ -1,6 +1,14 @@
 import "../styles/BidPanel.css";
 
-function TimeAndTitle({ time, username, color }) {
+function TimeAndTitle({
+  time,
+  username,
+  color,
+}: {
+  time: string;
+  username: string;
+  color: string;
+}) {
   return (
     <div className="time-and-title">
       <div className="time item">
@@ -15,7 +23,13 @@ function TimeAndTitle({ time, username, color }) {
   );
 }
 
-function CurrentBalance({ balance, nextBalance }) {
+function CurrentBalance({
+  balance,
+  nextBalance,
+}: {
+  balance: number;
+  nextBalance: number;
+}) {
   return (
     <div className="current-balance item">
       <h5>Current Balance</h5>
@@ -26,7 +40,7 @@ function CurrentBalance({ balance, nextBalance }) {
   );
 }
 
-function BidInfo({ playerBid, oppBid }) {
+function BidInfo({ playerBid, oppBid }: { playerBid: number; oppBid: number }) {
   return (
     <div className="bid-info">
       <div className="item">
@@ -34,22 +48,20 @@ function BidInfo({ playerBid, oppBid }) {
         <h2>${playerBid}</h2>
       </div>
       <div className="item">
-        <p>Opponent Bid</p>
+        <p>Opp. Bid</p>
         <h2>${oppBid}</h2>
       </div>
     </div>
   );
 }
 
-function BidMenu({ currentBid }) {
+function BidMenu({ currentBid }: { currentBid: number }) {
   return (
     <div className="bid-menu item">
       <div className="left">
         <div className="item">
           <p>Current Bid</p>
-          <div className="item">
-            $250
-          </div>
+          <div className="item">${currentBid}</div>
         </div>
         <div className="bid-fold">
           <div className="item">BID</div>
@@ -81,7 +93,7 @@ export default function BidPanel() {
       <BidMenu currentBid={250} />
 
       <CurrentBalance balance={1000} nextBalance={750} />
-      
+
       <TimeAndTitle time={"15:00"} username={"Player 1"} color={"white"} />
     </div>
   );

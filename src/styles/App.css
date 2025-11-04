@@ -1,6 +1,15 @@
+@font-face {
+    font-family: 'Balatro'; /*a name to be used later*/
+    src: url('../../assets/fonts/balatro.otf'); /*URL to font*/
+}
 .board-container {
-  display: flex;
-  flex-direction: row; /* default, but explicit for clarity */
-  justify-content: center; /* don’t stretch or resize */
-  align-items: flex-start; /* keeps their natural heights */
+    height: 90vmin;
+    width: 90vmin;
+}
+
+.app {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Balatro;
 }
