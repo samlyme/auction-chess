@@ -6,11 +6,9 @@ import {
   kingAttacks,
   kingCastlesTo,
   knightAttacks,
-  makeSquare,
   opposite,
   pawnAttacks,
   rookAttacks,
-  squareFile,
   squareRank,
   SquareSet,
   type Color,
@@ -20,8 +18,8 @@ import {
   type Setup,
   type Square,
 } from "chessops";
-import { makeFen, parseBoardFen, parseFen } from "chessops/fen";
-import { parseSquare, rookCastlesTo, squareFromCoords } from "chessops/util";
+import { makeFen, parseFen } from "chessops/fen";
+import { rookCastlesTo, squareFromCoords } from "chessops/util";
 
 const attacksTo = (
   square: Square,
