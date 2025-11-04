@@ -1,6 +1,6 @@
 // TODO: for multiplayer, think about browser to browser connections.
 import type { Game, Move } from "boardgame.io";
-import { PseudoChess } from "./game/pseudoChess";
+import { PseudoChess } from "../game/pseudoChess";
 import { makeSquare, parseSquare, type NormalMove } from "chessops";
 import { INVALID_MOVE, TurnOrder } from "boardgame.io/core";
 import {
@@ -15,7 +15,7 @@ import {
   availableCapture,
   availableMove,
   selectedSquare,
-} from "./styles/BoardStyle";
+} from "../styles/BoardStyle";
 
 export interface ChessState {
   fen: string;
