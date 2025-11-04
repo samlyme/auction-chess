@@ -1,4 +1,4 @@
-import { PseudoChessBoard, PseudoChessGame } from "./Game";
+import { PseudoChessBoard, PseudoChessGame } from "./components/Game";
 import { Client } from 'boardgame.io/react';
 
 const BoardGame = Client({ game: PseudoChessGame, board: PseudoChessBoard });
