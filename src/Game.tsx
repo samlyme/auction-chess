@@ -1,4 +1,5 @@
-import type { Game, Move, MoveMap } from "boardgame.io";
+// TODO: for multiplayer, think about browser to browser connections.
+import type { Game, Move } from "boardgame.io";
 import { PseudoChess } from "./pseudoChess";
 import { makeSquare, parseSquare, type NormalMove } from "chessops";
 import { INVALID_MOVE } from "boardgame.io/core";
@@ -46,7 +47,7 @@ export const PseudoChessGame: Game<ChessState> = {
 
 export function PseudoChessBoard({ G, moves }: BoardProps) {
   // TODO: current code setup creates a lot of invalid moves. maybe add checks
-  // to onPieceDrop and onSquareClick functions. 
+  // to onPieceDrop and onSquareClick functions.
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
 
   const chessLogic = new PseudoChess(G.fen);
@@ -74,7 +75,7 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
         };
   }
 
-  function onPieceDrag({ square }: PieceHandlerArgs) {
+  function onPieceDrag({ square }: PieceHandlerArgs): void {
     setMoveFrom(square);
   }
 
@@ -83,25 +84,28 @@ export function PseudoChessBoard({ G, moves }: BoardProps) {
     targetSquare,
   }: PieceDropHandlerArgs): boolean {
     if (!targetSquare) return false;
+    const move = {
+      from: parseSquare(sourceSquare)!,
+      to: parseSquare(targetSquare)!,
+    }
+    if (chessLogic.isLegal(move)) {
+      moves.movePiece!(move);
+      return true;
+    }
 
-    moves.movePiece!({
-      from: parseSquare(sourceSquare),
-      to: parseSquare(targetSquare),
-    });
     setMoveFrom(null);
-    return true;
+    return false;
   }
 
   function onSquareClick({ square, piece }: SquareHandlerArgs): void {
     console.log("moveFrom", moveFrom);
 
     if (moveFrom !== null) {
-      if (square !== moveFrom) {
-        moves.movePiece!({
-          from: parseSquare(moveFrom),
-          to: parseSquare(square),
-        });
-      }
+      const move = {
+        from: parseSquare(moveFrom)!,
+        to: parseSquare(square)!,
+      };
+      if (chessLogic.isLegal(move)) moves.movePiece!(move);
       setMoveFrom(null);
     } else if (piece !== null) {
       setMoveFrom(square);
