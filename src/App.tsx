@@ -7,8 +7,10 @@ const BoardGame = Client({ game: PseudoChessGame, board: PseudoChessBoard });
 
 export function App() {
   return (
-    <div className="board-container" style={{height: "90vmin", width:"90vmin"}}>
-      <BoardGame />
+    <div className="app">
+      <div className="board-container">
+        <BoardGame />
+      </div>
       <BidPanel />
     </div>
   )
