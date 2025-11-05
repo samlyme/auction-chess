@@ -15,6 +15,7 @@ import {
   type NormalMove,
   type Outcome,
   type Piece,
+  type Role,
   type Setup,
   type Square,
 } from "chessops";
@@ -137,17 +138,35 @@ export class PseudoChess {
     );
   }
 
-  //   TODO: handle castling
   // TODO: check for promotions
   *legalMoves(color: Color): Generator<NormalMove> {
     for (const from of this.setup.board[color]) {
       for (const to of this.legalDests(from)) {
-        yield { from, to };
+        if (this.setup.board.pawn.has(from) && SquareSet.backranks().has(to)) {
+          // promotion
+          const promotionOptions: Role[] = [
+            "queen",
+            "rook",
+            "bishop",
+            "knight",
+          ];
+          const promotionMoves: NormalMove[] = promotionOptions.map((role) => {
+            return { from, to, promotion: role };
+          });
+
+          yield* promotionMoves;
+        } else yield { from, to };
       }
     }
   }
 
-  isLegal(move: NormalMove): boolean {
+  isLegalDest(move: NormalMove): boolean {
+    // does not check for promotion
+    const piece = this.setup.board.get(move.from);
+    if (!piece) return false;
+
+    if (move.promotion == "king" || move.promotion == "pawn") return false
+    
     const dests = this.legalDests(move.from);
     return dests.has(move.to);
   }
@@ -199,6 +218,11 @@ export class PseudoChess {
       const taken = this.setup.board.set(move.to, piece);
       if (taken && taken.role == "rook") {
         this.setup.castlingRights = this.setup.castlingRights.without(move.to);
+      }
+
+      if (move.promotion) {
+        this.setup.board[piece.role] = this.setup.board[piece.role].without(move.to)
+        this.setup.board[move.promotion] = this.setup.board[move.promotion].with(move.to)
       }
       return true;
     }
