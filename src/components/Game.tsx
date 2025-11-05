@@ -137,9 +137,6 @@ function PromotionMenu({
 export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
-  console.log("promotionMove", promotionMove);
-  console.log(defaultPieces, `w${roleToChar("pawn")}`);
-  console.log(defaultPieces[`w${roleToChar("pawn").toUpperCase()}`]);
 
   const chessLogic = new PseudoChess(G.fen);
 
@@ -222,14 +219,11 @@ export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
     }
   }
 
-  console.log(ctx.playOrder[ctx.turn]);
-  
-
   return (
     <>
       {promotionMove && (
         <PromotionMenu
-          color={"white"}
+          color={ctx.playOrder[ctx.playOrderPos] as Color}
           fileIndex={squareFile(promotionMove.to)}
           cancel={() => setPromotionMove(null)}
           select={playPromotion}
