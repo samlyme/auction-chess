@@ -1,5 +1,4 @@
 // TODO: for multiplayer, think about browser to browser connections.
-import type { Game, Move } from "boardgame.io";
 import { PseudoChess } from "../game/pseudoChess";
 import {
   makeSquare,
@@ -11,11 +10,9 @@ import {
   type NormalMove,
   type Role,
 } from "chessops";
-import { INVALID_MOVE, TurnOrder } from "boardgame.io/core";
 import {
   Chessboard,
   defaultPieces,
-  type PieceDataType,
   type PieceDropHandlerArgs,
   type PieceHandlerArgs,
   type SquareHandlerArgs,
@@ -27,42 +24,9 @@ import {
   availableMove,
   selectedSquare,
 } from "../styles/BoardStyle";
+import type { AuctionChessState } from "@/game/auctionChess";
+import BidPanel from "./BidPanel";
 
-
-
-export interface ChessState {
-  fen: string;
-}
-
-const movePiece: Move<ChessState> = ({ G }, move: NormalMove) => {
-  // Consider a refactor. Recreating the class per move COULD be a bottleneck.
-  const chessLogic = new PseudoChess(G.fen);
-  if (!chessLogic.movePiece(move)) return INVALID_MOVE;
-  G.fen = chessLogic.toFen();
-};
-
-export const PseudoChessGame: Game<ChessState> = {
-  setup: () => ({
-    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  }),
-
-  turn: {
-    order: TurnOrder.CUSTOM(["white", "black"]),
-    minMoves: 1,
-    maxMoves: 1,
-  },
-
-  moves: {
-    movePiece,
-  },
-
-  endIf: ({ G, ctx }) => {
-    const chessLogic: PseudoChess = new PseudoChess(G.fen);
-
-    const outcome = chessLogic.outcome();
-    if (outcome.winner) return outcome;
-  },
-};
 
 function PromotionMenu({
   color,
@@ -134,11 +98,13 @@ function PromotionMenu({
   );
 }
 
-export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
+export function AuctionChessBoard({ G, ctx, moves, playerID, isActive }: BoardProps) {
+  G as AuctionChessState;
+
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
 
-  const chessLogic = new PseudoChess(G.fen);
+  const chessLogic = new PseudoChess(G.chessState.fen);
 
   const moveOptions = moveFrom
     ? chessLogic.legalDests(parseSquare(moveFrom)!)
@@ -164,8 +130,9 @@ export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
     setPromotionMove(null);
   }
 
-  function onPieceDrag({ square }: PieceHandlerArgs): void {
-    setMoveFrom(square);
+  function onPieceDrag({ square, piece }: PieceHandlerArgs): void {
+    const pieceColor = piece.pieceType.includes("w") ? "white" : "black";
+    if (pieceColor === playerID) setMoveFrom(square);
   }
 
   function onPieceDrop({
@@ -197,21 +164,27 @@ export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
   }
 
   function onSquareClick({ square, piece }: SquareHandlerArgs): void {
-    if (moveFrom === null) {
-      setMoveFrom(piece === null ? null : square);
-      return;
-    }
-
     if (moveFrom === square) {
       setMoveFrom(null);
       return;
     }
 
+    if (moveFrom === null) {
+      if (!piece) {
+        setMoveFrom(null);
+        return;
+      }
+
+      const pieceColor = piece.pieceType.includes("w") ? "white" : "black"
+      setMoveFrom(pieceColor === playerID ? square : null);
+      return;
+    }
+
     const move = { from: parseSquare(moveFrom)!, to: parseSquare(square)! };
-    if (chessLogic.isLegalDest(move) && shouldPromote(move)) {
+    if (chessLogic.isLegalDest(move, playerID as Color) && shouldPromote(move)) {
       setPromotionMove(move);
     }
-    else if (chessLogic.isLegalDest(move)) {
+    else if (chessLogic.isLegalDest(move, playerID as Color)) {
       moves.movePiece!(move);
       setMoveFrom(null);
     } else {
@@ -220,7 +193,7 @@ export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
   }
 
   return (
-    <>
+    <div className="board-container">
       {promotionMove && (
         <PromotionMenu
           color={ctx.playOrder[ctx.playOrderPos] as Color}
@@ -229,15 +202,19 @@ export function PseudoChessBoard({ G, ctx, moves }: BoardProps) {
           select={playPromotion}
         />
       )}
-      <Chessboard
-        options={{
-          position: G.fen,
-          onPieceDrag,
-          onPieceDrop,
-          onSquareClick,
-          squareStyles,
-        }}
-      />
-    </>
+      <div className="board-wrapper">
+        <Chessboard
+          options={{
+            position: G.chessState.fen,
+            onPieceDrag,
+            onPieceDrop,
+            onSquareClick,
+            squareStyles,
+            boardOrientation: playerID as Color, 
+          }}
+        />
+      </div>
+      <BidPanel makeBid={moves.makeBid!}/>
+    </div>
   );
 }

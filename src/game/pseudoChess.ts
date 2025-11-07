@@ -160,18 +160,17 @@ export class PseudoChess {
     }
   }
 
-  isLegalDest(move: NormalMove): boolean {
-    // does not check for promotion
-    const piece = this.setup.board.get(move.from);
-    if (!piece) return false;
-
-    if (move.promotion == "king" || move.promotion == "pawn") return false
-    
+  isLegalDest(move: NormalMove, color: Color | null = null): boolean {
+    if (move.promotion == "king" || move.promotion == "pawn") return false;
     const dests = this.legalDests(move.from);
+
+    if (color) return dests.has(move.to) && this.setup.board[color].has(move.from);
     return dests.has(move.to);
   }
 
-  movePiece(move: NormalMove): boolean {
+  movePiece(move: NormalMove, color: Color): boolean {
+    if (!this.setup.board[color].has(move.from)) return false;
+
     if (this.legalDests(move.from).has(move.to)) {
       const piece = this.setup.board.take(move.from)!;
 

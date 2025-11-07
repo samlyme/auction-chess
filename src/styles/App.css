@@ -3,13 +3,16 @@
     src: url('../../assets/fonts/balatro.otf'); /*URL to font*/
 }
 .board-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 90vmin;
     width: 90vmin;
 }
 
 .app {
+    font-family: Balatro;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: Balatro;
 }
