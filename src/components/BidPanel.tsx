@@ -1,8 +1,8 @@
-import type { Bid } from "@/game/auctionChess";
+import type { AuctionChessState, Bid } from "@/game/auctionChess";
 import "../styles/BidPanel.css";
 import { opposite, type Color } from "chessops";
 import type { BoardProps } from "boardgame.io/dist/types/packages/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function TimeAndTitle({
   time,
@@ -124,8 +124,37 @@ export default function BidPanel({
   moves,
   playerID,
   isActive,
-}: BoardProps) {
+}: BoardProps<AuctionChessState>) {
+  const {balance, bidHistory} = G.auctionState;
+
+  const bidStack: Bid[] = bidHistory[bidHistory.length-1]!;
+  const lastBid = bidStack.length >= 1 ? bidStack[bidStack.length-1] : null;
+  const secondLastBid = bidStack.length >= 2 ? bidStack[bidStack.length-2] : null;
+
+  let prevPlayerBidAmount = 0;
+  let prevOppBidAmount = 0
+  if (lastBid) {
+    if (lastBid.from === playerID) {
+      prevPlayerBidAmount = lastBid.amount
+    }
+    else {
+      prevOppBidAmount = lastBid.amount
+    }
+  }
+  if (secondLastBid) {
+    if (secondLastBid.from === playerID) {
+      prevPlayerBidAmount = secondLastBid.amount
+    }
+    else {
+      prevOppBidAmount = secondLastBid.amount
+    }
+  }
+
   const [currentBid, setCurrentBid] = useState<number>(0);
+
+  useEffect(() => {
+    setCurrentBid(Math.max(prevPlayerBidAmount, prevOppBidAmount))
+  },[G])
 
   return (
     <div className="bid-panel">
@@ -136,11 +165,11 @@ export default function BidPanel({
       />
 
       <CurrentBalance
-        balance={G.auctionState[opposite(playerID as Color)]}
-        nextBalance={750}
+        balance={balance[opposite(playerID as Color)]}
+        nextBalance={balance[opposite(playerID as Color)] - prevOppBidAmount}
       />
 
-      <BidInfo playerBid={250} oppBid={250} />
+      <BidInfo playerBid={prevPlayerBidAmount} oppBid={prevOppBidAmount} />
 
       <BidMenu
         currentBid={currentBid}
@@ -150,8 +179,8 @@ export default function BidPanel({
       />
 
       <CurrentBalance
-        balance={G.auctionState[playerID as Color]}
-        nextBalance={750}
+        balance={balance[playerID as Color]}
+        nextBalance={balance[playerID as Color] - currentBid}
       />
 
       <TimeAndTitle

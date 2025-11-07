@@ -36,13 +36,21 @@ const movePiece: Move<AuctionChessState> = ({ G, ctx, events }, move: NormalMove
 const makeBid: Move<AuctionChessState> = ({ G, ctx, events }, bid: Bid) => {
   // TODO: consider turn order
   console.log("Trying to bid", bid);
+  const {balance, bidHistory} = G.auctionState;
 
   // TODO: implement bidding
+  const bidStack: Bid[] = bidHistory[bidHistory.length-1]!;
+  const lastBid = bidStack[bidStack.length - 1];
 
   events.endTurn({ next: opposite(ctx.currentPlayer as Color)})
   if (bid.fold) {
+    if (lastBid) {
+      balance[lastBid.from] -= lastBid.amount;
+    }
+    bidHistory.push([])
     events.setPhase("move");
   }
+  bidStack.push(bid);
 };
 
 export const AuctionChessGame: Game<AuctionChessState> = {
@@ -52,7 +60,7 @@ export const AuctionChessGame: Game<AuctionChessState> = {
     },
     auctionState: {
       balance: { white: 100, black: 100 },
-      bidHistory: [],
+      bidHistory: [[]],
     },
   }),
 
