@@ -98,7 +98,8 @@ function PromotionMenu({
   );
 }
 
-export function AuctionChessBoard({ G, ctx, moves, playerID, isActive }: BoardProps) {
+export function AuctionChessBoard(props: BoardProps) {
+  const { G, ctx, moves, playerID, isActive } = props;
   G as AuctionChessState;
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -214,7 +215,7 @@ export function AuctionChessBoard({ G, ctx, moves, playerID, isActive }: BoardPr
           }}
         />
       </div>
-      <BidPanel makeBid={moves.makeBid!} playerID={playerID as Color}/>
+      <BidPanel {...props}/>
     </div>
   );
 }
