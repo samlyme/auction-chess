@@ -1,11 +1,12 @@
 import type { Game, Move } from "boardgame.io";
 import { INVALID_MOVE, TurnOrder } from "boardgame.io/core";
-import type { Color, NormalMove } from "chessops";
+import { opposite, type Color, type NormalMove } from "chessops";
 import { PseudoChess } from "./pseudoChess";
 
 export interface Bid {
   amount: number;
   fold: boolean;
+  from: Color;
 }
 
 export interface AuctionState {
@@ -28,7 +29,8 @@ const movePiece: Move<AuctionChessState> = ({ G, ctx, events }, move: NormalMove
   const chessLogic = new PseudoChess(G.chessState.fen);
   if (!chessLogic.movePiece(move, ctx.currentPlayer as Color)) return INVALID_MOVE;
   G.chessState.fen = chessLogic.toFen();
-  // events.setPhase("bid");
+  events.endTurn({ next: opposite(ctx.currentPlayer as Color)})
+  events.setPhase("bid");
 };
 
 const makeBid: Move<AuctionChessState> = ({ G, ctx, events }, bid: Bid) => {
@@ -37,6 +39,7 @@ const makeBid: Move<AuctionChessState> = ({ G, ctx, events }, bid: Bid) => {
 
   // TODO: implement bidding
 
+  events.endTurn({ next: opposite(ctx.currentPlayer as Color)})
   if (bid.fold) {
     events.setPhase("move");
   }
@@ -54,17 +57,29 @@ export const AuctionChessGame: Game<AuctionChessState> = {
   }),
 
   turn: { 
-    minMoves: 1, 
-    maxMoves: 1 ,
     order: TurnOrder.CUSTOM(["white", "black"])
   },
 
   phases: {
     bid: {
       moves: { makeBid },
+      turn: {
+        order: {
+          playOrder: () => ["white", "black"],
+          first: ({ctx}) => ctx.playOrderPos,
+          next: ({ctx}) => (ctx.playOrderPos + 1) % ctx.playOrder.length
+        }
+      }
     },
     move: {
       moves: { movePiece },
+      turn: {
+        order: {
+          playOrder: () => ["white", "black"],
+          first: ({ctx}) => ctx.playOrderPos,
+          next: ({ctx}) => (ctx.playOrderPos + 1) % ctx.playOrder.length
+        }
+      },
       start: true,
     }
   }
