@@ -2,7 +2,7 @@ import type { AuctionChessState, Bid } from "@/game/auctionChess";
 import "../styles/BidPanel.css";
 import { opposite, type Color } from "chessops";
 import type { BoardProps } from "boardgame.io/dist/types/packages/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 function TimeAndTitle({
   time,
@@ -37,9 +37,9 @@ function CurrentBalance({
   return (
     <div className="current-balance item">
       <h5>Current Balance</h5>
-      <h1>
+      <h2>
         ${balance} <em>{nextBalance}</em>
-      </h1>
+      </h2>
     </div>
   );
 }
@@ -61,13 +61,19 @@ function BidInfo({ playerBid, oppBid }: { playerBid: number; oppBid: number }) {
 
 function BidMenu({
   currentBid,
+  prevBid,
+  playerBalance,
+  oppBalance,
   setCurrentBid,
   makeBid,
   playerID,
 }: {
   playerID: Color;
+  prevBid: number;
+  playerBalance: number;
+  oppBalance: number
   currentBid: number;
-  setCurrentBid: (bid: number) => void;
+  setCurrentBid: Dispatch<SetStateAction<number>>;
   makeBid: (bid: Bid) => void;
 }) {
   return (
@@ -93,24 +99,24 @@ function BidMenu({
             FOLD
           </div>
         </div>
-        <div className="item">MATCH</div>
+        <div className="item" onClick={() => setCurrentBid(Math.min(playerBalance, oppBalance))}>MAX</div>
       </div>
       <div className="right">
         <div className="increment-stack">
-          <div className="item" onClick={() => setCurrentBid(currentBid + 20)}>
+          <div className="item" onClick={() => setCurrentBid(Math.min(currentBid + 20, playerBalance))}>
             +20
           </div>
-          <div className="item" onClick={() => setCurrentBid(currentBid + 10)}>
+          <div className="item" onClick={() => setCurrentBid(Math.min(currentBid + 10, playerBalance))}>
             +10
           </div>
           {/* TODO: make reset go to min raise */}
-          <div className="item" onClick={() => setCurrentBid(0)}>
+          <div className="item" onClick={() => setCurrentBid(prevBid)}>
             Reset
           </div>
-          <div className="item" onClick={() => setCurrentBid(currentBid - 10)}>
+          <div className="item" onClick={() => setCurrentBid(Math.max(currentBid - 10, prevBid))}>
             -10
           </div>
-          <div className="item" onClick={() => setCurrentBid(currentBid - 20)}>
+          <div className="item" onClick={() => setCurrentBid(Math.max(currentBid - 20, prevBid))}>
             -20
           </div>
         </div>
@@ -173,10 +179,13 @@ export default function BidPanel({
 
       <BidMenu
         currentBid={currentBid}
+        prevBid={Math.max(prevPlayerBidAmount, prevOppBidAmount)}
+        playerBalance={balance[playerID as Color]}
+        oppBalance={balance[opposite(playerID as Color)]}
         setCurrentBid={setCurrentBid}
         makeBid={moves.makeBid!}
-        playerID={playerID as Color}
-      />
+        playerID={playerID as Color}        
+        />
 
       <CurrentBalance
         balance={balance[playerID as Color]}
