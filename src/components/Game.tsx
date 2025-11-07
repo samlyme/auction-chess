@@ -214,7 +214,7 @@ export function AuctionChessBoard({ G, ctx, moves, playerID, isActive }: BoardPr
           }}
         />
       </div>
-      <BidPanel makeBid={moves.makeBid!}/>
+      <BidPanel makeBid={moves.makeBid!} playerID={playerID as Color}/>
     </div>
   );
 }
