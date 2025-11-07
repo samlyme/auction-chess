@@ -23,33 +23,80 @@ export interface AuctionChessState {
   auctionState: AuctionState;
 }
 
-const movePiece: Move<AuctionChessState> = ({ G, ctx, events }, move: NormalMove) => {
+const movePiece: Move<AuctionChessState> = (
+  { G, ctx, events },
+  move: NormalMove
+) => {
+  const { balance, bidHistory } = G.auctionState;
+  const bidStack: Bid[] = bidHistory[bidHistory.length - 1]!;
   // Consider a refactor. Recreating the class per move COULD be a bottleneck.
   // TODO: consider turn order
   const chessLogic = new PseudoChess(G.chessState.fen);
-  if (!chessLogic.movePiece(move, ctx.currentPlayer as Color)) return INVALID_MOVE;
+  if (!chessLogic.movePiece(move, ctx.currentPlayer as Color))
+    return INVALID_MOVE;
   G.chessState.fen = chessLogic.toFen();
-  events.endTurn({ next: opposite(ctx.currentPlayer as Color)})
-  events.setPhase("bid");
+
+  if (balance.white == 0 || balance.black == 0) {
+    console.log("skip bid phase");
+    const brokePlayer = balance.white === 0 ? "white" : "black";
+    const richPlayer = opposite(brokePlayer)
+    balance[richPlayer] -= 1;
+    bidStack.push({
+      amount: 1,
+      fold: false,
+      from: richPlayer
+    });
+    bidHistory.push([]);
+    events.endTurn({ next: richPlayer });
+    events.setPhase("move");
+    return;
+  }
+
+  if (balance[opposite(ctx.currentPlayer as Color)] > 0) {
+    
+    events.endTurn({ next: opposite(ctx.currentPlayer as Color) });
+    events.setPhase("bid");
+    return;
+  }
 };
 
 const makeBid: Move<AuctionChessState> = ({ G, ctx, events }, bid: Bid) => {
   // TODO: consider turn order
   console.log("Trying to bid", bid);
-  const {balance, bidHistory} = G.auctionState;
-
-  // TODO: implement bidding
-  const bidStack: Bid[] = bidHistory[bidHistory.length-1]!;
+  const { balance, bidHistory } = G.auctionState;
+  const bidStack: Bid[] = bidHistory[bidHistory.length - 1]!;
   const lastBid = bidStack[bidStack.length - 1];
+  const lastBidAmount: number = lastBid ? lastBid.amount : 0;
 
-  events.endTurn({ next: opposite(ctx.currentPlayer as Color)})
+  if (
+    !bid.fold &&
+    (bid.amount <= 0 ||
+      bid.amount <= lastBidAmount ||
+      bid.amount > balance[bid.from])
+  ) {
+    return INVALID_MOVE;
+  }
+
   if (bid.fold) {
     if (lastBid) {
       balance[lastBid.from] -= lastBid.amount;
     }
-    bidHistory.push([])
+    bidStack.push(bid);
+    bidHistory.push([]);
+    events.endTurn({ next: opposite(ctx.currentPlayer as Color) });
     events.setPhase("move");
+    return;
   }
+
+  if (bid.amount >= balance[opposite(bid.from)]) {
+    balance[bid.from] -= bid.amount;
+    bidStack.push(bid);
+    bidHistory.push([]);
+    events.setPhase("move");
+    return;
+  }
+
+  events.endTurn({ next: opposite(ctx.currentPlayer as Color) });
   bidStack.push(bid);
 };
 
@@ -59,13 +106,13 @@ export const AuctionChessGame: Game<AuctionChessState> = {
       fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     },
     auctionState: {
-      balance: { white: 100, black: 100 },
+      balance: { white: 1000, black: 1000 },
       bidHistory: [[]],
     },
   }),
 
-  turn: { 
-    order: TurnOrder.CUSTOM(["white", "black"])
+  turn: {
+    order: TurnOrder.CUSTOM(["white", "black"]),
   },
 
   phases: {
@@ -74,9 +121,9 @@ export const AuctionChessGame: Game<AuctionChessState> = {
       turn: {
         order: {
           playOrder: () => ["white", "black"],
-          first: ({ctx}) => ctx.playOrderPos,
-          next: ({ctx}) => (ctx.playOrderPos + 1) % ctx.playOrder.length
-        }
+          first: ({ ctx }) => ctx.playOrderPos,
+          next: ({ ctx }) => (ctx.playOrderPos + 1) % ctx.playOrder.length,
+        },
       },
       start: true,
     },
@@ -85,10 +132,10 @@ export const AuctionChessGame: Game<AuctionChessState> = {
       turn: {
         order: {
           playOrder: () => ["white", "black"],
-          first: ({ctx}) => ctx.playOrderPos,
-          next: ({ctx}) => (ctx.playOrderPos + 1) % ctx.playOrder.length
-        }
+          first: ({ ctx }) => ctx.playOrderPos,
+          next: ({ ctx }) => (ctx.playOrderPos + 1) % ctx.playOrder.length,
+        },
       },
-    }
-  }
+    },
+  },
 };
