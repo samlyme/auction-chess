@@ -69,7 +69,8 @@ export const AuctionChessGame: Game<AuctionChessState> = {
           first: ({ctx}) => ctx.playOrderPos,
           next: ({ctx}) => (ctx.playOrderPos + 1) % ctx.playOrder.length
         }
-      }
+      },
+      start: true,
     },
     move: {
       moves: { movePiece },
@@ -80,7 +81,6 @@ export const AuctionChessGame: Game<AuctionChessState> = {
           next: ({ctx}) => (ctx.playOrderPos + 1) % ctx.playOrder.length
         }
       },
-      start: true,
     }
   }
 };
