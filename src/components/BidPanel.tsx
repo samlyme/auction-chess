@@ -1,3 +1,4 @@
+import type { Bid } from "@/game/auctionChess";
 import "../styles/BidPanel.css";
 
 function TimeAndTitle({
@@ -55,7 +56,7 @@ function BidInfo({ playerBid, oppBid }: { playerBid: number; oppBid: number }) {
   );
 }
 
-function BidMenu({ currentBid }: { currentBid: number }) {
+function BidMenu({ currentBid, makeBid }: { currentBid: number, makeBid: (bid: Bid) => void }) {
   return (
     <div className="bid-menu item">
       <div className="left">
@@ -65,7 +66,7 @@ function BidMenu({ currentBid }: { currentBid: number }) {
         </div>
         <div className="bid-fold">
           <div className="item">BID</div>
-          <div className="item">FOLD</div>
+          <div className="item" onClick={() => makeBid({amount: 0, fold: true})}>FOLD</div>
         </div>
         <div className="item">MATCH</div>
       </div>
@@ -81,7 +82,7 @@ function BidMenu({ currentBid }: { currentBid: number }) {
     </div>
   );
 }
-export default function BidPanel() {
+export default function BidPanel({ makeBid }: { makeBid: (bid: Bid) => void}) {
   return (
     <div className="bid-panel">
       <TimeAndTitle time={"15:00"} username={"Player 1"} color={"white"} />
@@ -90,7 +91,7 @@ export default function BidPanel() {
 
       <BidInfo playerBid={250} oppBid={250} />
 
-      <BidMenu currentBid={250} />
+      <BidMenu currentBid={250} makeBid={makeBid}/>
 
       <CurrentBalance balance={1000} nextBalance={750} />
 

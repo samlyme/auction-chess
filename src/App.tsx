@@ -1,17 +1,23 @@
 import BidPanel from "./components/BidPanel";
-import { PseudoChessBoard, PseudoChessGame } from "./components/Game";
+import { AuctionChessBoard } from "./components/Game";
 import { Client } from 'boardgame.io/react';
 import "./styles/App.css"
+import { AuctionChessGame } from "./game/auctionChess";
+import { Local } from 'boardgame.io/multiplayer';
 
-const BoardGame = Client({ game: PseudoChessGame, board: PseudoChessBoard });
+
+const ClientA = Client({ 
+  game: AuctionChessGame, 
+  board: AuctionChessBoard, 
+  multiplayer: Local(),
+  numPlayers: 2,
+});
 
 export function App() {
   return (
     <div className="app">
-      <div className="board-container">
-        <BoardGame />
-      </div>
-      <BidPanel />
+        <ClientA playerID="white"/>
+        <ClientA playerID="black"/>
     </div>
   )
 }
