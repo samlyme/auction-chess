@@ -34,8 +34,8 @@ const movePiece: Move<AuctionChessState> = (
   const chessLogic = new PseudoChess(G.chessState.fen);
   if (!chessLogic.movePiece(move, ctx.currentPlayer as Color))
     return INVALID_MOVE;
-  G.chessState.fen = chessLogic.toFen();
 
+  G.chessState.fen = chessLogic.toFen();
   if (balance.white == 0 || balance.black == 0) {
     console.log("skip bid phase");
     const brokePlayer = balance.white === 0 ? "white" : "black";
@@ -49,14 +49,15 @@ const movePiece: Move<AuctionChessState> = (
     bidHistory.push([]);
     events.endTurn({ next: richPlayer });
     events.setPhase("move");
-    return;
   }
-
-  if (balance[opposite(ctx.currentPlayer as Color)] > 0) {
+  else if (balance[opposite(ctx.currentPlayer as Color)] > 0) {
     
     events.endTurn({ next: opposite(ctx.currentPlayer as Color) });
     events.setPhase("bid");
-    return;
+  }
+
+  if (chessLogic.outcome().winner) {
+    events.endGame(chessLogic.outcome());
   }
 };
 
