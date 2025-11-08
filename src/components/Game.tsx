@@ -195,6 +195,11 @@ export function AuctionChessBoard(props: BoardProps) {
 
   return (
     <div className="board-container">
+      {ctx.gameover ? (ctx.gameover.winner === playerID 
+        ? <h1>You win!</h1>
+        : <h1>You lose.</h1>)
+        : ""
+      }
       {promotionMove && (
         <PromotionMenu
           color={ctx.playOrder[ctx.playOrderPos] as Color}
