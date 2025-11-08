@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "boardgame.io": "^0.50.2",
+    "bun-plugin-tailwind": "^0.1.2",
     "chessops": "^0.15.0",
     "react": "^19",
     "react-chessboard": "^5.8.3",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
     "@types/react": "^19",
