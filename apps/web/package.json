@@ -1,0 +1,29 @@
+{
+  "name": "bun-test",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "bun run server.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.1.0",
+    "vite": "^7.2.2",
+    "vite-tsconfig-paths": "^5.1.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.135.2",
+    "@tanstack/react-start": "^1.135.2",
+    "react": "^19",
+    "react-dom": "^19"
+  }
+}
