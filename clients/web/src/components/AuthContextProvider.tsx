@@ -5,11 +5,13 @@ import type { Session } from "@supabase/auth-js";
 
 export default function AuthContextProvider({ children }: { children: React.ReactNode}) {
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Wrap in auth context.
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);
     });
     const {
       data: { subscription },
@@ -21,7 +23,7 @@ export default function AuthContextProvider({ children }: { children: React.Reac
 
 
   return (
-    <AuthContext value={session}>
+    <AuthContext value={{session, loading}}>
       { children }
     </AuthContext>
     
