@@ -4,7 +4,7 @@ import type { Tables } from "../supabase";
 import supabase from "../supabase";
 
 export default function Lobby() {
-    const session = useContext(AuthContext);
+    const {session} = useContext(AuthContext);
     const [userLobby, setUserLobby] = useState<Tables<"lobbies"> | null>(null)
 
     useEffect(() => {

@@ -4,40 +4,52 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import Splash from "./pages/Splash";
 import Home from "./pages/Home";
 import { RedirectIfAuth, RequireAuth } from "./components/AuthGuards";
+import UserProfile from "./pages/UserProfile";
+import UserProfileContextProvider from "./components/UserProfileContextProvider";
 
 function App() {
   return (
     <>
-      <AuthContextProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <RedirectIfAuth>
-                  <Splash />
-                </RedirectIfAuth>
-              }
-            />
-            <Route
-              path="/auth"
-              element={
-                <RedirectIfAuth>
-                  <Auth />
-                </RedirectIfAuth>
-              }
-            />
-            <Route
-              path="/home"
-              element={
-                <RequireAuth>
-                  <Home />
-                </RequireAuth>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      </AuthContextProvider>
+        <AuthContextProvider>
+      <UserProfileContextProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <RedirectIfAuth>
+                    <Splash />
+                  </RedirectIfAuth>
+                }
+              />
+              <Route
+                path="/auth"
+                element={
+                  <RedirectIfAuth>
+                    <Auth />
+                  </RedirectIfAuth>
+                }
+              />
+              <Route
+                path="/home"
+                element={
+                  <RequireAuth>
+                    <Home />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/profile/me"
+                element={
+                  <RequireAuth>
+                    <UserProfile />
+                  </RequireAuth>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+      </UserProfileContextProvider>
+        </AuthContextProvider>
     </>
   );
 }
