@@ -1,7 +1,21 @@
 {
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "files.watcherExclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "search.exclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "json.validate.enable": false,
   "deno.enablePaths": [
-    "supabase/functions"
+    "supabase"
   ],
+  "deno.enable": true,
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -18,17 +32,4 @@
     "http",
     "net"
   ],
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "files.watcherExclude": {
-    "**/routeTree.gen.ts": true
-  },
-  "search.exclude": {
-    "**/routeTree.gen.ts": true
-  },
-  "files.readonlyInclude": {
-    "**/routeTree.gen.ts": true
-  },
-  "json.validate.enable": false
 }

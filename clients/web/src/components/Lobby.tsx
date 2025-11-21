@@ -22,8 +22,15 @@ export default function Lobby() {
     }, [session])
 
     async function createLobby() {
-        const res = await supabase.from('lobbies').insert({ code: "lmfaoo" })
-        console.log("create lobby res", res);
+        const res = await supabase.functions.invoke(
+            'lobbies', 
+            { 
+                method: 'GET',
+                // body: { lmao: 'lmao'},
+            }
+        )
+        console.log(res);
+        
     }
 
     return (

@@ -40,7 +40,7 @@ export type Database = {
           config: Json
           created_at: string
           guest_uid: string | null
-          host_uid: string | null
+          host_uid: string
           id: number
         }
         Insert: {
@@ -48,7 +48,7 @@ export type Database = {
           config?: Json
           created_at?: string
           guest_uid?: string | null
-          host_uid?: string | null
+          host_uid?: string
           id?: number
         }
         Update: {
@@ -56,10 +56,25 @@ export type Database = {
           config?: Json
           created_at?: string
           guest_uid?: string | null
-          host_uid?: string | null
+          host_uid?: string
           id?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lobbies_guest_uid_fkey"
+            columns: ["guest_uid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lobbies_host_uid_fkey"
+            columns: ["host_uid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
