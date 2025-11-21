@@ -1,5 +1,6 @@
+import { AuthContext } from "../contexts/Auth";
 import supabase from "../supabase";
-import { useState } from "react";
+import { useContext, useState } from "react";
 export default function Auth() {
   const [mode, setMode] = useState<"signin"|"signup">("signin");
 
@@ -19,13 +20,17 @@ export default function Auth() {
     }
   }
 
+  const session = useContext(AuthContext);
+
   return (
     <>
       <h1>Auth</h1>
+      <h2>sesssion: {session ? session.access_token : ""}</h2>
       <input type="text" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}/>
       <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}/>
       <button onClick={() => setMode((prev) => prev === "signin" ? "signup" : "signin")}>signin / signup</button>
       <button onClick={handleSubmit}>{mode}</button>
+      <button onClick={() => supabase.auth.signOut()}>sign out</button>
     </>
   );
 }
