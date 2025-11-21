@@ -12,6 +12,8 @@ export default function UserProfile() {
 
     supabase.from('profiles').select().eq('id', session.user.id).single()
     .then((res) => {
+      console.log(res);
+      
       setProfile(res.data)
     })
   }, [session])
@@ -38,7 +40,6 @@ function ProfileForm() {
   async function submitTask(_e: FormEvent) {
     const res = await supabase.from('profiles').upsert(newProfile).eq('id', session?.user.id)
     console.log(res);
-    
   }
 
   return (
