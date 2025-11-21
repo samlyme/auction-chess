@@ -1,5 +1,7 @@
 {
   "imports": {
-    "@supabase/functions-js": "jsr:@supabase/functions-js@^2.5.0"
+    "@supabase/functions-js": "npm:@supabase/functions-js@^2.83.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.83.0",
+    "hono": "npm:hono@^4.10.6"
   }
 }
