@@ -1,0 +1,2 @@
+[**.{ts, tsx, js, jsx}]
+tab_width = 2
