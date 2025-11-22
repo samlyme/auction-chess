@@ -1,13 +1,15 @@
 import supabase from "../supabase";
 import { useState } from "react";
-export default function Auth() {
 
+export default function Auth() {
   const [confirmEmail, setConfirmEmail] = useState<boolean>(false);
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
+  const origin = window.location.origin;
 
   async function handleSubmit() {
     if (mode === "signin") {
@@ -18,7 +20,13 @@ export default function Auth() {
       console.log({ data, error });
       if (error?.code === "email_not_confirmed") setConfirmEmail(true);
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: origin,
+        },
+      });
       console.log({ data, error });
       setConfirmEmail(true);
     }
