@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router";
 import supabase from "../supabase";
 import { useState } from "react";
 export default function Auth() {
+  const navigate = useNavigate();
+
   const [mode, setMode] = useState<"signin"|"signup">("signin");
 
   const [email, setEmail] = useState<string>("");
@@ -8,12 +11,13 @@ export default function Auth() {
 
   async function handleSubmit() {
     if (mode === "signin") {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const res = await supabase.auth.signInWithPassword({email, password});
+      console.log(res);
     }
     else {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const res = await supabase.auth.signUp({email, password})
+      console.log(res);
+      navigate("/auth/email-confirmation")
     }
   }
 
