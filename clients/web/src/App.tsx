@@ -3,10 +3,9 @@ import Auth from "./pages/Auth";
 import { BrowserRouter, Route, Routes } from "react-router";
 import Splash from "./pages/Splash";
 import Home from "./pages/Home";
-import { RedirectIfAuth, RequireAuth } from "./components/AuthGuards";
+import OnboardingGuard from "./components/OnboardingGuard";
 import UserProfile from "./pages/UserProfile";
 import UserProfileContextProvider from "./components/UserProfileContextProvider";
-import EmailConfirmation from "./pages/EmailConfirmation";
 import CreateUserProfile from "./pages/CreateUserProfile";
 
 function App() {
@@ -19,49 +18,41 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <RedirectIfAuth>
+                  <OnboardingGuard allow={"unauthed"}>
                     <Splash />
-                  </RedirectIfAuth>
+                  </OnboardingGuard>
                 }
               />
               <Route
                 path="/auth"
                 element={
-                  <RedirectIfAuth>
+                  <OnboardingGuard allow={"unauthed"}>
                     <Auth />
-                  </RedirectIfAuth>
-                }
-              />
-              <Route
-                path="/auth/email-confirmation"
-                element={
-                  <RedirectIfAuth>
-                    <EmailConfirmation />
-                  </RedirectIfAuth>
+                  </OnboardingGuard>
                 }
               />
               <Route
                 path="/auth/create-profile"
                 element={
-                  <RedirectIfAuth>
+                  <OnboardingGuard allow={"createProfile"}>
                     <CreateUserProfile />
-                  </RedirectIfAuth>
+                  </OnboardingGuard>
                 }
               />
               <Route
                 path="/home"
                 element={
-                  <RequireAuth>
+                  <OnboardingGuard allow={"complete"}>
                     <Home />
-                  </RequireAuth>
+                  </OnboardingGuard>
                 }
               />
               <Route
                 path="/profile/me"
                 element={
-                  <RequireAuth>
+                  <OnboardingGuard allow={"complete"}>
                     <UserProfile />
-                  </RequireAuth>
+                  </OnboardingGuard>
                 }
               />
             </Routes>

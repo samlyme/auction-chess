@@ -2,16 +2,21 @@ import { useContext, useState, type FormEvent } from "react";
 import type { Tables } from "../supabase";
 import supabase from "../supabase";
 import { AuthContext } from "../contexts/Auth";
+import { UserProfileContext } from "../contexts/UserProfile";
 
 export default function CreateUserProfile() {
   // assume session is good
   const {session} = useContext(AuthContext)
-  console.log("in create user profile", {session});
+  // man, this "direct to db" is so dumb. also serverless is dumb. i'm dumb. i hate this.
+  // in all seriousness, this is so fragile, and should be controlled in the backend.
+  // i dont want users to just change usernames again and again.
+  const {invalidate} = useContext(UserProfileContext);
   const [newProfile, setNewProfile] = useState<Omit<Tables<'profiles'>, 'created_at'>>({username: "", bio: "", id: session!.user.id});
 
   async function submitTask(_e: FormEvent) {
-    _e.preventDefault();
+    // _e.preventDefault();
     await supabase.from('profiles').insert(newProfile)
+    invalidate()
   }
 
   

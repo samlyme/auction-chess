@@ -25,6 +25,8 @@ export default function AuthContextProvider({ children }: { children: React.Reac
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("auth state changed");
+      
       setSession(session);
     });
     return () => subscription.unsubscribe();
