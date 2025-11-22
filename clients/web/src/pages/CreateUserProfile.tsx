@@ -1,27 +1,16 @@
 import { useContext, useState, type FormEvent } from "react";
-import supabase, { type Tables } from "../supabase";
+import type { Tables } from "../supabase";
+import supabase from "../supabase";
 import { AuthContext } from "../contexts/Auth";
-import { UserProfileContext } from "../contexts/UserProfile";
 
-export default function UserProfile() {
-  const {profile, invalidate} = useContext(UserProfileContext);
-
-  return <>
-  {profile && <>
-    <h2>Username: {profile.username}</h2>
-    <h2>Bio: {profile.bio}</h2>
-  </>}
-    <ProfileForm invalidate={invalidate!}/>
-  </>
-}
-
-function ProfileForm({invalidate}: {invalidate: () => void}) {
+export default function CreateUserProfile() {
+  // assume session is good
   const {session} = useContext(AuthContext)
-  const [newProfile, setNewProfile] = useState<Omit<Tables<'profiles'>, 'created_at' | 'id'>>({username: "", bio: ""});
+  const [newProfile, setNewProfile] = useState<Omit<Tables<'profiles'>, 'created_at'>>({username: "", bio: "", id: session!.user.id});
+
   async function submitTask(_e: FormEvent) {
     _e.preventDefault();
-    await supabase.from('profiles').upsert(newProfile).eq('id', session?.user.id)
-    invalidate();
+    await supabase.from('profiles').insert(newProfile)
   }
 
   return (
