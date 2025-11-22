@@ -11,12 +11,13 @@ export default function Auth() {
 
   async function handleSubmit() {
     if (mode === "signin") {
-      const res = await supabase.auth.signInWithPassword({email, password});
-      console.log(res);
+      const {data, error} = await supabase.auth.signInWithPassword({email, password});
+      console.log({data, error});
+      if (error?.code === "email_not_confirmed") navigate("/auth/email-confirmation")
     }
     else {
-      const res = await supabase.auth.signUp({email, password})
-      console.log(res);
+      const {data, error} = await supabase.auth.signUp({email, password})
+      console.log({data, error});
       navigate("/auth/email-confirmation")
     }
   }

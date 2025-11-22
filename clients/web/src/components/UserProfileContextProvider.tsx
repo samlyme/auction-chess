@@ -13,29 +13,41 @@ export default function UserProfileContextProvider({
     null
   );
   const [prevTime, setPrevTime] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const {session} = useContext(AuthContext);
+  const { session, loading: authLoading } = useContext(AuthContext);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!session) return;
-    
-    const fetchUserProfile = async () => {
-      const {data} = await supabase
-        .from("profiles")
-        .select()
-        .eq("id", session.user.id)
-        .single();
+    if (!session)return;
 
+    (async () => {
+      setLoading(true);
+      try{
+        const { data } = await supabase
+          .from("profiles")
+          .select()
+          .eq("id", session.user.id)
+          .single();
         setUserProfile(data)
-        setLoading(false);
-    }
+      }
+      catch {
+        setUserProfile(null)
+      }
+      finally {
+        setLoading(false)
+      }
+    })();
 
-    fetchUserProfile()
-  }, [session, prevTime]);
+  }, [session, authLoading, prevTime]);
 
   return (
-    <UserProfileContext value={
-      { profile: userProfile, invalidate: () => setPrevTime(Date.now()), loading }
-    }>{children}</UserProfileContext>
+    <UserProfileContext
+      value={{
+        profile: userProfile,
+        invalidate: () => setPrevTime(Date.now()),
+        loading,
+      }}
+    >
+      {children}
+    </UserProfileContext>
   );
 }

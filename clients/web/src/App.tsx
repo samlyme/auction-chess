@@ -7,6 +7,7 @@ import { RedirectIfAuth, RequireAuth } from "./components/AuthGuards";
 import UserProfile from "./pages/UserProfile";
 import UserProfileContextProvider from "./components/UserProfileContextProvider";
 import EmailConfirmation from "./pages/EmailConfirmation";
+import CreateUserProfile from "./pages/CreateUserProfile";
 
 function App() {
   return (
@@ -34,7 +35,17 @@ function App() {
               <Route
                 path="/auth/email-confirmation"
                 element={
-                  <EmailConfirmation />
+                  <RedirectIfAuth>
+                    <EmailConfirmation />
+                  </RedirectIfAuth>
+                }
+              />
+              <Route
+                path="/auth/create-profile"
+                element={
+                  <RedirectIfAuth>
+                    <CreateUserProfile />
+                  </RedirectIfAuth>
                 }
               />
               <Route

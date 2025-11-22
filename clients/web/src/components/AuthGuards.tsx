@@ -3,12 +3,18 @@ import type React from "react";
 import { useContext } from "react";
 import { Navigate, useLocation } from "react-router";
 import { AuthContext } from "../contexts/Auth";
+import { UserProfileContext } from "../contexts/UserProfile";
 
-export function RequireAuth({ children }: { children: React.ReactNode}) {
-  const {session, loading} = useContext(AuthContext);
+export function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useContext(AuthContext);
   const location = useLocation();
 
-  if (loading) return <><h1>Loading user auth session...</h1></>
+  if (loading)
+    return (
+      <>
+        <h1>Loading user auth session...</h1>
+      </>
+    );
   if (!session) {
     // Redirect them to the login page and save the location they were trying to go
     return <Navigate to="/auth" state={{ from: location }} replace />;
@@ -18,15 +24,37 @@ export function RequireAuth({ children }: { children: React.ReactNode}) {
 }
 
 export function RedirectIfAuth({ children }: { children: React.ReactNode }) {
-  const {session, loading} = useContext(AuthContext);
+  const { session, loading: authLoading } = useContext(AuthContext);
+  const { profile, loading: profileLoading } = useContext(UserProfileContext);
   const location = useLocation();
 
-  if (loading) return <><h1>Loading user auth session...</h1></>
-  if (!session) return children;
+  if (authLoading)
+    return (
+      <>
+        <h1>Loading user auth session...</h1>
+      </>
+    );
+  if (profileLoading) return <h1>Loading user profile</h1>;
 
-  if (!session.user.confirmed_at) return <Navigate to="/email-confirmation" replace />
-  
-  return  <Navigate to={location.state?.from?.pathname || "/home"} replace />;
+  if (!session) return children;
+  if (!session.user.confirmed_at) {
+    return location.pathname !== "/auth/email-confirmation" ? (
+      <Navigate to="/auth/email-confirmation" replace />
+    ) : (
+      children
+    );
+  }
+  if (!profile) {
+    console.log("going to create profile");
+
+    return location.pathname !== "/auth/create-profile" ? (
+      <Navigate to="/auth/create-profile" replace />
+    ) : (
+      children
+    );
+  }
+
+  return <Navigate to={location.state?.from?.pathname || "/home"} replace />;
 }
 
 /* 
