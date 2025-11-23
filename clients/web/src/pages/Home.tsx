@@ -12,6 +12,12 @@ export default function Home(){
         </h2>
 
         <h2>Make lobby</h2>
+        <button onClick={() => supabase.functions.invoke("api/lobbies", {
+            method: "POST"
+        }).then((val) => {
+            console.log(val);
+            
+        })}>make lobby</button>
 
         <h2>Join Lobby</h2>
         <button onClick={() => supabase.auth.signOut()}>sign out</button>
