@@ -25,9 +25,8 @@ export default function AuthContextProvider({ children }: { children: React.Reac
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("auth state changed");
-      
-      setSession(session);
+      // This is to prevent token refreshes from "churning" the session state.
+      setSession((prev) => prev?.access_token === session?.access_token ? prev : session);
     });
     return () => subscription.unsubscribe();
   }, []);
