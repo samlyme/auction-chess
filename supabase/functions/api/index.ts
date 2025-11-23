@@ -1,6 +1,6 @@
 import "@supabase/functions-js";
 import { createClient, User } from "@supabase/supabase-js";
-import { Context, Hono, MiddlewareHandler } from "hono";
+import { Context, Hono } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
 import { cors } from "hono/cors";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -94,9 +94,42 @@ export async function createLobbyRow(config: Record<string, any> = {}, host_uid:
   throw new Error('Failed to generate unique lobby code after many tries')
 }
 
+
+// Need lobbies middleware. Ignore weird states for now.
 app.post("/lobbies", async (c: Context<CompleteEnv>) => {
   const lobby = await createLobbyRow({}, c.get('user').id);
   return c.json(lobby);
+})
+
+app.get("/lobbies", async (c: Context<CompleteEnv>) => {
+  const { data: hostLobby } = await supabase
+    .from('lobbies')
+    .select("*")
+    .eq("host_uid", c.get("user").id)
+    .single();
+
+  if (hostLobby) return c.json(hostLobby);
+
+  const { data: guestLobby } = await supabase
+    .from('lobbies')
+    .select("*")
+    .eq("guest_uid", c.get("user").id)
+    .single();
+
+  if (guestLobby) return c.json(guestLobby);
+
+  return c.json({});
+})
+
+app.post("/lobbies/:code/join", async (c: Context<CompleteEnv>) => {
+  const code = c.req.param("code");
+  const { data: lobby } = await supabase
+    .from('lobbies')
+    .update({"guest_uid": c.get('user').id})
+    .eq("code", code)
+    .select()
+
+  return c.json(lobby)
 })
 
 Deno.serve(app.fetch)
