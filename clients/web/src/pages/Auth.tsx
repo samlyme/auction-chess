@@ -28,7 +28,7 @@ export default function Auth() {
         },
       });
       console.log({ data, error });
-      setConfirmEmail(true);
+      if (!error) setConfirmEmail(true);
     }
   }
 
@@ -59,6 +59,16 @@ export default function Auth() {
             signin / signup
           </button>
           <button onClick={handleSubmit}>{mode}</button>
+
+          <button
+            onClick={() => {
+              supabase.auth.signInWithOAuth({
+                provider: "google",
+              });
+            }}
+          >
+            Sign in with Google
+          </button>
         </>
       )}
     </>
