@@ -17,7 +17,7 @@ export default function UserProfileContextProvider({
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!session)return;
+    if (!session || authLoading) return;
 
     (async () => {
       setLoading(true);

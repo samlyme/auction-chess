@@ -39,7 +39,7 @@ export default function OnboardingGuard({
 
   const stage = getStage({ session, profile });
   const target = stagePath[stage];
-  console.log({stage, target});
+  // console.log({stage, target});
   
 
   if (allow === stage || location.pathname === target) return children
