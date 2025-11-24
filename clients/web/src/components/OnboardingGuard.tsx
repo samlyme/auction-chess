@@ -12,7 +12,7 @@ export type OnboardingStage = "unauthed"  | "createProfile" | "complete";
 const stagePath: Readonly<Record<OnboardingStage, string>> = {
   "unauthed": "/auth",
   "createProfile": "/auth/create-profile",
-  "complete": "/home"
+  "complete": "/lobbies"
 }
 
 function getStage({ session, profile }: { session: Session | null, profile: Tables<'profiles'> | null}): OnboardingStage {

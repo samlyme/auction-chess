@@ -2,7 +2,7 @@ import AuthContextProvider from "./components/AuthContextProvider";
 import Auth from "./pages/Auth";
 import { BrowserRouter, Route, Routes } from "react-router";
 import Splash from "./pages/Splash";
-import Home from "./pages/Home";
+import Lobbies from "./pages/Lobbies";
 import OnboardingGuard from "./components/OnboardingGuard";
 import UserProfile from "./pages/UserProfile";
 import UserProfileContextProvider from "./components/UserProfileContextProvider";
@@ -40,10 +40,10 @@ function App() {
                 }
               />
               <Route
-                path="/home"
+                path="/lobbies"
                 element={
                   <OnboardingGuard allow={"complete"}>
-                    <Home />
+                    <Lobbies />
                   </OnboardingGuard>
                 }
               />
