@@ -1,9 +1,9 @@
 import { createContext } from "react";
-import type { Tables } from "../supabase";
+import type { Tables } from "shared";
 
 export interface UserProfileContextType {
   profile: Tables<"profiles"> | null;
-  update: () => void;
+  update: (profile?: Tables<'profiles'>) => void;
   loading: boolean;
 }
 
