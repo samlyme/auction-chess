@@ -1,0 +1,14 @@
+{
+  "name": "auction-chess",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "clients/web"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

@@ -3,7 +3,8 @@
   "specifiers": {
     "npm:@supabase/functions-js@^2.84.0": "2.84.0",
     "npm:@supabase/supabase-js@^2.84.0": "2.84.0",
-    "npm:hono@^4.10.6": "4.10.6"
+    "npm:hono@^4.10.6": "4.10.6",
+    "npm:zod@^4.1.13": "4.1.13"
   },
   "npm": {
     "@supabase/auth-js@2.84.0": {
@@ -75,13 +76,17 @@
     },
     "ws@8.18.3": {
       "integrity": "sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg=="
+    },
+    "zod@4.1.13": {
+      "integrity": "sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig=="
     }
   },
   "workspace": {
     "dependencies": [
       "npm:@supabase/functions-js@^2.84.0",
       "npm:@supabase/supabase-js@^2.84.0",
-      "npm:hono@^4.10.6"
+      "npm:hono@^4.10.6",
+      "npm:zod@^4.1.13"
     ]
   }
 }
