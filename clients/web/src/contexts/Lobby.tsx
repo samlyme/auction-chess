@@ -3,12 +3,12 @@ import type { Tables } from "shared";
 
 export interface LobbyContextType {
   lobby: Tables<"lobbies"> | null,
-  update: (lobby: Tables<"lobbies"> | null) => void;
+  update: (lobby?: Tables<"lobbies"> | null) => void;
   loading: boolean,
 };
 
 export const LobbyContext = createContext<LobbyContextType>({
   lobby: null,
-  update: (_ = null) => {},
+  update: () => {},
   loading: true
 });
