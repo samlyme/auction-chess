@@ -7,60 +7,57 @@ import OnboardingGuard from "./components/OnboardingGuard";
 import UserProfile from "./pages/UserProfile";
 import UserProfileContextProvider from "./components/providers/UserProfileContextProvider";
 import CreateUserProfile from "./pages/CreateUserProfile";
-import LobbyContextProvider from "./components/providers/LobbyContextProvider";
 
 function App() {
   return (
     <>
       <AuthContextProvider>
-        <LobbyContextProvider>
-          <UserProfileContextProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <OnboardingGuard allow={"unauthed"}>
-                      <Splash />
-                    </OnboardingGuard>
-                  }
-                />
-                <Route
-                  path="/auth"
-                  element={
-                    <OnboardingGuard allow={"unauthed"}>
-                      <Auth />
-                    </OnboardingGuard>
-                  }
-                />
-                <Route
-                  path="/auth/create-profile"
-                  element={
-                    <OnboardingGuard allow={"createProfile"}>
-                      <CreateUserProfile />
-                    </OnboardingGuard>
-                  }
-                />
-                <Route
-                  path="/lobbies"
-                  element={
-                    <OnboardingGuard allow={"complete"}>
-                      <Lobbies />
-                    </OnboardingGuard>
-                  }
-                />
-                <Route
-                  path="/profile/me"
-                  element={
-                    <OnboardingGuard allow={"complete"}>
-                      <UserProfile />
-                    </OnboardingGuard>
-                  }
-                />
-              </Routes>
-            </BrowserRouter>
-          </UserProfileContextProvider>
-        </LobbyContextProvider>
+        <UserProfileContextProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <OnboardingGuard allow={"unauthed"}>
+                    <Splash />
+                  </OnboardingGuard>
+                }
+              />
+              <Route
+                path="/auth"
+                element={
+                  <OnboardingGuard allow={"unauthed"}>
+                    <Auth />
+                  </OnboardingGuard>
+                }
+              />
+              <Route
+                path="/auth/create-profile"
+                element={
+                  <OnboardingGuard allow={"createProfile"}>
+                    <CreateUserProfile />
+                  </OnboardingGuard>
+                }
+              />
+              <Route
+                path="/lobbies"
+                element={
+                  <OnboardingGuard allow={"complete"}>
+                    <Lobbies />
+                  </OnboardingGuard>
+                }
+              />
+              <Route
+                path="/profile/me"
+                element={
+                  <OnboardingGuard allow={"complete"}>
+                    <UserProfile />
+                  </OnboardingGuard>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </UserProfileContextProvider>
       </AuthContextProvider>
     </>
   );

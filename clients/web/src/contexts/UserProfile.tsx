@@ -3,7 +3,7 @@ import type { Tables } from "shared";
 
 export interface UserProfileContextType {
   profile: Tables<"profiles"> | null;
-  update: (profile?: Tables<'profiles'>) => void;
+  update: (profile?: Tables<"profiles">) => void;
   loading: boolean;
 }
 
