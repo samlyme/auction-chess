@@ -1,38 +1,42 @@
 import { useContext, useState, type FormEvent } from "react";
-import supabase, { type Tables } from "../supabase";
-import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
+import { updateProfile } from "../services/profiles";
+import type { ProfileUpdate } from "shared";
 
 export default function UserProfile() {
-  const {profile, invalidate} = useContext(UserProfileContext);
+  const { profile, invalidate } = useContext(UserProfileContext);
 
-  return <>
-  {profile && <>
-    <h2>Username: {profile.username}</h2>
-    <h2>Bio: {profile.bio}</h2>
-  </>}
-    <ProfileForm invalidate={invalidate!}/>
-  </>
+  return (
+    <>
+      {profile && (
+        <>
+          <h2>Username: {profile.username}</h2>
+          <h2>Bio: {profile.bio}</h2>
+        </>
+      )}
+      <ProfileForm invalidate={invalidate!} />
+    </>
+  );
 }
 
-function ProfileForm({invalidate}: {invalidate: () => void}) {
-  const {session} = useContext(AuthContext)
-  const [newProfile, setNewProfile] = useState<Omit<Tables<'profiles'>, 'created_at' | 'id'>>({username: "", bio: ""});
+function ProfileForm({ invalidate }: { invalidate: () => void }) {
+  const [newProfile, setNewProfile] = useState<ProfileUpdate>({ bio: "" });
   async function submitTask(_e: FormEvent) {
     _e.preventDefault();
-    await supabase.from('profiles').upsert(newProfile).eq('id', session?.user.id)
+    await updateProfile(newProfile);
     invalidate();
   }
 
   return (
     <form onSubmit={submitTask}>
-      <input type="text" placeholder='Username' value={newProfile.username} onChange={e => setNewProfile(
-        prev => ({...prev, username: e.target.value})
-      )} />
-      <textarea placeholder='Task Description' value={newProfile.bio || ""} onChange={e => setNewProfile(
-        prev => ({ ...prev, bio: e.target.value})
-      )}></textarea>
+      <textarea
+        placeholder="Task Description"
+        value={newProfile.bio || ""}
+        onChange={(e) =>
+          setNewProfile((prev) => ({ ...prev, bio: e.target.value }))
+        }
+      ></textarea>
       <button type="submit">Submit</button>
     </form>
-  )
+  );
 }

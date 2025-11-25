@@ -1,8 +1,8 @@
 import { useContext, useState, type FormEvent } from "react";
-import type { Tables } from "../supabase";
-import supabase from "../supabase";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
+import { createProfile } from "../services/profiles";
+import type { ProfileCreate } from "shared";
 
 export default function CreateUserProfile() {
   // assume session is good
@@ -11,15 +11,15 @@ export default function CreateUserProfile() {
   // in all seriousness, this is so fragile, and should be controlled in the backend.
   // i dont want users to just change usernames again and again.
   const {invalidate} = useContext(UserProfileContext);
-  const [newProfile, setNewProfile] = useState<Omit<Tables<'profiles'>, 'created_at'>>({username: "", bio: "", id: session!.user.id});
+  const [newProfile, setNewProfile] = useState<ProfileCreate>({username: "", bio: "", id: session!.user.id});
 
   async function submitTask(_e: FormEvent) {
-    // _e.preventDefault();
-    await supabase.from('profiles').insert(newProfile)
+    _e.preventDefault();
+    await createProfile(newProfile)
     invalidate()
   }
 
-  
+
 
   return (
     <>

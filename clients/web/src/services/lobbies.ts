@@ -1,23 +1,15 @@
-import type { Tables } from "../../../../supabase/functions/_shared/database.types"; // adjust path as needed
-import supabase from "../supabase";
+import type { Tables } from "shared";
+import { getAuthHeader } from "./utils";
 
 export type Lobby = Tables<"lobbies">;
 
-const LOBBIES_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api/lobbies`;
+const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api/lobbies`;
 
-async function getAuthHeader() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const token = session?.access_token;
-  return { Authorization: `Bearer ${token || ""}` };
-}
 
 export async function createLobby(): Promise<Lobby> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(LOBBIES_BASE_URL, {
+  const res = await fetch(BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +23,7 @@ export async function createLobby(): Promise<Lobby> {
 export async function getLobby(): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(LOBBIES_BASE_URL, {
+  const res = await fetch(BASE_URL, {
     headers: {
       ...authHeader,
     },
@@ -43,7 +35,7 @@ export async function getLobby(): Promise<Lobby | null> {
 export async function deleteLobby(code: string): Promise<Lobby> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${LOBBIES_BASE_URL}/${encodeURIComponent(code)}`, {
+  const res = await fetch(`${BASE_URL}/${encodeURIComponent(code)}`, {
     method: "DELETE",
     headers: {
       ...authHeader,
@@ -57,7 +49,7 @@ export async function joinLobby(code: string): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
   const res = await fetch(
-    `${LOBBIES_BASE_URL}/${encodeURIComponent(code)}/join`,
+    `${BASE_URL}/${encodeURIComponent(code)}/join`,
     {
       method: "POST",
       headers: {
@@ -73,7 +65,7 @@ export async function leaveLobby(code: string): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
   const res = await fetch(
-    `${LOBBIES_BASE_URL}/${encodeURIComponent(code)}/leave`,
+    `${BASE_URL}/${encodeURIComponent(code)}/leave`,
     {
       method: "POST",
       headers: {
