@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
-import type { Tables } from "../supabase";
 import { UserProfileContext } from "../contexts/UserProfile";
 import { getProfile } from "../services/profiles";
 import { LobbyContext } from "../contexts/Lobby";
+import type { Tables } from "shared";
 
 export default function LobbyInfo() {
   const { lobby, loading: lobbyLoading } = useContext(LobbyContext);
