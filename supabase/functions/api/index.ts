@@ -8,14 +8,13 @@ import { lobbies } from "./routes/lobbies.ts";
 import { AuthedEnv } from "./types.ts";
 import { profiles } from "./routes/profiles.ts";
 
-
 const app = new Hono<AuthedEnv>().basePath("/api");
 
 app.use(
   cors({
     origin: corsHeaders["Access-Control-Allow-Origin"],
     allowHeaders: corsHeaders["Access-Control-Allow-Headers"],
-  })
+  }),
 );
 
 app.use(
@@ -27,10 +26,10 @@ app.use(
       c.set("user", data.user); // optionally store user in context
       return true;
     },
-  })
+  }),
 );
 
-app.route("/lobbies", lobbies)
-app.route("/profiles", profiles)
+app.route("/lobbies", lobbies);
+app.route("/profiles", profiles);
 
-Deno.serve(app.fetch)
+Deno.serve(app.fetch);

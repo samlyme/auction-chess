@@ -7,29 +7,34 @@ import { UserProfileContext } from "../contexts/UserProfile";
 import type { Session } from "@supabase/supabase-js";
 import type { Tables } from "../supabase";
 
-export type OnboardingStage = "unauthed"  | "createProfile" | "complete";
+export type OnboardingStage = "unauthed" | "createProfile" | "complete";
 
 const stagePath: Readonly<Record<OnboardingStage, string>> = {
-  "unauthed": "/auth",
-  "createProfile": "/auth/create-profile",
-  "complete": "/lobbies"
-}
+  unauthed: "/auth",
+  createProfile: "/auth/create-profile",
+  complete: "/lobbies",
+};
 
-function getStage({ session, profile }: { session: Session | null, profile: Tables<'profiles'> | null}): OnboardingStage {
+function getStage({
+  session,
+  profile,
+}: {
+  session: Session | null;
+  profile: Tables<"profiles"> | null;
+}): OnboardingStage {
   if (!session) return "unauthed";
   if (!profile) return "createProfile";
   return "complete";
 }
 
-
 export default function OnboardingGuard({
   children,
   allow,
-  loadingFallback = <h1>Loading...</h1>
+  loadingFallback = <h1>Loading...</h1>,
 }: {
-  children: React.ReactNode,
-  allow: OnboardingStage,
-  loadingFallback?: React.ReactNode,
+  children: React.ReactNode;
+  allow: OnboardingStage;
+  loadingFallback?: React.ReactNode;
 }) {
   const { session, loading: authLoading } = useContext(AuthContext);
   const { profile, loading: profileLoading } = useContext(UserProfileContext);
@@ -41,8 +46,8 @@ export default function OnboardingGuard({
 
   // Make this somehow preserve where the user was at through refresh.
   const target = stagePath[stage];
-  if (allow === stage || location.pathname === target) return children
-  return <Navigate to={target} state={{from: location.pathname}} replace />;
+  if (allow === stage || location.pathname === target) return children;
+  return <Navigate to={target} state={{ from: location.pathname }} replace />;
 }
 
 /*

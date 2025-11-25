@@ -9,7 +9,7 @@ import { profileValidator } from "../middleware/profiles.ts";
 // Inserts a row with a unique code into "lobbies"
 export async function createLobbyRow(
   config: Record<string, any> = {},
-  host_uid: string
+  host_uid: string,
 ): Promise<Tables<"lobbies">> {
   const MAX_ATTEMPTS = 10;
 
@@ -40,7 +40,7 @@ export async function createLobbyRow(
 
 const lobbyValidator: MiddlewareHandler<LobbyEnv> = async (
   c: Context<LobbyEnv>,
-  next
+  next,
 ) => {
   // Don't worry about extreme panick states like them being a host and a guest
 
@@ -57,7 +57,7 @@ const lobbyValidator: MiddlewareHandler<LobbyEnv> = async (
 
 const app = new Hono<LobbyEnv>();
 
-app.use(profileValidator)
+app.use(profileValidator);
 app.use(lobbyValidator);
 
 // Need lobbies middleware. Ignore weird states for now.
@@ -118,19 +118,21 @@ app.post("/:code/leave", async (c: Context<LobbyEnv>) => {
 
   // TODO: make remove code from param
   const code = c.req.param("code");
-  if (code !== lobby.code) return c.json({ message: `user in other lobby, not in lobby ${code}`});
+  if (code !== lobby.code)
+    return c.json({ message: `user in other lobby, not in lobby ${code}` });
 
   const user = c.get("user");
-  if (user.id !== lobby.guest_uid) return c.json({ message: `user is not guest in lobby ${code}`});
+  if (user.id !== lobby.guest_uid)
+    return c.json({ message: `user is not guest in lobby ${code}` });
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("lobbies")
     .update({ guest_uid: null })
     .eq("code", code)
     .select()
     .maybeSingle();
 
-    return c.json(data);
+  return c.json(data);
 });
 
 export { app as lobbies };
