@@ -1,10 +1,10 @@
 import { useContext } from "react";
-import useLobby from "../hooks/useLobby";
 import { AuthContext } from "../contexts/Auth";
 import { deleteLobby, leaveLobby } from "../services/lobbies";
+import { LobbyContext } from "../contexts/Lobby";
 
 export default function LobbyMenu() {
-  const lobby = useLobby();
+  const { lobby, update } =  useContext(LobbyContext);
   const { user } = useContext(AuthContext);
   if (!lobby || !user) return <></>;
 
@@ -19,7 +19,7 @@ export default function LobbyMenu() {
         </>
       ) : (
         <>
-          <button onClick={() => leaveLobby(lobby.code)}>leave lobby</button>
+          <button onClick={() => leaveLobby(lobby.code).then(() => update(null))}>leave lobby</button>
         </>
       )}
     </div>

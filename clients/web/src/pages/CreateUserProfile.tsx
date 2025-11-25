@@ -10,7 +10,7 @@ export default function CreateUserProfile() {
   // man, this "direct to db" is so dumb. also serverless is dumb. i'm dumb. i hate this.
   // in all seriousness, this is so fragile, and should be controlled in the backend.
   // i dont want users to just change usernames again and again.
-  const { invalidate } = useContext(UserProfileContext);
+  const { update: invalidate } = useContext(UserProfileContext);
   const [newProfile, setNewProfile] = useState<ProfileCreate>({
     username: "",
     bio: "",

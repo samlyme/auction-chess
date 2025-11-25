@@ -1,12 +1,13 @@
 import { Link } from "react-router";
 import supabase from "../supabase";
-import useLobby from "../hooks/useLobby";
 import LobbyInfo from "../components/LobbyInfo";
 import LobbySearch from "../components/LobbySearch";
 import LobbyMenu from "../components/LobbyMenu";
+import { useContext } from "react";
+import { LobbyContext } from "../contexts/Lobby";
 
 export default function Lobbies() {
-  const lobby = useLobby();
+  const {lobby} = useContext(LobbyContext);
 
   return (
     <>

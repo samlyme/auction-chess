@@ -4,7 +4,7 @@ import { updateProfile } from "../services/profiles";
 import type { ProfileUpdate } from "shared";
 
 export default function UserProfile() {
-  const { profile, invalidate } = useContext(UserProfileContext);
+  const { profile, update: invalidate } = useContext(UserProfileContext);
 
   return (
     <>
