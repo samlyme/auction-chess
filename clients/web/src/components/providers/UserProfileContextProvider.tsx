@@ -9,9 +9,7 @@ export default function UserProfileContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [profile, setProfile] = useState<Tables<"profiles"> | null>(
-    null,
-  );
+  const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
   const [prevTime, setPrevTime] = useState<number | null>(null);
   const { session, loading: authLoading } = useContext(AuthContext);
   const [loading, setLoading] = useState<boolean>(false);

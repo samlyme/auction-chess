@@ -1,12 +1,17 @@
 import { useContext } from "react";
 import { AuthContext } from "../contexts/Auth";
 import { deleteLobby, leaveLobby } from "../services/lobbies";
-import { LobbyContext } from "../contexts/Lobby";
+import type { Tables } from "shared";
 
-export default function LobbyMenu() {
-  const { lobby, update } =  useContext(LobbyContext);
+export default function LobbyMenu({
+  lobby,
+  update,
+}: {
+  lobby: Tables<"lobbies">;
+  update: (lobby?: Tables<"lobbies"> | null) => void;
+}) {
   const { user } = useContext(AuthContext);
-  if (!lobby || !user) return <></>;
+  if (!lobby || !user) return <h1>Loading</h1>;
 
   return (
     <div>
@@ -15,11 +20,19 @@ export default function LobbyMenu() {
           <button onClick={() => console.log("start lobby")}>
             start lobby
           </button>
-          <button onClick={() => deleteLobby(lobby.code)}>delete lobby</button>
+          <button
+            onClick={() => deleteLobby(lobby.code).then(() => update(null))}
+          >
+            delete lobby
+          </button>
         </>
       ) : (
         <>
-          <button onClick={() => leaveLobby(lobby.code).then(() => update(null))}>leave lobby</button>
+          <button
+            onClick={() => leaveLobby(lobby.code).then(() => update(null))}
+          >
+            leave lobby
+          </button>
         </>
       )}
     </div>

@@ -1,10 +1,9 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { createLobby, joinLobby } from "../services/lobbies";
-import { LobbyContext } from "../contexts/Lobby";
+import type { Tables } from "shared";
 
-export default function LobbySearch() {
+export default function LobbySearch({ update }: { update: (lobby?: Tables<"lobbies"> | null) => void }) {
   const [code, setCode] = useState<string>("");
-  const { update } = useContext(LobbyContext);
   return (
     <>
       <h2>Make lobby</h2>
