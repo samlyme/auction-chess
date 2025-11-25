@@ -30,6 +30,8 @@ export default function LobbyContextProvider({
   useEffect(() => {
     if (!lobby) return;
 
+    // NOTE: Delete operations are not filterable, so i need to do a workaround
+    // that soft deletes it.
     const channel = supabase.channel(`lobby-${lobby.code}`).on(
       "postgres_changes",
       {
@@ -40,8 +42,6 @@ export default function LobbyContextProvider({
       },
       (payload) => {
         console.log("real time", payload.new);
-        // TODO: set up zod validation for lobbies
-        console.log("what the actual fuck?");
         setLobby(payload.new as Tables<"lobbies">);
       },
     ).subscribe();

@@ -1,5 +1,4 @@
 import { createContext } from "react";
-// TODO: shared lobby zod schema
 import type { Tables } from "shared";
 
 export interface LobbyContextType {
