@@ -4,6 +4,8 @@ import type { Tables } from "../supabase";
 import { AuthContext } from "../contexts/Auth";
 import supabase from "../supabase";
 
+import { UserProfile } from "shared";
+
 export default function UserProfileContextProvider({
   children,
 }: {
