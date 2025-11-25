@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
-import supabase, { type Tables } from "../supabase";
-import type { FunctionsResponse } from "@supabase/functions-js";
+import { type Tables } from "../supabase";
+import { getLobby } from "../services/lobbies";
 
 export default function useLobby() {
   const [lobby, setLobby] = useState<Tables<"lobbies"> | null>(null);
 
   useEffect(() => {
-    supabase.functions
-      .invoke("api/lobbies", {
-        method: "GET",
-      })
-      .then((res: FunctionsResponse<any>) => {
-        setLobby(res.data as unknown as Tables<"lobbies">);
-        console.log(res);
+    getLobby()
+      .then((res: Tables<"lobbies"> | null) => {
+        setLobby(res);
       });
   }, []);
 
