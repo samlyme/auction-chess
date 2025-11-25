@@ -4,6 +4,7 @@ import type { Tables } from "../supabase";
 import supabase from "../supabase";
 import { UserProfileContext } from "../contexts/UserProfile";
 import { getLobby } from "../services/lobbies";
+import { getProfile } from "../services/profiles";
 
 export default function LobbyInfo() {
   const { session, user, loading: authLoading } = useContext(AuthContext);
@@ -20,19 +21,19 @@ export default function LobbyInfo() {
     console.log(session);
 
     getLobby()
-    .then((res: Tables<"lobbies"> | null) => {
-      if (!res) return null;
-      setUserLobby(res);
-      setUserRole(user.id === res.host_uid ? "host" : "guest");
+    .then((lobby) => {
+      if (!lobby) return null;
+      setUserLobby(lobby);
+      setUserRole(user.id === lobby.host_uid ? "host" : "guest");
 
-      const oppRole = user.id !== res.host_uid ? "host" : "guest";
-      // TODO: implement this as an actual api lmao.
-      supabase.from("profiles").select("*").eq("id", res[`${oppRole}_uid`]).single()
-      .then(({data, error}) => {
-        if (error) return;
-        setOppProfile(data);
-      })
-      return res;
+      const oppRole = user.id !== lobby.host_uid ? "host" : "guest";
+
+      const id = oppRole === "host" ? lobby.host_uid : lobby.guest_uid;
+
+      if (id) {
+        getProfile({id})
+        .then((res) => setOppProfile(res));
+      }
     })
   }, [session]);
 

@@ -1,11 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
 import { Context, Hono, MiddlewareHandler } from "hono";
-import { Tables } from "../../_shared/database.types.ts";
+import { Tables } from "shared";
 import { supabase } from "../supabase.ts";
 import { generateCode } from "../utils.ts";
 import { LobbyEnv } from "../types.ts";
-
-import { UserProfile } from "shared";
+import { profileValidator } from "../middleware/profiles.ts";
 
 // Inserts a row with a unique code into "lobbies"
 export async function createLobbyRow(
@@ -58,6 +57,7 @@ const lobbyValidator: MiddlewareHandler<LobbyEnv> = async (
 
 const app = new Hono<LobbyEnv>();
 
+app.use(profileValidator)
 app.use(lobbyValidator);
 
 // Need lobbies middleware. Ignore weird states for now.

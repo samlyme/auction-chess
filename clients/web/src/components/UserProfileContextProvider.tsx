@@ -2,9 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { UserProfileContext } from "../contexts/UserProfile";
 import type { Tables } from "../supabase";
 import { AuthContext } from "../contexts/Auth";
-import supabase from "../supabase";
-
-import { UserProfile } from "shared";
+import { getProfile } from "../services/profiles";
 
 export default function UserProfileContextProvider({
   children,
@@ -23,20 +21,9 @@ export default function UserProfileContextProvider({
 
     (async () => {
       setLoading(true);
-      try{
-        const { data } = await supabase
-          .from("profiles")
-          .select()
-          .eq("id", session.user.id)
-          .single();
-        setUserProfile(data)
-      }
-      catch {
-        setUserProfile(null)
-      }
-      finally {
-        setLoading(false)
-      }
+      const profile = await getProfile();
+      setUserProfile(profile);
+      setLoading(false);
     })();
 
   }, [session, authLoading, prevTime]);

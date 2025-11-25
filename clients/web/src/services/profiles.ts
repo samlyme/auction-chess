@@ -1,0 +1,54 @@
+import { Profile, ProfileCreate, ProfileUpdate } from "shared";
+import { getAuthHeader } from "./utils";
+
+const BASE_URL = `${
+  import.meta.env.VITE_SUPABASE_URL
+}/functions/v1/api/profiles`;
+
+export async function createProfile(profile: ProfileCreate) {
+  const authHeader = await getAuthHeader();
+
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader,
+    },
+    body: JSON.stringify(ProfileCreate.parse(profile))
+  });
+
+  return Profile.parse(await res.json());
+}
+
+export async function getProfile(query: { username: string } | { id: string } | null = null) {
+  const authHeader = await getAuthHeader();
+
+  const route = query ? "?" + (new URLSearchParams(query)).toString() : "/me";
+  console.log("route", route);
+
+
+  const res = await fetch(`${BASE_URL}${route}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader,
+    }
+  });
+
+  return Profile.parse(await res.json());
+}
+
+export async function updateProfile(profile: ProfileUpdate) {
+  const authHeader = await getAuthHeader();
+
+  const res = await fetch(BASE_URL, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader,
+    },
+    body: JSON.stringify(ProfileUpdate.parse(profile))
+  });
+
+  return Profile.parse(await res.json());
+}

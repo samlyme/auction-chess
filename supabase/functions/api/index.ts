@@ -1,14 +1,15 @@
 import "@supabase/functions-js";
-import { Context, Hono } from "hono";
+import { Hono } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
 import { cors } from "hono/cors";
 import { corsHeaders } from "../_shared/cors.ts";
 import { supabase } from "./supabase.ts";
-import { CompleteEnv } from "./types.ts";
 import { lobbies } from "./routes/lobbies.ts";
+import { AuthedEnv } from "./types.ts";
+import { profiles } from "./routes/profiles.ts";
 
 
-const app = new Hono().basePath("/api");
+const app = new Hono<AuthedEnv>().basePath("/api");
 
 app.use(
   cors({
@@ -29,19 +30,7 @@ app.use(
   })
 );
 
-app.use(async (c: Context<CompleteEnv>, next) => {
-  const user = c.get("user");
-  const { data, error } = await supabase
-    .from("profiles")
-    .select()
-    .eq("id", user.id)
-    .single();
-
-  if (error) return c.json({ message: "no profile" }, 400);
-  c.set('profile', data);
-  await next();
-});
-
 app.route("/lobbies", lobbies)
+app.route("/profiles", profiles)
 
 Deno.serve(app.fetch)

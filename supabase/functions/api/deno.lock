@@ -1,12 +1,20 @@
 {
   "version": "4",
   "specifiers": {
+    "npm:@hono/zod-validator@~0.7.5": "0.7.5_hono@4.10.6_zod@4.1.13",
     "npm:@supabase/functions-js@^2.84.0": "2.84.0",
     "npm:@supabase/supabase-js@^2.84.0": "2.84.0",
     "npm:hono@^4.10.6": "4.10.6",
     "npm:zod@^4.1.13": "4.1.13"
   },
   "npm": {
+    "@hono/zod-validator@0.7.5_hono@4.10.6_zod@4.1.13": {
+      "integrity": "sha512-n4l4hutkfYU07PzRUHBOVzUEn38VSfrh+UVE5d0w4lyfWDOEhzxIupqo5iakRiJL44c3vTuFJBvcmUl8b9agIA==",
+      "dependencies": [
+        "hono",
+        "zod"
+      ]
+    },
     "@supabase/auth-js@2.84.0": {
       "integrity": "sha512-J6XKbqqg1HQPMfYkAT9BrC8anPpAiifl7qoVLsYhQq5B/dnu/lxab1pabnxtJEsvYG5rwI5HEVEGXMjoQ6Wz2Q==",
       "dependencies": [
@@ -83,6 +91,7 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:@hono/zod-validator@~0.7.5",
       "npm:@supabase/functions-js@^2.84.0",
       "npm:@supabase/supabase-js@^2.84.0",
       "npm:hono@^4.10.6",

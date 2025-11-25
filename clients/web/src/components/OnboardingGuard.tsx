@@ -22,11 +22,11 @@ function getStage({ session, profile }: { session: Session | null, profile: Tabl
 }
 
 
-export default function OnboardingGuard({ 
+export default function OnboardingGuard({
   children,
   allow,
   loadingFallback = <h1>Loading...</h1>
-}: { 
+}: {
   children: React.ReactNode,
   allow: OnboardingStage,
   loadingFallback?: React.ReactNode,
@@ -38,16 +38,14 @@ export default function OnboardingGuard({
   if (authLoading || profileLoading) return loadingFallback;
 
   const stage = getStage({ session, profile });
+
+  // Make this somehow preserve where the user was at through refresh.
   const target = stagePath[stage];
-  // console.log({stage, target});
-  
-
   if (allow === stage || location.pathname === target) return children
-
-  return <Navigate to={target} replace />;
+  return <Navigate to={target} state={{from: location.pathname}} replace />;
 }
 
-/* 
+/*
 There are 3 layers to the auth:
 1. Successful Sign In, no email conf -> AuthContext returns valid user object, but null session
 2. Successful Sign In, email conf -> AuthContext returns valid user object, and valid session
