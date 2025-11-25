@@ -1,12 +1,16 @@
 {
   "name": "auction-chess",
   "private": true,
+  "scripts": {
+    "format": "prettier --write ./**"
+  },
   "workspaces": [
     "shared",
     "clients/web"
   ],
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prettier": "^3.6.2"
   },
   "peerDependencies": {
     "typescript": "^5"

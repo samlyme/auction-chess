@@ -8,16 +8,20 @@ export default function LobbyMenu() {
   const { user } = useContext(AuthContext);
   if (!lobby || !user) return <></>;
 
-  return <div>
-    {
-      user.id === lobby.host_uid
-      ? <>
-        <button onClick={() => console.log("start lobby")}>start lobby</button>
-        <button onClick={() => deleteLobby(lobby.code)}>delete lobby</button>
-      </>
-      : <>
-        <button onClick={() => leaveLobby(lobby.code)}>leave lobby</button>
-      </>
-    }
-	</div>;
+  return (
+    <div>
+      {user.id === lobby.host_uid ? (
+        <>
+          <button onClick={() => console.log("start lobby")}>
+            start lobby
+          </button>
+          <button onClick={() => deleteLobby(lobby.code)}>delete lobby</button>
+        </>
+      ) : (
+        <>
+          <button onClick={() => leaveLobby(lobby.code)}>leave lobby</button>
+        </>
+      )}
+    </div>
+  );
 }

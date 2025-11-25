@@ -5,7 +5,6 @@ export type Lobby = Tables<"lobbies">;
 
 const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api/lobbies`;
 
-
 export async function createLobby(): Promise<Lobby> {
   const authHeader = await getAuthHeader();
 
@@ -48,15 +47,12 @@ export async function deleteLobby(code: string): Promise<Lobby> {
 export async function joinLobby(code: string): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(
-    `${BASE_URL}/${encodeURIComponent(code)}/join`,
-    {
-      method: "POST",
-      headers: {
-        ...authHeader,
-      },
-    }
-  );
+  const res = await fetch(`${BASE_URL}/${encodeURIComponent(code)}/join`, {
+    method: "POST",
+    headers: {
+      ...authHeader,
+    },
+  });
 
   return await res.json();
 }
@@ -64,16 +60,12 @@ export async function joinLobby(code: string): Promise<Lobby | null> {
 export async function leaveLobby(code: string): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(
-    `${BASE_URL}/${encodeURIComponent(code)}/leave`,
-    {
-      method: "POST",
-      headers: {
-        ...authHeader,
-      },
-    }
-  );
+  const res = await fetch(`${BASE_URL}/${encodeURIComponent(code)}/leave`, {
+    method: "POST",
+    headers: {
+      ...authHeader,
+    },
+  });
 
   return await res.json();
-
 }

@@ -1,7 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
 import type { Tables } from "../supabase";
-import supabase from "../supabase";
 import { UserProfileContext } from "../contexts/UserProfile";
 import { getLobby } from "../services/lobbies";
 import { getProfile } from "../services/profiles";
@@ -20,8 +19,7 @@ export default function LobbyInfo() {
 
     console.log(session);
 
-    getLobby()
-    .then((lobby) => {
+    getLobby().then((lobby) => {
       if (!lobby) return null;
       setUserLobby(lobby);
       setUserRole(user.id === lobby.host_uid ? "host" : "guest");
@@ -31,10 +29,9 @@ export default function LobbyInfo() {
       const id = oppRole === "host" ? lobby.host_uid : lobby.guest_uid;
 
       if (id) {
-        getProfile({id})
-        .then((res) => setOppProfile(res));
+        getProfile({ id }).then((res) => setOppProfile(res));
       }
-    })
+    });
   }, [session]);
 
   return (

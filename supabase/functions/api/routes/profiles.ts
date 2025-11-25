@@ -13,7 +13,7 @@ app.get(
   "/",
   zValidator(
     "query",
-    z.union([z.object({ username: z.string() }), z.object({ id: z.string() })])
+    z.union([z.object({ username: z.string() }), z.object({ id: z.string() })]),
   ),
   async (c) => {
     const query = c.req.valid("query");
@@ -28,7 +28,7 @@ app.get(
       if (error)
         return c.json(
           { message: "error in fetching user profile", error },
-          500
+          500,
         );
       return c.json(data);
     }
@@ -41,32 +41,37 @@ app.get(
     if (error)
       return c.json({ message: "error in fetching user profile", error }, 500);
     return c.json(data);
-  }
+  },
 );
 
 app.get("/me", profileValidator, (c) => {
   return c.json(c.get("profile"));
 });
 
-app.post("/", profileValidator, zValidator("json", ProfileCreate), async (c) => {
-  const profile = c.get("profile");
-  if (profile) return c.json({ message: "profile already created" }, 400);
+app.post(
+  "/",
+  profileValidator,
+  zValidator("json", ProfileCreate),
+  async (c) => {
+    const profile = c.get("profile");
+    if (profile) return c.json({ message: "profile already created" }, 400);
 
-  const body = c.req.valid("json");
+    const body = c.req.valid("json");
 
-  const user = c.get("user");
-  const { data, error } = await supabase
-    .from("profiles")
-    .insert({
-      id: user.id,
-      ...body,
-    })
-    .select();
+    const user = c.get("user");
+    const { data, error } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        ...body,
+      })
+      .select();
 
-  if (error) return c.json({ message: "profile create failed", error }, 500);
+    if (error) return c.json({ message: "profile create failed", error }, 500);
 
-  return c.json(data);
-});
+    return c.json(data);
+  },
+);
 
 app.patch(
   "/",
@@ -87,7 +92,7 @@ app.patch(
       return c.json({ message: "error updating user profile", error }, 500);
 
     return c.json(data);
-  }
+  },
 );
 
 export { app as profiles };

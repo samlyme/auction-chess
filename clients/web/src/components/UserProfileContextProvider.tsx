@@ -10,7 +10,7 @@ export default function UserProfileContextProvider({
   children: React.ReactNode;
 }) {
   const [userProfile, setUserProfile] = useState<Tables<"profiles"> | null>(
-    null
+    null,
   );
   const [prevTime, setPrevTime] = useState<number | null>(null);
   const { session, loading: authLoading } = useContext(AuthContext);
@@ -25,7 +25,6 @@ export default function UserProfileContextProvider({
       setUserProfile(profile);
       setLoading(false);
     })();
-
   }, [session, authLoading, prevTime]);
 
   return (

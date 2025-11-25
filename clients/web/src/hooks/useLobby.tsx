@@ -6,10 +6,9 @@ export default function useLobby() {
   const [lobby, setLobby] = useState<Tables<"lobbies"> | null>(null);
 
   useEffect(() => {
-    getLobby()
-      .then((res: Tables<"lobbies"> | null) => {
-        setLobby(res);
-      });
+    getLobby().then((res: Tables<"lobbies"> | null) => {
+      setLobby(res);
+    });
   }, []);
 
   return lobby;
