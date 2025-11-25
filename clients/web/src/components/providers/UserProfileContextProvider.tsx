@@ -1,15 +1,15 @@
 import { useContext, useEffect, useState } from "react";
-import { UserProfileContext } from "../contexts/UserProfile";
-import type { Tables } from "../supabase";
-import { AuthContext } from "../contexts/Auth";
-import { getProfile } from "../services/profiles";
+import { UserProfileContext } from "../../contexts/UserProfile";
+import type { Tables } from "../../supabase";
+import { AuthContext } from "../../contexts/Auth";
+import { getProfile } from "../../services/profiles";
 
 export default function UserProfileContextProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [userProfile, setUserProfile] = useState<Tables<"profiles"> | null>(
+  const [profile, setProfile] = useState<Tables<"profiles"> | null>(
     null,
   );
   const [prevTime, setPrevTime] = useState<number | null>(null);
@@ -22,7 +22,7 @@ export default function UserProfileContextProvider({
     (async () => {
       setLoading(true);
       const profile = await getProfile();
-      setUserProfile(profile);
+      setProfile(profile);
       setLoading(false);
     })();
   }, [session, authLoading, prevTime]);
@@ -30,8 +30,8 @@ export default function UserProfileContextProvider({
   return (
     <UserProfileContext
       value={{
-        profile: userProfile,
-        invalidate: () => setPrevTime(Date.now()),
+        profile,
+        update: () => setPrevTime(Date.now()),
         loading,
       }}
     >

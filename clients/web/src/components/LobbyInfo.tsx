@@ -2,42 +2,39 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
 import type { Tables } from "../supabase";
 import { UserProfileContext } from "../contexts/UserProfile";
-import { getLobby } from "../services/lobbies";
 import { getProfile } from "../services/profiles";
+import { LobbyContext } from "../contexts/Lobby";
 
 export default function LobbyInfo() {
-  const { session, user, loading: authLoading } = useContext(AuthContext);
+  const { lobby, loading: lobbyLoading } = useContext(LobbyContext);
   const { profile, loading: profileLoading } = useContext(UserProfileContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
 
   const [userRole, setUserRole] = useState<"host" | "guest">("host");
-  const [userLobby, setUserLobby] = useState<Tables<"lobbies"> | null>(null);
   const [oppProfile, setOppProfile] = useState<Tables<"profiles"> | null>(null);
 
   useEffect(() => {
-    if (authLoading || profileLoading) return;
-    if (!session || !user || !profile) return;
+    if (lobbyLoading || profileLoading || !lobby || !profile || !user) return;
 
-    console.log(session);
+    (async () => {
+      const { host_uid, guest_uid } = lobby;
+      const role = user.id === host_uid ? "host" : "guest";
+      setUserRole(role);
 
-    getLobby().then((lobby) => {
-      if (!lobby) return null;
-      setUserLobby(lobby);
-      setUserRole(user.id === lobby.host_uid ? "host" : "guest");
-
-      const oppRole = user.id !== lobby.host_uid ? "host" : "guest";
-
-      const id = oppRole === "host" ? lobby.host_uid : lobby.guest_uid;
-
-      if (id) {
-        getProfile({ id }).then((res) => setOppProfile(res));
+      if (role === "host") {
+        const opp = guest_uid ? await getProfile({ id: guest_uid }) : null;
+        setOppProfile(opp);
+      } else if (role === "guest") {
+        const opp = await getProfile({ id: host_uid });
+        setOppProfile(opp);
       }
-    });
-  }, [session]);
+    })();
+  }, [lobby, lobbyLoading, profile, profileLoading, user, authLoading]);
 
   return (
     <>
-      <h1>lobby: {userLobby?.id}</h1>
-      <h2>code: {userLobby?.code}</h2>
+      <h1>lobby: {lobby?.id}</h1>
+      <h2>code: {lobby?.code}</h2>
       <h2>
         host:{" "}
         {userRole == "host" ? (

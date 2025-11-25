@@ -26,7 +26,6 @@ export async function getProfile(
   const authHeader = await getAuthHeader();
 
   const route = query ? "?" + new URLSearchParams(query).toString() : "/me";
-  console.log("route", route);
 
   const res = await fetch(`${BASE_URL}${route}`, {
     method: "GET",

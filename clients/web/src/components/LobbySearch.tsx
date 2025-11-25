@@ -1,24 +1,27 @@
-import { useState } from "react";
-import supabase from "../supabase";
+import { useContext, useState } from "react";
+import { createLobby, joinLobby } from "../services/lobbies";
+import { LobbyContext } from "../contexts/Lobby";
 
 export default function LobbySearch() {
   const [code, setCode] = useState<string>("");
+  const { update } = useContext(LobbyContext);
   return (
     <>
       <h2>Make lobby</h2>
 
       {/* This is such a thin wrapper, I might as well just use fetch lol */}
       <button
-        onClick={() =>
-          supabase.functions
-            .invoke("api/lobbies", {
-              method: "POST",
-            })
-            .then(({ data, error, response }) => {
-              console.log(data);
-              if (error) console.log(response?.json());
-            })
-        }
+        onClick={async () => {
+          try {
+            const lobby = await createLobby();
+            update(lobby);
+          } catch (error) {
+            console.log(
+              "weird, user is already in lobby yet is on this page.",
+              error,
+            );
+          }
+        }}
       >
         make lobby
       </button>
@@ -32,15 +35,13 @@ export default function LobbySearch() {
         }}
       ></input>
       <button
-        onClick={() => {
-          supabase.functions
-            .invoke(`api/lobbies/${code}/join`, {
-              method: "POST",
-            })
-            .then(({ data, error, response }) => {
-              console.log(data);
-              if (error) console.log(response?.json());
-            });
+        onClick={async () => {
+          try {
+            const lobby = await joinLobby(code);
+            update(lobby);
+          } catch (error) {
+            console.log("failed to join lobby", error);
+          }
         }}
       >
         join
