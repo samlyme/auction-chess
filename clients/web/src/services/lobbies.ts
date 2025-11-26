@@ -2,7 +2,7 @@ import { getAuthHeader } from "./utils";
 import { HTTPException, Lobby } from "shared";
 import { z } from "zod";
 
-const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api/lobbies`;
+const BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/lobbies`;
 
 export async function createLobby(): Promise<Lobby> {
   const authHeader = await getAuthHeader();
@@ -54,7 +54,6 @@ export async function joinLobby(code: string) {
   });
 
   const json = await res.json();
-  console.log(json);
 
   return z.preprocess(
     (data) => {
