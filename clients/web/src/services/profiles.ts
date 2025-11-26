@@ -35,7 +35,7 @@ export async function getProfile(
     },
   });
 
-  return Profile.parse(await res.json());
+  return Profile.nullable().parse(await res.json());
 }
 
 export async function updateProfile(profile: ProfileUpdate) {
