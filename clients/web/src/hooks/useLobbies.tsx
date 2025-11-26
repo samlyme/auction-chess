@@ -8,14 +8,20 @@ export default function useLobbies() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const [subFlag, setSubFlag] = useState<number>(0);
-  const resubscribe = () => setSubFlag(prev => prev + 1);
+  const resubscribe = () => setSubFlag((prev) => prev + 1);
 
   useEffect(() => {
     setLoading(true);
-    getLobby().then((res) => {
-      setLobby(res);
-      setLoading(false);
-    });
+    getLobby()
+      .then((res) => {
+        setLobby(res);
+        setLoading(false);
+      })
+      .catch((reason) => {
+        console.log({ reason });
+        setLobby(null);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -23,25 +29,24 @@ export default function useLobbies() {
 
     console.log("subscribe to realtime");
 
-    const channel = supabase.channel(`lobby-${lobby.code}`).on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "lobbies",
-        filter: `id=eq.${lobby.id}`
-      },
-      (payload) => {
-        const newLobby = payload.new as Tables<"lobbies">;
-        console.log("realtime", newLobby);
-        setLobby(newLobby.closed ? null : newLobby);
-      }
-    ).subscribe();
+    const channel = supabase.channel(`lobby-${lobby.code}`).subscribe();
+
+    channel.on("broadcast", { event: "*" }, (payload) => {
+      console.log("real time", payload);
+
+      const newLobby = payload.payload as
+        | Tables<"lobbies">
+        | { deleted: boolean };
+      console.log("newLobby", newLobby);
+      if ("deleted" in newLobby) {
+        setLobby(null);
+      } else setLobby(newLobby);
+    });
 
     return () => {
       channel.unsubscribe();
-    }
-  }, [subFlag])
+    };
+  }, [subFlag, loading]);
 
   return {
     lobby,
@@ -50,9 +55,9 @@ export default function useLobbies() {
       console.log("fire update");
 
       if (lobby === undefined) {
-        console.log('default update');
+        console.log("default update");
       } else {
-        console.log('valued update');
+        console.log("valued update");
         setLobby(lobby);
       }
       resubscribe();

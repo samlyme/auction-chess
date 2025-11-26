@@ -1,10 +1,15 @@
 // deno-lint-ignore-file no-explicit-any
-import { Context, Hono, MiddlewareHandler } from "hono";
+import { Context, Hono, Next } from "hono";
 import { Tables } from "shared";
 import { supabase } from "../supabase.ts";
 import { generateCode } from "../utils.ts";
-import { LobbyEnv } from "../types.ts";
-import { profileValidator } from "../middleware/profiles.ts";
+import { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
+import { getProfile, validateProfile } from "../middleware/profiles.ts";
+import {
+  broadcastLobby,
+  getLobby,
+  validateLobby,
+} from "../middleware/lobbies.ts";
 
 // Inserts a row with a unique code into "lobbies"
 export async function createLobbyRow(
@@ -38,101 +43,109 @@ export async function createLobbyRow(
   throw new Error("Failed to generate unique lobby code after many tries");
 }
 
-const lobbyValidator: MiddlewareHandler<LobbyEnv> = async (
-  c: Context<LobbyEnv>,
-  next,
-) => {
-  // Don't worry about extreme panick states like them being a host and a guest
-
-  const { data: lobby } = await supabase
-    .from("lobbies")
-    .select("*")
-    .or(`host_uid.eq.${c.get("user").id},guest_uid.eq.${c.get("user").id}`)
-    .maybeSingle();
-
-  c.set("lobby", lobby);
-
-  await next();
-};
-
-const app = new Hono<LobbyEnv>();
-
-app.use(profileValidator);
-app.use(lobbyValidator);
+const app = new Hono<MaybeLobbyEnv>();
+// could be a perf bottleneck since we are getting their profile on each req.
+app.use(getProfile, validateProfile);
+app.use(getLobby);
 
 // Need lobbies middleware. Ignore weird states for now.
-app.post("", async (c: Context<LobbyEnv>) => {
-  if (c.get("lobby")) return c.json({ message: "user already in lobby" }, 400);
+app.post(
+  "",
+  async (c: Context<MaybeLobbyEnv>, next: Next) => {
+    if (c.get("lobby"))
+      return c.json({ message: "user already in lobby" }, 400);
 
-  const lobby = await createLobbyRow({}, c.get("user").id);
+    const lobby = await createLobbyRow({}, c.get("user").id);
+    c.set("lobby", lobby);
 
-  // is this needed?
-  // c.set("lobby", lobby)
+    await next();
+  },
+  validateLobby,
+  broadcastLobby,
+);
 
+app.get("", validateLobby, (c: Context<MaybeLobbyEnv>) => {
+  const lobby = c.get("lobby");
   return c.json(lobby);
 });
 
-app.get("", (c: Context<LobbyEnv>) => {
-  return c.json(c.get("lobby"));
-});
+// TODO: remove route param here
+app.delete(
+  "/:code",
+  validateLobby,
+  async (c: Context<LobbyEnv>, next) => {
+    const lobby = c.get("lobby");
+    console.log("delete route", { lobby });
 
-app.delete("/:code", async (c: Context<LobbyEnv>) => {
-  const lobby = c.get("lobby");
-  if (!lobby) return c.status(400);
+    const code = c.req.param("code");
+    if (lobby.code !== code) return c.status(400);
 
-  const code = c.req.param("code");
-  if (lobby.code !== code) return c.status(400);
+    const user = c.get("user");
+    if (user.id !== lobby.host_uid) return c.status(400);
 
-  const user = c.get("user");
-  if (user.id !== lobby.host_uid) return c.status(400);
+    const { error } = await supabase
+      .from("lobbies")
+      .delete()
+      .eq("code", code)
+      .single();
+    if (error) return c.json(error, 500);
 
-  const { data, error } = await supabase
-    .from("lobbies")
-    .delete()
-    .eq("code", code)
-    .select()
-    .single();
-  if (error) return c.json(error, 500);
+    c.set("deleted", true);
 
-  return c.json(data);
-});
+    await next();
+  },
+  broadcastLobby,
+);
 
-app.post("/:code/join", async (c: Context<LobbyEnv>) => {
-  if (c.get("lobby")) return c.json({ message: "user already in lobby" }, 400);
+app.post(
+  "/:code/join",
+  async (c: Context<MaybeLobbyEnv>, next) => {
+    if (c.get("lobby"))
+      return c.json({ message: "user already in lobby" }, 400);
 
-  const code = c.req.param("code");
-  // TODO: check if lobby is full
-  const { data: lobby } = await supabase
-    .from("lobbies")
-    .update({ guest_uid: c.get("user").id })
-    .eq("code", code)
-    .select()
-    .maybeSingle();
+    const code = c.req.param("code");
+    // TODO: check if lobby is full
+    const { data: lobby } = await supabase
+      .from("lobbies")
+      .update({ guest_uid: c.get("user").id })
+      .eq("code", code)
+      .select()
+      .maybeSingle();
 
-  return c.json(lobby);
-});
+    c.set("lobby", lobby);
 
-app.post("/:code/leave", async (c: Context<LobbyEnv>) => {
-  const lobby = c.get("lobby");
-  if (!lobby) return c.json({ message: "user not in lobby" }, 400);
+    await next();
+  },
+  validateLobby,
+  broadcastLobby,
+);
 
-  // TODO: make remove code from param
-  const code = c.req.param("code");
-  if (code !== lobby.code)
-    return c.json({ message: `user in other lobby, not in lobby ${code}` });
+app.post(
+  "/:code/leave",
+  validateLobby,
+  async (c: Context<LobbyEnv>, next) => {
+    const lobby = c.get("lobby");
 
-  const user = c.get("user");
-  if (user.id !== lobby.guest_uid)
-    return c.json({ message: `user is not guest in lobby ${code}` });
+    // TODO: make remove code from param
+    const code = c.req.param("code");
+    if (code !== lobby.code)
+      return c.json({ message: `user in other lobby, not in lobby ${code}` });
+    const user = c.get("user");
+    if (user.id !== lobby.guest_uid)
+      return c.json({ message: `user is not guest in lobby ${code}` });
 
-  const { data } = await supabase
-    .from("lobbies")
-    .update({ guest_uid: null })
-    .eq("code", code)
-    .select()
-    .maybeSingle();
+    const { data: newLobby } = await supabase
+      .from("lobbies")
+      .update({ guest_uid: null })
+      .eq("code", code)
+      .select()
+      .maybeSingle();
 
-  return c.json(data);
-});
+    c.set("lobby", newLobby);
+
+    await next();
+  },
+  broadcastLobby,
+);
 
 export { app as lobbies };

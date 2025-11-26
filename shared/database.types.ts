@@ -36,6 +36,7 @@ export type Database = {
     Tables: {
       lobbies: {
         Row: {
+          closed: boolean;
           code: string;
           config: Json;
           created_at: string;
@@ -44,6 +45,7 @@ export type Database = {
           id: number;
         };
         Insert: {
+          closed?: boolean;
           code: string;
           config?: Json;
           created_at?: string;
@@ -52,6 +54,7 @@ export type Database = {
           id?: number;
         };
         Update: {
+          closed?: boolean;
           code?: string;
           config?: Json;
           created_at?: string;

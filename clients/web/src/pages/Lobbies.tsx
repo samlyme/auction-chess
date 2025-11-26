@@ -63,7 +63,7 @@ export default function Lobbies() {
         </>
       ) : (
         <>
-          <LobbySearch update={update}/>
+          <LobbySearch update={update} />
         </>
       )}
 
