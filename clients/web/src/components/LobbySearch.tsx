@@ -2,7 +2,11 @@ import { useState } from "react";
 import { createLobby, joinLobby } from "../services/lobbies";
 import type { Tables } from "shared";
 
-export default function LobbySearch({ update }: { update: (lobby?: Tables<"lobbies"> | null) => void }) {
+export default function LobbySearch({
+  update,
+}: {
+  update: (lobby?: Tables<"lobbies"> | null) => void;
+}) {
   const [code, setCode] = useState<string>("");
   return (
     <>
@@ -17,7 +21,7 @@ export default function LobbySearch({ update }: { update: (lobby?: Tables<"lobbi
           } catch (error) {
             console.log(
               "weird, user is already in lobby yet is on this page.",
-              error,
+              { error },
             );
           }
         }}
@@ -39,7 +43,7 @@ export default function LobbySearch({ update }: { update: (lobby?: Tables<"lobbi
             const lobby = await joinLobby(code);
             update(lobby);
           } catch (error) {
-            console.log("failed to join lobby", error);
+            console.log("failed to join lobby", { error });
           }
         }}
       >

@@ -1,12 +1,11 @@
 import "@supabase/functions-js";
 import { Hono } from "hono";
-import { bearerAuth } from "hono/bearer-auth";
 import { cors } from "hono/cors";
 import { corsHeaders } from "../_shared/cors.ts";
-import { supabase } from "./supabase.ts";
 import { lobbies } from "./routes/lobbies.ts";
 import { AuthedEnv } from "./types.ts";
 import { profiles } from "./routes/profiles.ts";
+import { validateAuth } from "./middleware/auth.ts";
 
 const app = new Hono<AuthedEnv>().basePath("/api");
 
@@ -17,17 +16,7 @@ app.use(
   }),
 );
 
-app.use(
-  bearerAuth({
-    verifyToken: async (token, c) => {
-      // Verify token by calling Supabase Auth API
-      const { data, error } = await supabase.auth.getUser(token);
-      if (error || !data.user) return false; // invalid token
-      c.set("user", data.user); // optionally store user in context
-      return true;
-    },
-  }),
-);
+app.use(validateAuth);
 
 app.route("/lobbies", lobbies);
 app.route("/profiles", profiles);
