@@ -27,7 +27,7 @@ export const validateLobby = async (c: Context<LobbyEnv>, next: Next) => {
 };
 
 // NOTE: Misleading, but this is a handler LOL!!!!
-export const broadcastLobby = async (c: Context<LobbyEnv>) => {
+export const broadcastLobby = (c: Context<LobbyEnv>) => {
   const lobby = c.get("lobby");
   const channel = c.get("channel");
   const deleted = c.get("deleted");
