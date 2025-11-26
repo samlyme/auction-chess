@@ -40,4 +40,9 @@ export const LobbyJoinQuery = z.object({
 })
 export type LobbyJoin = z.infer<typeof LobbyJoinQuery>;
 
+export const HTTPException = z.object({
+  message: z.string().optional(),
+})
+export type HTTPException = z.infer<typeof HTTPException>;
+
 export * from "./database.types.ts";
