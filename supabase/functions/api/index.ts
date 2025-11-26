@@ -1,7 +1,6 @@
 import "@supabase/functions-js";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { corsHeaders } from "../_shared/cors.ts";
 import { lobbies } from "./routes/lobbies.ts";
 import { AuthedEnv } from "./types.ts";
 import { profiles } from "./routes/profiles.ts";
@@ -18,6 +17,15 @@ app.onError((err, c) => {
   return c.json({ message: "Internal Server Error" }, 500);
 });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": [
+    "authorization",
+    "x-client-info",
+    "apikey",
+    "content-type",
+  ],
+};
 app.use(
   cors({
     origin: corsHeaders["Access-Control-Allow-Origin"],
