@@ -64,7 +64,7 @@ app.post(
   broadcastLobby,
 );
 
-app.get("", validateLobby, (c: Context<MaybeLobbyEnv>) => {
+app.get("", (c: Context<MaybeLobbyEnv>) => {
   const lobby = c.get("lobby");
   return c.json(lobby);
 });
