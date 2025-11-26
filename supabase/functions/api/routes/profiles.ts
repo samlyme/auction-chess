@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { MaybeProfileEnv } from "../types.ts";
 import { supabase } from "../supabase.ts";
-import { zValidator } from "@hono/zod-validator";
 import { ProfileCreate } from "shared";
 import { ProfileUpdate } from "shared";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
+import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
 const app = new Hono<MaybeProfileEnv>();

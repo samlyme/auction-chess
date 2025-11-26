@@ -16,8 +16,7 @@
   "deno.enablePaths": [
     "supabase"
   ],
-  "deno.enable": true,
-  // "deno.lint": true,
+  "deno.enable": false,
   "deno.unstable": [
     "bare-node-builtins",
     "byonm",

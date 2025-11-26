@@ -21,7 +21,7 @@ export default function LobbyMenu({
             start lobby
           </button>
           <button
-            onClick={() => deleteLobby(lobby.code).then(() => update(null))}
+            onClick={() => deleteLobby().then(() => update(null))}
           >
             delete lobby
           </button>
@@ -29,7 +29,7 @@ export default function LobbyMenu({
       ) : (
         <>
           <button
-            onClick={() => leaveLobby(lobby.code).then(() => update(null))}
+            onClick={() => leaveLobby().then(() => update(null))}
           >
             leave lobby
           </button>

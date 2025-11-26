@@ -10,6 +10,8 @@ import {
   getLobby,
   validateLobby,
 } from "../middleware/lobbies.ts";
+import { z } from "zod";
+import { zValidator } from "@hono/zod-validator";
 
 // Inserts a row with a unique code into "lobbies"
 export async function createLobbyRow(
@@ -69,16 +71,12 @@ app.get("", (c: Context<MaybeLobbyEnv>) => {
   return c.json(lobby);
 });
 
-// TODO: remove route param here
 app.delete(
-  "/:code",
+  "/",
   validateLobby,
   async (c: Context<LobbyEnv>, next) => {
     const lobby = c.get("lobby");
     console.log("delete route", { lobby });
-
-    const code = c.req.param("code");
-    if (lobby.code !== code) return c.status(400);
 
     const user = c.get("user");
     if (user.id !== lobby.host_uid) return c.status(400);
@@ -86,7 +84,7 @@ app.delete(
     const { error } = await supabase
       .from("lobbies")
       .delete()
-      .eq("code", code)
+      .eq("code", lobby.code)
       .single();
     if (error) return c.json(error, 500);
 
@@ -98,12 +96,15 @@ app.delete(
 );
 
 app.post(
-  "/:code/join",
-  async (c: Context<MaybeLobbyEnv>, next) => {
+  "/join",
+  zValidator("query", z.object({ code: z.string() })),
+  async (c, next) => {
     if (c.get("lobby"))
       return c.json({ message: "user already in lobby" }, 400);
 
-    const code = c.req.param("code");
+    // THIS line is haunted lmfao
+    const { code } = (c.req as any).valid("query");
+
     // TODO: check if lobby is full
     const { data: lobby } = await supabase
       .from("lobbies")
@@ -121,23 +122,19 @@ app.post(
 );
 
 app.post(
-  "/:code/leave",
+  "/leave",
   validateLobby,
   async (c: Context<LobbyEnv>, next) => {
     const lobby = c.get("lobby");
 
-    // TODO: make remove code from param
-    const code = c.req.param("code");
-    if (code !== lobby.code)
-      return c.json({ message: `user in other lobby, not in lobby ${code}` });
     const user = c.get("user");
     if (user.id !== lobby.guest_uid)
-      return c.json({ message: `user is not guest in lobby ${code}` });
+      return c.json({ message: `user is not guest in lobby ${lobby.code}` });
 
     const { data: newLobby } = await supabase
       .from("lobbies")
       .update({ guest_uid: null })
-      .eq("code", code)
+      .eq("code", lobby.code)
       .select()
       .maybeSingle();
 

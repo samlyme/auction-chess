@@ -1,10 +1,10 @@
-import { Context, Next } from "hono";
+import { Handler, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 import { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { supabase } from "../supabase.ts";
 
-export const getLobby = async (c: Context<MaybeLobbyEnv>, next: Next) => {
+export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   const { data: lobby } = await supabase
     .from("lobbies")
     .select("*")
@@ -16,7 +16,7 @@ export const getLobby = async (c: Context<MaybeLobbyEnv>, next: Next) => {
   await next();
 };
 
-export const validateLobby = async (c: Context<LobbyEnv>, next: Next) => {
+export const validateLobby: MiddlewareHandler<LobbyEnv> = async (c, next) => {
   const lobby = c.get("lobby");
 
   if (!lobby) throw new HTTPException(400, { message: "user not in lobby" });
@@ -27,7 +27,7 @@ export const validateLobby = async (c: Context<LobbyEnv>, next: Next) => {
 };
 
 // NOTE: Misleading, but this is a handler LOL!!!!
-export const broadcastLobby = (c: Context<LobbyEnv>) => {
+export const broadcastLobby: Handler<LobbyEnv> = (c) => {
   const lobby = c.get("lobby");
   const channel = c.get("channel");
   const deleted = c.get("deleted");

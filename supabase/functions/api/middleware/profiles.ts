@@ -1,9 +1,11 @@
-import { Context } from "hono";
+import { MiddlewareHandler } from "hono";
 import { supabase } from "../supabase.ts";
-import { MaybeProfileEnv } from "../types.ts";
-import { Next } from "hono/types";
+import { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
 
-export const getProfile = async (c: Context<MaybeProfileEnv>, next: Next) => {
+export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
+  c,
+  next,
+) => {
   const user = c.get("user");
   const { data } = await supabase
     .from("profiles")
@@ -15,9 +17,9 @@ export const getProfile = async (c: Context<MaybeProfileEnv>, next: Next) => {
   await next();
 };
 
-export const validateProfile = async (
-  c: Context<MaybeProfileEnv>,
-  next: Next,
+export const validateProfile: MiddlewareHandler<CompleteProfileEnv> = async (
+  c,
+  next,
 ) => {
   const profile = c.get("profile");
   if (!profile) return c.json({ message: "no profile" }, 400);

@@ -31,10 +31,10 @@ export async function getLobby(): Promise<Lobby | null> {
   return await res.json();
 }
 
-export async function deleteLobby(code: string): Promise<Lobby> {
+export async function deleteLobby(): Promise<Lobby> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${BASE_URL}/${encodeURIComponent(code)}`, {
+  const res = await fetch(BASE_URL, {
     method: "DELETE",
     headers: {
       ...authHeader,
@@ -47,7 +47,7 @@ export async function deleteLobby(code: string): Promise<Lobby> {
 export async function joinLobby(code: string): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${BASE_URL}/${encodeURIComponent(code)}/join`, {
+  const res = await fetch(`${BASE_URL}/join?code=${code}`, {
     method: "POST",
     headers: {
       ...authHeader,
@@ -57,10 +57,10 @@ export async function joinLobby(code: string): Promise<Lobby | null> {
   return await res.json();
 }
 
-export async function leaveLobby(code: string): Promise<Lobby | null> {
+export async function leaveLobby(): Promise<Lobby | null> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${BASE_URL}/${encodeURIComponent(code)}/leave`, {
+  const res = await fetch(`${BASE_URL}/leave`, {
     method: "POST",
     headers: {
       ...authHeader,
