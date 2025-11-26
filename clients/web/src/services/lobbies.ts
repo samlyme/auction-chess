@@ -1,6 +1,6 @@
 import { getAuthHeader } from "./utils";
-import { Lobby } from "shared";
-
+import { HTTPException, Lobby } from "shared";
+import { z } from "zod";
 
 const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api/lobbies`;
 
@@ -15,7 +15,7 @@ export async function createLobby(): Promise<Lobby> {
     },
   });
 
-  return await res.json();
+  return Lobby.parse(await res.json());
 }
 
 export async function getLobby(): Promise<Lobby | null> {
@@ -27,7 +27,7 @@ export async function getLobby(): Promise<Lobby | null> {
     },
   });
 
-  return await res.json();
+  return Lobby.nullable().parse(await res.json());
 }
 
 export async function deleteLobby(): Promise<Lobby> {
@@ -40,10 +40,10 @@ export async function deleteLobby(): Promise<Lobby> {
     },
   });
 
-  return await res.json();
+  return Lobby.parse(await res.json());
 }
 
-export async function joinLobby(code: string): Promise<Lobby | null> {
+export async function joinLobby(code: string) {
   const authHeader = await getAuthHeader();
 
   const res = await fetch(`${BASE_URL}/join?code=${code}`, {
@@ -53,7 +53,23 @@ export async function joinLobby(code: string): Promise<Lobby | null> {
     },
   });
 
-  return await res.json();
+  const json = await res.json();
+  console.log(json);
+
+  return z.preprocess(
+    (data) => {
+      if (data && typeof data === "object" && "message" in data) {
+        // error shape
+        return { ...(data as any), type: "error" as const };
+      }
+      // otherwise assume lobby
+      return { ...(data as any), type: "lobby" as const };
+    },
+    z.discriminatedUnion("type", [
+      Lobby.extend({ type: z.literal("lobby") }),
+      HTTPException.extend({ type: z.literal("error") }),
+    ]),
+  ).parse(json);
 }
 
 export async function leaveLobby(): Promise<Lobby | null> {
@@ -66,5 +82,5 @@ export async function leaveLobby(): Promise<Lobby | null> {
     },
   });
 
-  return await res.json();
+  return Lobby.nullable().parse(await res.json());
 }

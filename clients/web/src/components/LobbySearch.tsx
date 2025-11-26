@@ -39,12 +39,8 @@ export default function LobbySearch({
       ></input>
       <button
         onClick={async () => {
-          try {
-            const lobby = await joinLobby(code);
-            update(lobby);
-          } catch (error) {
-            console.log("failed to join lobby", { error });
-          }
+          const res = await joinLobby(code);
+          update(res.type === "lobby" ? res : undefined);
         }}
       >
         join
