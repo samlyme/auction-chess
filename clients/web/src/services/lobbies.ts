@@ -1,7 +1,6 @@
-import type { Tables } from "shared";
 import { getAuthHeader } from "./utils";
+import { Lobby } from "shared";
 
-export type Lobby = Tables<"lobbies">;
 
 const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api/lobbies`;
 

@@ -24,4 +24,20 @@ export const ProfileUpdate = z
   .strict();
 export type ProfileUpdate = z.infer<typeof ProfileUpdate>;
 
+export const Lobby = z.object({
+  code: z.string(),
+  config: z.object(), // TODO: define lobby config
+  created_at: z.string(),
+  game_state: z.object().optional(),
+  guest_uid: z.string().optional(),
+  host_uid: z.string(),
+  id: z.number(),
+});
+export type Lobby = z.infer<typeof Lobby>;
+
+export const LobbyJoinQuery = z.object({
+  code: z.string()
+})
+export type LobbyJoin = z.infer<typeof LobbyJoinQuery>;
+
 export * from "./database.types.ts";

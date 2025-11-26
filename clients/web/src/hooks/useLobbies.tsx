@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Tables } from "shared";
+import { Lobby } from "shared";
 import { getLobby } from "../services/lobbies";
 import supabase from "../supabase";
 
 export default function useLobbies() {
-  const [lobby, setLobby] = useState<Tables<"lobbies"> | null>(null);
+  const [lobby, setLobby] = useState<Lobby | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const [subFlag, setSubFlag] = useState<number>(0);
@@ -34,9 +34,7 @@ export default function useLobbies() {
     channel.on("broadcast", { event: "*" }, (payload) => {
       console.log("real time", payload);
 
-      const newLobby = payload.payload as
-        | Tables<"lobbies">
-        | { deleted: boolean };
+      const newLobby = Lobby.parse(payload.payload);
       console.log("newLobby", newLobby);
       if ("deleted" in newLobby) {
         setLobby(null);
@@ -51,7 +49,7 @@ export default function useLobbies() {
   return {
     lobby,
     loading,
-    update: (lobby?: Tables<"lobbies"> | null) => {
+    update: (lobby?: Lobby | null) => {
 
       if (lobby === undefined) {
         setLoading(true);

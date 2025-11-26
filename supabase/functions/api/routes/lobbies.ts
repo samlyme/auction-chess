@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { Context, Hono, Next } from "hono";
-import { Tables } from "shared";
+import { LobbyJoinQuery, Tables } from "shared";
 import { supabase } from "../supabase.ts";
 import { generateCode } from "../utils.ts";
 import { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
@@ -10,7 +10,6 @@ import {
   getLobby,
   validateLobby,
 } from "../middleware/lobbies.ts";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 // Inserts a row with a unique code into "lobbies"
@@ -97,7 +96,7 @@ app.delete(
 
 app.post(
   "/join",
-  zValidator("query", z.object({ code: z.string() })),
+  zValidator("query", LobbyJoinQuery),
   async (c, next) => {
     if (c.get("lobby"))
       return c.json({ message: "user already in lobby" }, 400);
