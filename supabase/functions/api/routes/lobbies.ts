@@ -94,6 +94,7 @@ app.delete(
   broadcastLobby,
 );
 
+// TODO: use http exceptions here
 app.post(
   "/join",
   zValidator("query", LobbyJoinQuery),
@@ -104,7 +105,14 @@ app.post(
     // THIS line is haunted lmfao
     const { code } = (c.req as any).valid("query");
 
-    // TODO: check if lobby is full
+    const { data: oldLobby } = await supabase
+      .from("lobbies")
+      .select("guest_uid")
+      .eq("code", code)
+      .single();
+
+    if (oldLobby?.guest_uid) return c.json({ message: "lobby is full"}, 400)
+
     const { data: lobby } = await supabase
       .from("lobbies")
       .update({ guest_uid: c.get("user").id })
