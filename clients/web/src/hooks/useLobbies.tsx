@@ -52,12 +52,20 @@ export default function useLobbies() {
     lobby,
     loading,
     update: (lobby?: Tables<"lobbies"> | null) => {
-      console.log("fire update");
 
       if (lobby === undefined) {
-        console.log("default update");
+        setLoading(true);
+        getLobby()
+          .then((res) => {
+            setLobby(res);
+            setLoading(false);
+          })
+          .catch((reason) => {
+            console.log({ reason });
+            setLobby(null);
+            setLoading(false);
+          });
       } else {
-        console.log("valued update");
         setLobby(lobby);
       }
       resubscribe();
