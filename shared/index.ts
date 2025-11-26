@@ -28,8 +28,8 @@ export const Lobby = z.object({
   code: z.string(),
   config: z.object(), // TODO: define lobby config
   created_at: z.string(),
-  game_state: z.object().optional(),
-  guest_uid: z.string().optional(),
+  game_state: z.object().nullable(),
+  guest_uid: z.string().nullable(),
   host_uid: z.string(),
   id: z.number(),
 });
