@@ -46,8 +46,8 @@ app.get(
   },
 );
 
-app.get("/me", validateProfile, (c) => {
-  return c.json(c.get("profile"));
+app.get("/me", (c) => {
+  return c.json(c.get("profile") || null);
 });
 
 app.post("/", zValidator("json", ProfileCreate), async (c) => {
@@ -63,8 +63,8 @@ app.post("/", zValidator("json", ProfileCreate), async (c) => {
       id: user.id,
       ...body,
     })
-    .select();
-
+    .select()
+    .single();
   if (error) return c.json({ message: "profile create failed", error }, 500);
 
   return c.json(data);
