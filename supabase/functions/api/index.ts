@@ -6,8 +6,17 @@ import { lobbies } from "./routes/lobbies.ts";
 import { AuthedEnv } from "./types.ts";
 import { profiles } from "./routes/profiles.ts";
 import { validateAuth } from "./middleware/auth.ts";
+import { HTTPException } from "hono/http-exception";
 
 const app = new Hono<AuthedEnv>().basePath("/api");
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return c.json({ message: err.message }, err.status);
+  }
+
+  return c.json({ message: "Internal Server Error" }, 500);
+});
 
 app.use(
   cors({
