@@ -107,12 +107,14 @@ app.delete(
 app.post(
   "/join",
   // This whole area is haunted when using Deno. Typechecker does not like.
+  // deno-lint-ignore no-explicit-any
   zValidator("query", LobbyJoinQuery) as any,
   async (c, next) => {
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
     // THIS line is haunted lmfao
+    // deno-lint-ignore no-explicit-any
     const { code } = (c.req as any).valid("query");
 
     const { data: lobbyState } = await supabase
