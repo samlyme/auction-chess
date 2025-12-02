@@ -33,8 +33,8 @@ export const broadcastLobby: Handler<LobbyEnv> = async (c) => {
   const channel = c.get("channel");
   const deleted = c.get("deleted");
 
-  channel.httpSend("lobby-update", deleted ? { deleted } : lobby);
-  // console.log("try to send realtime broadcast", res);
+  if (deleted) channel.httpSend("delete", {});
+  else channel.httpSend("update", lobby);
 
   return c.json(lobby);
 };
