@@ -6,6 +6,7 @@
   },
   "workspaces": [
     "shared",
+    "server",
     "clients/web"
   ],
   "devDependencies": {

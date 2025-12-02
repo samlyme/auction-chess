@@ -32,4 +32,5 @@
     "http",
     "net"
   ],
+  "deno.cache": ".deno-cache"
 }

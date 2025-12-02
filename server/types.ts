@@ -1,9 +1,15 @@
-import { RealtimeChannel, type User } from "@supabase/supabase-js";
+import { RealtimeChannel, SupabaseClient, type User } from "@supabase/supabase-js";
 import { type Tables } from "shared";
+
+export type SupabaseEnv = {
+  Variables: {
+    supabase: SupabaseClient,
+  }
+}
 
 // successful log in.
 export type AuthedEnv = {
-  Variables: {
+  Variables: SupabaseEnv["Variables"] & {
     user: User;
   };
 };
