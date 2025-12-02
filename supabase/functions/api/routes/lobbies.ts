@@ -106,7 +106,8 @@ app.delete(
 // TODO: use http exceptions here
 app.post(
   "/join",
-  zValidator("query", LobbyJoinQuery),
+  // This whole area is haunted when using Deno. Typechecker does not like.
+  zValidator("query", LobbyJoinQuery) as any,
   async (c, next) => {
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
@@ -167,12 +168,43 @@ app.post(
 app.post("/start", validateLobby, async (c: Context<LobbyEnv>, next) => {
   const lobby = c.get("lobby");
   const user = c.get("user");
+
   if (user.id !== lobby.host_uid)
-    throw new HTTPException(400, {
+    throw new HTTPException(403, {
       message: `user is not host of lobby ${lobby.code}`,
     });
 
+  if (!lobby.guest_uid)
+    throw new HTTPException(400, {
+      message: `cannot start game without a guest`,
+    });
 
-});
+  if (lobby.game_state)
+    throw new HTTPException(400, {
+      message: `game already started`,
+    });
+
+  // TODO: Initialize game state based on config
+  const initialGameState = {
+    started: true,
+    started_at: new Date().toISOString(),
+  };
+
+  const { data: updatedLobby, error } = await supabase
+    .from("lobbies")
+    .update({ game_state: initialGameState })
+    .eq("code", lobby.code)
+    .select()
+    .single();
+
+  if (error)
+    throw new HTTPException(500, {
+      message: `failed to start game for lobby ${lobby.code}`,
+    });
+
+  c.set("lobby", updatedLobby);
+
+  await next();
+}, broadcastLobby);
 
 export { app as lobbies };
