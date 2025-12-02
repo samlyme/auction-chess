@@ -1,8 +1,8 @@
-import { getAuthHeader, apiFetch } from "./utils";
+import { getAuthHeader, apiFetch, BACKEND_URL } from "./utils";
 import { Lobby } from "shared";
 import type { Result } from "shared";
 
-const BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/lobbies`;
+const BASE_URL = `${BACKEND_URL}/api/lobbies`;
 
 export async function createLobby(): Promise<Result<Lobby>> {
   const authHeader = await getAuthHeader();
