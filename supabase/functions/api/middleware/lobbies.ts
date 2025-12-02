@@ -27,13 +27,13 @@ export const validateLobby: MiddlewareHandler<LobbyEnv> = async (c, next) => {
 };
 
 // NOTE: Misleading, but this is a handler LOL!!!!
-export const broadcastLobby: Handler<LobbyEnv> = async (c) => {
+export const broadcastLobby: Handler<LobbyEnv> = (c) => {
   const lobby = c.get("lobby");
   const channel = c.get("channel");
   const deleted = c.get("deleted");
 
-  channel.httpSend("lobby-update", deleted ? { deleted } : lobby);
-  // console.log("try to send realtime broadcast", res);
+  if (deleted) channel.httpSend("delete", {})
+  else channel.httpSend("update", lobby);
 
   return c.json(lobby);
 };
