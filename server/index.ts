@@ -1,4 +1,3 @@
-import "@supabase/functions-js";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { lobbies } from "./routes/lobbies.ts";

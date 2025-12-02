@@ -1,85 +1,95 @@
-import { getAuthHeader } from "./utils";
-import { HTTPException, Lobby } from "shared";
-import { z } from "zod";
+import { getAuthHeader, apiFetch } from "./utils";
+import { Lobby } from "shared";
+import type { Result } from "shared";
 
 const BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/lobbies`;
 
-export async function createLobby(): Promise<Lobby> {
+export async function createLobby(): Promise<Result<Lobby>> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader,
+  return apiFetch(
+    BASE_URL,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader,
+      },
     },
-  });
-
-  return Lobby.parse(await res.json());
+    Lobby
+  );
 }
 
-export async function getLobby(): Promise<Lobby | null> {
+export async function getLobby(): Promise<Result<Lobby | null>> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(BASE_URL, {
-    headers: {
-      ...authHeader,
+  return apiFetch(
+    BASE_URL,
+    {
+      headers: {
+        ...authHeader,
+      },
     },
-  });
-
-  return Lobby.nullable().parse(await res.json());
+    Lobby.nullable()
+  );
 }
 
-export async function deleteLobby(): Promise<Lobby> {
+export async function deleteLobby(): Promise<Result<Lobby>> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(BASE_URL, {
-    method: "DELETE",
-    headers: {
-      ...authHeader,
+  return apiFetch(
+    BASE_URL,
+    {
+      method: "DELETE",
+      headers: {
+        ...authHeader,
+      },
     },
-  });
-
-  return Lobby.parse(await res.json());
+    Lobby
+  );
 }
 
-export async function joinLobby(code: string) {
+export async function joinLobby(code: string): Promise<Result<Lobby>> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${BASE_URL}/join?code=${code}`, {
-    method: "POST",
-    headers: {
-      ...authHeader,
+  return apiFetch(
+    `${BASE_URL}/join?code=${code}`,
+    {
+      method: "POST",
+      headers: {
+        ...authHeader,
+      },
     },
-  });
-
-  const json = await res.json();
-
-  return z.preprocess(
-    (data) => {
-      if (data && typeof data === "object" && "message" in data) {
-        // error shape
-        return { ...(data as any), type: "error" as const };
-      }
-      // otherwise assume lobby
-      return { ...(data as any), type: "lobby" as const };
-    },
-    z.discriminatedUnion("type", [
-      Lobby.extend({ type: z.literal("lobby") }),
-      HTTPException.extend({ type: z.literal("error") }),
-    ]),
-  ).parse(json);
+    Lobby
+  );
 }
 
-export async function leaveLobby(): Promise<Lobby | null> {
+export async function leaveLobby(): Promise<Result<Lobby | null>> {
   const authHeader = await getAuthHeader();
 
-  const res = await fetch(`${BASE_URL}/leave`, {
-    method: "POST",
-    headers: {
-      ...authHeader,
+  return apiFetch(
+    `${BASE_URL}/leave`,
+    {
+      method: "POST",
+      headers: {
+        ...authHeader,
+      },
     },
-  });
+    Lobby.nullable()
+  );
+}
 
-  return Lobby.nullable().parse(await res.json());
+export async function startLobby(): Promise<Result<Lobby>> {
+  const authHeader = await getAuthHeader();
+
+  return apiFetch(
+    `${BASE_URL}/start`,
+    {
+      method: "POST",
+      headers: {
+        ...authHeader,
+      },
+    },
+    Lobby
+  );
 }

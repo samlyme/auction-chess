@@ -12,16 +12,15 @@ export default function useLobbies() {
 
   useEffect(() => {
     setLoading(true);
-    getLobby()
-      .then((res) => {
-        setLobby(res);
-        setLoading(false);
-      })
-      .catch((reason) => {
-        console.log({ reason });
+    getLobby().then((result) => {
+      if (result.ok) {
+        setLobby(result.value);
+      } else {
+        console.log("Error fetching lobby:", result.error);
         setLobby(null);
-        setLoading(false);
-      });
+      }
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -50,19 +49,17 @@ export default function useLobbies() {
     lobby,
     loading,
     update: (lobby?: Lobby | null) => {
-
       if (lobby === undefined) {
         setLoading(true);
-        getLobby()
-          .then((res) => {
-            setLobby(res);
-            setLoading(false);
-          })
-          .catch((reason) => {
-            console.log({ reason });
+        getLobby().then((result) => {
+          if (result.ok) {
+            setLobby(result.value);
+          } else {
+            console.log("Error fetching lobby:", result.error);
             setLobby(null);
-            setLoading(false);
-          });
+          }
+          setLoading(false);
+        });
       } else {
         setLobby(lobby);
       }

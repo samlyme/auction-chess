@@ -45,4 +45,31 @@ export const HTTPException = z.object({
 })
 export type HTTPException = z.infer<typeof HTTPException>;
 
+// Result type for API responses
+export type Result<T, E = APIError> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+// API Error type
+export const APIError = z.object({
+  status: z.number(),
+  message: z.string(),
+});
+export type APIError = z.infer<typeof APIError>;
+
+// Helper functions for creating Results
+export const Ok = <T>(value: T): Result<T, never> => ({ ok: true, value });
+export const Err = <E>(error: E): Result<never, E> => ({ ok: false, error });
+
+// Helper to match on Result types
+export function match<T, E, R>(
+  result: Result<T, E>,
+  handlers: {
+    ok: (value: T) => R;
+    err: (error: E) => R;
+  }
+): R {
+  return result.ok ? handlers.ok(result.value) : handlers.err(result.error);
+}
+
 export * from "./database.types.ts";

@@ -136,7 +136,7 @@ app.post(
   },
   validateLobby,
   broadcastLobby,
-)
+);
 
 app.post(
   "/leave",
@@ -146,7 +146,9 @@ app.post(
 
     const user = c.get("user");
     if (user.id !== lobby.guest_uid)
-      throw new HTTPException(400, { message: `user is not guest in lobby ${lobby.code}` });
+      throw new HTTPException(400, {
+        message: `user is not guest in lobby ${lobby.code}`,
+      });
 
     const { data: newLobby } = await supabase
       .from("lobbies")
@@ -161,5 +163,16 @@ app.post(
   },
   broadcastLobby,
 );
+
+app.post("/start", validateLobby, async (c: Context<LobbyEnv>, next) => {
+  const lobby = c.get("lobby");
+  const user = c.get("user");
+  if (user.id !== lobby.host_uid)
+    throw new HTTPException(400, {
+      message: `user is not host of lobby ${lobby.code}`,
+    });
+
+
+});
 
 export { app as lobbies };
