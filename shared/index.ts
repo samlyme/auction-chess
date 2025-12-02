@@ -72,4 +72,54 @@ export function match<T, E, R>(
   return result.ok ? handlers.ok(result.value) : handlers.err(result.error);
 }
 
+// Chess types (from chessops)
+export const Role = z.enum(["pawn", "knight", "bishop", "rook", "queen", "king"]);
+export type Role = z.infer<typeof Role>;
+
+export const Square = z.number().int().min(0).max(63);
+export type Square = z.infer<typeof Square>;
+
+export const NormalMove = z.object({
+  from: Square,
+  to: Square,
+  promotion: Role.optional(),
+});
+export type NormalMove = z.infer<typeof NormalMove>;
+
+// Game types
+export const Color = z.enum(["white", "black"]);
+export type Color = z.infer<typeof Color>;
+
+export const Phase = z.enum(["bid", "move"]);
+export type Phase = z.infer<typeof Phase>;
+
+export const Bid = z.object({
+  amount: z.number(),
+  fold: z.boolean(),
+  from: Color,
+});
+export type Bid = z.infer<typeof Bid>;
+
+export const AuctionState = z.object({
+  balance: z.record(Color, z.number()),
+  bidHistory: z.array(z.array(Bid)),
+});
+export type AuctionState = z.infer<typeof AuctionState>;
+
+export const ChessState = z.object({
+  fen: z.string(),
+});
+export type ChessState = z.infer<typeof ChessState>;
+
+export const AuctionChessState = z.object({
+  chessState: ChessState,
+  auctionState: AuctionState,
+  turn: Color,
+  phase: Phase,
+  winner: Color.optional()
+});
+export type AuctionChessState = z.infer<typeof AuctionChessState>;
+
+
+
 export * from "./database.types.ts";
