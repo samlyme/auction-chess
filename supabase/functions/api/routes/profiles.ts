@@ -1,11 +1,12 @@
 import { Hono } from "hono";
-import { MaybeProfileEnv } from "../types.ts";
+import { type MaybeProfileEnv } from "../types.ts";
 import { supabase } from "../supabase.ts";
 import { ProfileCreate } from "shared";
 import { ProfileUpdate } from "shared";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
+import { HTTPException } from "hono/http-exception";
 
 const app = new Hono<MaybeProfileEnv>();
 
@@ -21,18 +22,17 @@ app.get(
     const query = c.req.valid("query");
 
     if ("id" in query) {
-      const { data, error } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", query.id)
         .maybeSingle();
 
       if (error)
-        return c.json(
-          { message: "error in fetching user profile", error },
-          500,
+        throw new HTTPException(500,
+          { message: "error in fetching user profile" },
         );
-      return c.json(data);
+      return c.json(profile);
     }
 
     const { data, error } = await supabase
@@ -41,7 +41,8 @@ app.get(
       .eq("username", query.username)
       .maybeSingle();
     if (error)
-      return c.json({ message: "error in fetching user profile", error }, 500);
+      throw new HTTPException(500, { message: "error in fetching user profile" });
+
     return c.json(data);
   },
 );
@@ -52,16 +53,17 @@ app.get("/me", (c) => {
 
 app.post("/", zValidator("json", ProfileCreate), async (c) => {
   const profile = c.get("profile");
-  if (profile) return c.json({ message: "profile already created" }, 400);
+  if (profile) throw new HTTPException(400, { message: "profile already created" });
 
+  // zValidator isn't playing nice :(
   const body = c.req.valid("json");
 
   const user = c.get("user");
   const { data, error } = await supabase
     .from("profiles")
     .insert({
-      id: user.id,
       ...body,
+      id: user.id,
     })
     .select()
     .single();

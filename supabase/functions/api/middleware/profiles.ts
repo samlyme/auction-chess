@@ -1,6 +1,6 @@
-import { MiddlewareHandler } from "hono";
+import type { MiddlewareHandler } from "hono";
 import { supabase } from "../supabase.ts";
-import { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
+import type { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
 
 export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
   c,
