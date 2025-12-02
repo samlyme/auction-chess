@@ -32,12 +32,15 @@ export default function useLobbies() {
 
     channel.on("broadcast", { event: "*" }, (payload) => {
       console.log("real time", payload);
-
-      const newLobby = Lobby.parse(payload.payload);
-      console.log("newLobby", newLobby);
-      if ("deleted" in newLobby) {
+      if (payload.event === "delete") {
         setLobby(null);
-      } else setLobby(newLobby);
+        console.log("lobby deleted");
+
+      }
+      else {
+        const newLobby = Lobby.parse(payload.payload);
+        console.log("newLobby", newLobby);
+      }
     });
 
     return () => {
