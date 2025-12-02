@@ -1,0 +1,145 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Auction Chess is a multiplayer chess variant built with:
+- **Frontend**: React + TypeScript + Vite (in `clients/web`)
+- **Backend**: Hono API server running on Bun (in `server`)
+- **Database**: Supabase (PostgreSQL) with local development support
+- **Serverless**: Supabase Edge Functions using Deno (in `supabase/functions/api`)
+- **Shared code**: Common types and database schema (in `shared`)
+
+## Monorepo Structure
+
+This is a Bun workspace with three main packages:
+- `clients/web` - React web client
+- `server` - Hono API server (alternative to Supabase Edge Functions)
+- `shared` - Shared TypeScript types and Zod schemas
+
+Both the `server` and `supabase/functions/api` implementations provide the same API (using Hono), but one runs on Bun and the other on Deno. They share similar structure and logic.
+
+## Development Commands
+
+### Root level
+```bash
+bun install              # Install all dependencies
+bun run format          # Format all files with Prettier
+```
+
+### Web Client (`clients/web`)
+```bash
+cd clients/web
+bun run dev             # Start dev server on port 3000
+bun run build           # Build for production (runs tsc check + vite build)
+bun run lint            # Run ESLint
+bun run preview         # Preview production build
+```
+
+### Server (Bun version)
+```bash
+cd server
+bun run dev             # Start server with watch mode on port 8000
+bun run serve           # Start server without watch mode
+```
+
+### Supabase (Database & Edge Functions)
+```bash
+# From supabase directory
+supabase start          # Start local Supabase (required for development)
+supabase stop           # Stop local Supabase
+supabase db reset       # Reset database and run migrations
+supabase functions serve api  # Serve the api edge function locally
+
+# Generate TypeScript types from database schema
+supabase gen types typescript --local > shared/database.types.ts
+```
+
+## Key Architecture Patterns
+
+### Dual API Implementation
+The codebase has two parallel API implementations:
+1. **Bun Server** (`server/`): Runs on Bun runtime, uses Hono framework
+2. **Supabase Edge Function** (`supabase/functions/api/`): Runs on Deno runtime, uses Hono framework
+
+Both share the same:
+- Route structure (`/lobbies`, `/profiles`)
+- Middleware patterns (auth validation, lobby validation)
+- Type definitions from `shared/`
+
+When making changes to API logic, consider whether both implementations need updates.
+
+### Shared Package
+The `shared` package contains:
+- Zod schemas for validation (`Profile`, `Lobby`, `LobbyJoinQuery`, etc.)
+- Database types generated from Supabase (`database.types.ts`)
+- Type exports used by both frontend and backend
+
+Import from `shared` package in all workspace packages.
+
+### Authentication Flow
+- Supabase Auth handles user authentication
+- JWT tokens passed in `Authorization` header
+- Backend middleware (`validateAuth`) extracts user from JWT
+- Frontend uses `AuthContext` and `UserProfileContext` for state management
+- Onboarding flow: Splash → Auth → Create Profile → Lobbies
+
+### Route Protection
+Frontend uses `OnboardingGuard` component with three states:
+- `unauthed`: Only accessible when not logged in
+- `createProfile`: Only accessible when authenticated but no profile exists
+- `complete`: Only accessible when authenticated with a profile
+
+### Database Schema
+Key tables:
+- `lobbies`: Game lobbies with `code`, `config`, `game_state`, `host_uid`, `guest_uid`
+- `profiles`: User profiles with `username`, `bio`, linked to Supabase auth `id`
+
+Migrations are in `supabase/migrations/`. Row Level Security (RLS) is enabled on tables.
+
+### Lobby System
+- Lobbies created with unique 6-character codes (generated in `utils.ts`)
+- Host creates lobby, guest joins via code
+- Real-time updates via Supabase Realtime (broadcast channel)
+- Lobby middleware handles validation and broadcasting
+
+## TypeScript Configuration
+
+- Root `tsconfig.json` has strict mode enabled
+- Uses `module: "Preserve"` and `moduleResolution: "bundler"`
+- JSX transform: `react-jsx`
+- Strict options: `noUncheckedIndexedAccess`, `noImplicitOverride`
+
+## Important Notes
+
+- This project uses **Bun** as the primary runtime (not Node.js)
+- The web client runs on port 3000, servers run on port 8000
+- Supabase local instance runs on port 54321 (API), 54322 (DB), 54323 (Studio)
+- Environment variables are in `.env` files (gitignored)
+- Format code with Prettier before committing (`bun run format`)
+- Database types should be regenerated after schema changes using `supabase gen types`
+
+## Common Development Workflows
+
+### Adding a new API endpoint
+1. Define Zod schema in `shared/index.ts` if needed
+2. Add route handler in both `server/routes/` and `supabase/functions/api/routes/`
+3. Add middleware in corresponding `middleware/` directories if needed
+4. Register route in `index.ts` of both servers
+5. Update frontend service in `clients/web/src/services/`
+
+### Modifying database schema
+1. Create migration: `supabase migration new <name>`
+2. Write SQL in the generated migration file
+3. Apply migration: `supabase db reset` or `supabase db push`
+4. Regenerate types: `supabase gen types typescript --local > shared/database.types.ts`
+5. Update Zod schemas in `shared/index.ts` if needed
+
+### Working with the frontend
+- Components are in `clients/web/src/components/`
+- Pages are in `clients/web/src/pages/`
+- Context providers in `components/providers/`
+- Services for API calls in `services/`
+- Uses React Router for navigation
+- Supabase client initialized in `src/supabase.ts`
