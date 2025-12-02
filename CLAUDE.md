@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Auction Chess is a multiplayer chess variant built with:
+
 - **Frontend**: React + TypeScript + Vite (in `clients/web`)
 - **Backend**: Hono API server running on Bun (in `server`)
 - **Database**: Supabase (PostgreSQL) with local development support
@@ -14,6 +15,7 @@ Auction Chess is a multiplayer chess variant built with:
 ## Monorepo Structure
 
 This is a Bun workspace with three main packages:
+
 - `clients/web` - React web client
 - `server` - Hono API server (alternative to Supabase Edge Functions)
 - `shared` - Shared TypeScript types and Zod schemas
@@ -23,12 +25,14 @@ Both the `server` and `supabase/functions/api` implementations provide the same 
 ## Development Commands
 
 ### Root level
+
 ```bash
 bun install              # Install all dependencies
 bun run format          # Format all files with Prettier
 ```
 
 ### Web Client (`clients/web`)
+
 ```bash
 cd clients/web
 bun run dev             # Start dev server on port 3000
@@ -38,6 +42,7 @@ bun run preview         # Preview production build
 ```
 
 ### Server (Bun version)
+
 ```bash
 cd server
 bun run dev             # Start server with watch mode on port 8000
@@ -45,6 +50,7 @@ bun run serve           # Start server without watch mode
 ```
 
 ### Supabase (Database & Edge Functions)
+
 ```bash
 # From supabase directory
 supabase start          # Start local Supabase (required for development)
@@ -59,11 +65,14 @@ supabase gen types typescript --local > shared/database.types.ts
 ## Key Architecture Patterns
 
 ### Dual API Implementation
+
 The codebase has two parallel API implementations:
+
 1. **Bun Server** (`server/`): Runs on Bun runtime, uses Hono framework
 2. **Supabase Edge Function** (`supabase/functions/api/`): Runs on Deno runtime, uses Hono framework
 
 Both share the same:
+
 - Route structure (`/lobbies`, `/profiles`)
 - Middleware patterns (auth validation, lobby validation)
 - Type definitions from `shared/`
@@ -71,7 +80,9 @@ Both share the same:
 When making changes to API logic, consider whether both implementations need updates.
 
 ### Shared Package
+
 The `shared` package contains:
+
 - Zod schemas for validation (`Profile`, `Lobby`, `LobbyJoinQuery`, etc.)
 - Database types generated from Supabase (`database.types.ts`)
 - Type exports used by both frontend and backend
@@ -79,6 +90,7 @@ The `shared` package contains:
 Import from `shared` package in all workspace packages.
 
 ### Authentication Flow
+
 - Supabase Auth handles user authentication
 - JWT tokens passed in `Authorization` header
 - Backend middleware (`validateAuth`) extracts user from JWT
@@ -86,19 +98,24 @@ Import from `shared` package in all workspace packages.
 - Onboarding flow: Splash → Auth → Create Profile → Lobbies
 
 ### Route Protection
+
 Frontend uses `OnboardingGuard` component with three states:
+
 - `unauthed`: Only accessible when not logged in
 - `createProfile`: Only accessible when authenticated but no profile exists
 - `complete`: Only accessible when authenticated with a profile
 
 ### Database Schema
+
 Key tables:
+
 - `lobbies`: Game lobbies with `code`, `config`, `game_state`, `host_uid`, `guest_uid`
 - `profiles`: User profiles with `username`, `bio`, linked to Supabase auth `id`
 
 Migrations are in `supabase/migrations/`. Row Level Security (RLS) is enabled on tables.
 
 ### Lobby System
+
 - Lobbies created with unique 6-character codes (generated in `utils.ts`)
 - Host creates lobby, guest joins via code
 - Real-time updates via Supabase Realtime (broadcast channel)
@@ -123,6 +140,7 @@ Migrations are in `supabase/migrations/`. Row Level Security (RLS) is enabled on
 ## Common Development Workflows
 
 ### Adding a new API endpoint
+
 1. Define Zod schema in `shared/index.ts` if needed
 2. Add route handler in both `server/routes/` and `supabase/functions/api/routes/`
 3. Add middleware in corresponding `middleware/` directories if needed
@@ -130,6 +148,7 @@ Migrations are in `supabase/migrations/`. Row Level Security (RLS) is enabled on
 5. Update frontend service in `clients/web/src/services/`
 
 ### Modifying database schema
+
 1. Create migration: `supabase migration new <name>`
 2. Write SQL in the generated migration file
 3. Apply migration: `supabase db reset` or `supabase db push`
@@ -137,6 +156,7 @@ Migrations are in `supabase/migrations/`. Row Level Security (RLS) is enabled on
 5. Update Zod schemas in `shared/index.ts` if needed
 
 ### Working with the frontend
+
 - Components are in `clients/web/src/components/`
 - Pages are in `clients/web/src/pages/`
 - Context providers in `components/providers/`

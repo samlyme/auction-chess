@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { lobbies } from "./routes/lobbies.ts";
-import type { AuthedEnv, SupabaseEnv } from "./types.ts";
 import { profiles } from "./routes/profiles.ts";
+import { game } from "./routes/game.ts";
+import type { AuthedEnv, SupabaseEnv } from "./types.ts";
 import { validateAuth } from "./middleware/auth.ts";
 import { HTTPException } from "hono/http-exception";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -45,6 +46,7 @@ export function createApp(supabase: SupabaseClient<Database>) {
 
   app.route("/lobbies", lobbies);
   app.route("/profiles", profiles);
+  app.route("/game", game);
 
   return app;
 }

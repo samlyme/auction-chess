@@ -35,9 +35,7 @@ export default function useLobbies() {
       if (payload.event === "delete") {
         setLobby(null);
         console.log("lobby deleted");
-
-      }
-      else {
+      } else {
         const newLobby = Lobby.parse(payload.payload);
         console.log("newLobby", newLobby);
       }
