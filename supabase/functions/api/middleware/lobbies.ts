@@ -1,7 +1,7 @@
-import { Handler, MiddlewareHandler } from "hono";
+import type { Handler, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
-import { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { supabase } from "../supabase.ts";
 
 export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
@@ -27,12 +27,13 @@ export const validateLobby: MiddlewareHandler<LobbyEnv> = async (c, next) => {
 };
 
 // NOTE: Misleading, but this is a handler LOL!!!!
-export const broadcastLobby: Handler<LobbyEnv> = (c) => {
+export const broadcastLobby: Handler<LobbyEnv> = async (c) => {
   const lobby = c.get("lobby");
   const channel = c.get("channel");
   const deleted = c.get("deleted");
 
   channel.httpSend("lobby-update", deleted ? { deleted } : lobby);
+  // console.log("try to send realtime broadcast", res);
 
   return c.json(lobby);
 };

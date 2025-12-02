@@ -1,9 +1,8 @@
-// deno-lint-ignore-file no-explicit-any
-import { Context, Hono, Next } from "hono";
-import { LobbyJoinQuery, Tables } from "shared";
+import { type Context, Hono, type Next } from "hono";
+import { LobbyJoinQuery, type Tables } from "shared";
 import { supabase } from "../supabase.ts";
 import { generateCode } from "../utils.ts";
-import { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import {
   broadcastLobby,
@@ -11,9 +10,11 @@ import {
   validateLobby,
 } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
+import { HTTPException } from "hono/http-exception";
 
 // Inserts a row with a unique code into "lobbies"
 export async function createLobbyRow(
+  // deno-lint-ignore no-explicit-any
   config: Record<string, any> = {},
   host_uid: string,
 ): Promise<Tables<"lobbies">> {
@@ -41,7 +42,9 @@ export async function createLobbyRow(
     if (error.code !== "23505") throw error; // only retry on unique constraint violation
   }
 
-  throw new Error("Failed to generate unique lobby code after many tries");
+  throw new HTTPException(500, {
+    message: "Failed to generate unique lobby code after many tries",
+  });
 }
 
 const app = new Hono<MaybeLobbyEnv>();
@@ -54,7 +57,7 @@ app.post(
   "",
   async (c: Context<MaybeLobbyEnv>, next: Next) => {
     if (c.get("lobby"))
-      return c.json({ message: "user already in lobby" }, 400);
+      throw new HTTPException(400, { message: "user already in lobby" });
 
     const lobby = await createLobbyRow({}, c.get("user").id);
     c.set("lobby", lobby);
@@ -78,14 +81,20 @@ app.delete(
     console.log("delete route", { lobby });
 
     const user = c.get("user");
-    if (user.id !== lobby.host_uid) return c.status(400);
+    if (user.id !== lobby.host_uid)
+      throw new HTTPException(401, {
+        message: `You are not the host of lobby ${lobby.code}`,
+      });
 
     const { error } = await supabase
       .from("lobbies")
       .delete()
       .eq("code", lobby.code)
       .single();
-    if (error) return c.json(error, 500);
+    if (error)
+      throw new HTTPException(500, {
+        message: `DB failed to delete lobby ${lobby.code}`,
+      });
 
     c.set("deleted", true);
 
@@ -100,18 +109,19 @@ app.post(
   zValidator("query", LobbyJoinQuery),
   async (c, next) => {
     if (c.get("lobby"))
-      return c.json({ message: "user already in lobby" }, 400);
+      throw new HTTPException(400, { message: "user already in lobby" });
 
     // THIS line is haunted lmfao
     const { code } = (c.req as any).valid("query");
 
-    const { data: oldLobby } = await supabase
+    const { data: lobbyState } = await supabase
       .from("lobbies")
       .select("guest_uid")
       .eq("code", code)
       .single();
 
-    if (oldLobby?.guest_uid) return c.json({ message: "lobby is full"}, 400)
+    if (lobbyState?.guest_uid)
+      throw new HTTPException(400, { message: "lobby is full" });
 
     const { data: lobby } = await supabase
       .from("lobbies")
@@ -136,7 +146,9 @@ app.post(
 
     const user = c.get("user");
     if (user.id !== lobby.guest_uid)
-      return c.json({ message: `user is not guest in lobby ${lobby.code}` });
+      throw new HTTPException(400, {
+        message: `user is not guest in lobby ${lobby.code}`,
+      });
 
     const { data: newLobby } = await supabase
       .from("lobbies")
@@ -151,5 +163,16 @@ app.post(
   },
   broadcastLobby,
 );
+
+app.post("/start", validateLobby, async (c: Context<LobbyEnv>, next) => {
+  const lobby = c.get("lobby");
+  const user = c.get("user");
+  if (user.id !== lobby.host_uid)
+    throw new HTTPException(400, {
+      message: `user is not host of lobby ${lobby.code}`,
+    });
+
+
+});
 
 export { app as lobbies };

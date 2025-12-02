@@ -1,5 +1,5 @@
-import { RealtimeChannel, User } from "@supabase/supabase-js";
-import { Tables } from "../../../shared/database.types.ts";
+import { RealtimeChannel, type User } from "@supabase/supabase-js";
+import { type Tables } from "shared";
 
 // successful log in.
 export type AuthedEnv = {
