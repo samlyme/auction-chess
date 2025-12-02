@@ -1,9 +1,7 @@
 import { Profile, ProfileCreate, ProfileUpdate } from "shared";
-import { getAuthHeader } from "./utils";
+import { BACKEND_URL, getAuthHeader } from "./utils";
 
-const BASE_URL = `${
-  import.meta.env.VITE_BACKEND_URL
-}/api/profiles`;
+const BASE_URL = `${BACKEND_URL}/api/profiles`;
 
 export async function createProfile(profile: ProfileCreate) {
   const authHeader = await getAuthHeader();

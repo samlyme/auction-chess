@@ -38,3 +38,5 @@ export async function apiFetch<T>(
     });
   }
 }
+
+export const BACKEND_URL = import.meta.env.VITE_SUPABASE_FUNCTIONS_BACKEND_URL;
