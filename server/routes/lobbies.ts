@@ -1,6 +1,5 @@
 import { type Context, Hono, type Next } from "hono";
-import { LobbyJoinQuery, type Tables } from "shared";
-import { generateCode } from "../utils.ts";
+import { Lobby, LobbyJoinQuery, type Tables } from "shared";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import {
@@ -10,51 +9,13 @@ import {
 } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "shared";
-
-// Inserts a row with a unique code into "lobbies"
-export async function createLobbyRow(
-  supabase: SupabaseClient<Database>,
-  // deno-lint-ignore no-explicit-any
-  config: Record<string, any> = {},
-  host_uid: string,
-): Promise<Tables<"lobbies">> {
-  const MAX_ATTEMPTS = 10;
-
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    const code = generateCode();
-
-    const { data: existing, error: lookupError } = await supabase
-      .from("lobbies")
-      .select("code")
-      .eq("code", code)
-      .maybeSingle();
-
-    if (lookupError) throw lookupError;
-    if (existing) continue; // code taken — retry
-
-    const { data: inserted, error } = await supabase
-      .from("lobbies")
-      .insert({ code, config, host_uid })
-      .select()
-      .single();
-
-    if (!error) return inserted;
-    if (error.code !== "23505") throw error; // only retry on unique constraint violation
-  }
-
-  throw new HTTPException(500, {
-    message: "Failed to generate unique lobby code after many tries",
-  });
-}
+import { createLobbyRow } from "../utils.ts";
 
 const app = new Hono<MaybeLobbyEnv>();
 // could be a perf bottleneck since we are getting their profile on each req.
 app.use(getProfile, validateProfile);
 app.use(getLobby);
 
-// Need lobbies middleware. Ignore weird states for now.
 app.post(
   "",
   async (c: Context<MaybeLobbyEnv>, next: Next) => {
@@ -62,8 +23,8 @@ app.post(
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
-    const lobby = await createLobbyRow(supabase, {}, c.get("user").id);
-    c.set("lobby", lobby);
+    const lobby = await createLobbyRow(supabase, c.get("user").id);
+    c.set("lobby", lobby as Lobby); // is it worth to use zod to check here?
 
     await next();
   },
@@ -217,5 +178,8 @@ app.post(
   },
   broadcastLobby,
 );
+
+
+
 
 export { app as lobbies };

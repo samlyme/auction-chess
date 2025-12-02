@@ -15,7 +15,7 @@ export async function getAuthHeader() {
 export async function apiFetch<T>(
   url: string,
   options: RequestInit,
-  schema: z.ZodSchema<T>
+  schema: z.ZodSchema<T>,
 ): Promise<Result<T, APIError>> {
   try {
     const res = await fetch(url, options);

@@ -19,7 +19,7 @@ export function createGame(): AuctionChessState {
 
 export function movePiece(
   game: AuctionChessState,
-  move: NormalMove
+  move: NormalMove,
 ): AuctionChessState | { error: string } {
   if (game.phase !== "move") {
     return { error: "Not in move phase" };
@@ -38,13 +38,12 @@ export function movePiece(
   // Check if a player is broke
   if (balance.white === 0 || balance.black === 0) {
     const brokePlayer: Color = balance.white === 0 ? "white" : "black";
-    const richPlayer = opposite(brokePlayer);
 
+    const richPlayer = opposite(brokePlayer);
     balance[richPlayer] -= 1;
     currentBidStack.push({
       amount: 1,
       fold: false,
-      from: richPlayer,
     });
     bidHistory.push([]);
 
@@ -72,14 +71,10 @@ export function movePiece(
 
 export function makeBid(
   game: AuctionChessState,
-  bid: Bid
+  bid: Bid,
 ): AuctionChessState | { error: string } {
   if (game.phase !== "bid") {
     return { error: "Not in bid phase" };
-  }
-
-  if (bid.from !== game.turn) {
-    return { error: "Not your turn" };
   }
 
   const { balance, bidHistory } = game.auctionState;
@@ -95,7 +90,7 @@ export function makeBid(
     if (bid.amount <= lastBidAmount) {
       return { error: "Bid must be higher than previous bid" };
     }
-    if (bid.amount > balance[bid.from]) {
+    if (bid.amount > balance[game.turn]) {
       return { error: "Insufficient balance" };
     }
   }
@@ -103,7 +98,7 @@ export function makeBid(
   // Handle fold
   if (bid.fold) {
     if (lastBid) {
-      balance[lastBid.from] -= lastBid.amount;
+      balance[opposite(game.turn)] -= lastBid.amount;
     }
     bidStack.push(bid);
 
@@ -117,8 +112,8 @@ export function makeBid(
   }
 
   // Handle bid that opponent can't beat
-  if (bid.amount >= balance[opposite(bid.from)]) {
-    balance[bid.from] -= bid.amount;
+  if (bid.amount >= balance[opposite(game.turn)]) {
+    balance[game.turn] -= bid.amount;
     bidStack.push(bid);
 
     return {

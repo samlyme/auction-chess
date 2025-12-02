@@ -16,7 +16,7 @@ export async function createLobby(): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby
+    Lobby,
   );
 }
 
@@ -30,7 +30,7 @@ export async function getLobby(): Promise<Result<Lobby | null>> {
         ...authHeader,
       },
     },
-    Lobby.nullable()
+    Lobby.nullable(),
   );
 }
 
@@ -45,7 +45,7 @@ export async function deleteLobby(): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby
+    Lobby,
   );
 }
 
@@ -60,7 +60,7 @@ export async function joinLobby(code: string): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby
+    Lobby,
   );
 }
 
@@ -75,7 +75,7 @@ export async function leaveLobby(): Promise<Result<Lobby | null>> {
         ...authHeader,
       },
     },
-    Lobby.nullable()
+    Lobby.nullable(),
   );
 }
 
@@ -90,6 +90,6 @@ export async function startLobby(): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby
+    Lobby,
   );
 }

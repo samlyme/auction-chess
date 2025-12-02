@@ -29,9 +29,9 @@ app.get(
         .maybeSingle();
 
       if (error)
-        throw new HTTPException(500,
-          { message: "error in fetching user profile" },
-        );
+        throw new HTTPException(500, {
+          message: "error in fetching user profile",
+        });
       return c.json(profile);
     }
 
@@ -41,7 +41,9 @@ app.get(
       .eq("username", query.username)
       .maybeSingle();
     if (error)
-      throw new HTTPException(500, { message: "error in fetching user profile" });
+      throw new HTTPException(500, {
+        message: "error in fetching user profile",
+      });
 
     return c.json(data);
   },
@@ -54,7 +56,8 @@ app.get("/me", (c) => {
 app.post("/", zValidator("json", ProfileCreate), async (c) => {
   const supabase = c.get("supabase");
   const profile = c.get("profile");
-  if (profile) throw new HTTPException(400, { message: "profile already created" });
+  if (profile)
+    throw new HTTPException(400, { message: "profile already created" });
 
   // zValidator isn't playing nice :(
   const body = c.req.valid("json");
