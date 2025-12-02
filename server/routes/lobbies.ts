@@ -170,15 +170,52 @@ app.post(
   broadcastLobby,
 );
 
-app.post("/start", validateLobby, async (c: Context<LobbyEnv>, next) => {
-  const lobby = c.get("lobby");
-  const user = c.get("user");
-  if (user.id !== lobby.host_uid)
-    throw new HTTPException(400, {
-      message: `user is not host of lobby ${lobby.code}`,
-    });
+app.post(
+  "/start",
+  validateLobby,
+  async (c: Context<LobbyEnv>, next) => {
+    const supabase = c.get("supabase");
+    const lobby = c.get("lobby");
+    const user = c.get("user");
 
+    if (user.id !== lobby.host_uid)
+      throw new HTTPException(400, {
+        message: `user is not host of lobby ${lobby.code}`,
+      });
 
-});
+    if (!lobby.guest_uid)
+      throw new HTTPException(400, {
+        message: "cannot start lobby without a guest",
+      });
+
+    if (lobby.game_state !== null)
+      throw new HTTPException(400, {
+        message: "lobby already started",
+      });
+
+    // Initialize default game state for Auction Chess
+    const defaultGameState = {
+      started: true,
+      time: Date.now(),
+    };
+
+    const { data: updatedLobby, error } = await supabase
+      .from("lobbies")
+      .update({ game_state: defaultGameState })
+      .eq("code", lobby.code)
+      .select()
+      .single();
+
+    if (error)
+      throw new HTTPException(500, {
+        message: `Failed to start lobby ${lobby.code}`,
+      });
+
+    c.set("lobby", updatedLobby);
+
+    await next();
+  },
+  broadcastLobby,
+);
 
 export { app as lobbies };
