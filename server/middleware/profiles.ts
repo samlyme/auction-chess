@@ -1,11 +1,11 @@
 import type { MiddlewareHandler } from "hono";
-import { supabase } from "../supabase.ts";
 import type { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
 
 export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
   c,
   next,
 ) => {
+  const supabase = c.get("supabase");
   const user = c.get("user");
   const { data } = await supabase
     .from("profiles")

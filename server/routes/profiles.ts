@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { type MaybeProfileEnv } from "../types.ts";
-import { supabase } from "../supabase.ts";
 import { ProfileCreate } from "shared";
 import { ProfileUpdate } from "shared";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
@@ -19,6 +18,7 @@ app.get(
     z.union([z.object({ username: z.string() }), z.object({ id: z.string() })]),
   ),
   async (c) => {
+    const supabase = c.get("supabase");
     const query = c.req.valid("query");
 
     if ("id" in query) {
@@ -52,6 +52,7 @@ app.get("/me", (c) => {
 });
 
 app.post("/", zValidator("json", ProfileCreate), async (c) => {
+  const supabase = c.get("supabase");
   const profile = c.get("profile");
   if (profile) throw new HTTPException(400, { message: "profile already created" });
 
@@ -77,6 +78,7 @@ app.patch(
   validateProfile,
   zValidator("json", ProfileUpdate),
   async (c) => {
+    const supabase = c.get("supabase");
     const user = c.get("user");
     const body = c.req.valid("json");
 

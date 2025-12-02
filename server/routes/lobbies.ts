@@ -1,6 +1,5 @@
 import { type Context, Hono, type Next } from "hono";
 import { LobbyJoinQuery, type Tables } from "shared";
-import { supabase } from "../supabase.ts";
 import { generateCode } from "../utils.ts";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
@@ -11,9 +10,12 @@ import {
 } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "shared";
 
 // Inserts a row with a unique code into "lobbies"
 export async function createLobbyRow(
+  supabase: SupabaseClient<Database>,
   // deno-lint-ignore no-explicit-any
   config: Record<string, any> = {},
   host_uid: string,
@@ -56,10 +58,11 @@ app.use(getLobby);
 app.post(
   "",
   async (c: Context<MaybeLobbyEnv>, next: Next) => {
+    const supabase = c.get("supabase");
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
-    const lobby = await createLobbyRow({}, c.get("user").id);
+    const lobby = await createLobbyRow(supabase, {}, c.get("user").id);
     c.set("lobby", lobby);
 
     await next();
@@ -77,6 +80,7 @@ app.delete(
   "/",
   validateLobby,
   async (c: Context<LobbyEnv>, next) => {
+    const supabase = c.get("supabase");
     const lobby = c.get("lobby");
     console.log("delete route", { lobby });
 
@@ -108,6 +112,7 @@ app.post(
   "/join",
   zValidator("query", LobbyJoinQuery),
   async (c, next) => {
+    const supabase = c.get("supabase");
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
@@ -142,6 +147,7 @@ app.post(
   "/leave",
   validateLobby,
   async (c: Context<LobbyEnv>, next) => {
+    const supabase = c.get("supabase");
     const lobby = c.get("lobby");
 
     const user = c.get("user");
