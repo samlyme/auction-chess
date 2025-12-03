@@ -34,12 +34,16 @@ export type Color = z.infer<typeof Color>;
 export const Phase = z.enum(["bid", "move"]);
 export type Phase = z.infer<typeof Phase>;
 
-export const Bid = z.object({
-  amount: z.number(),
-  fold: z.boolean(),
-  // "from" field should not exist here. Not the responsibility of the game
-  // logic to validate the source of moves.
-});
+// "from" field should not exist here. Not the responsibility of the game
+// logic to validate the source of moves.
+export const Bid = z.union([
+  z.object({
+    amount: z.number(),
+  }),
+  z.object({
+    fold: z.boolean()
+  })
+]);
 export type Bid = z.infer<typeof Bid>;
 
 export const AuctionState = z.object({
@@ -81,6 +85,9 @@ export const Lobby = z.object({
   id: z.number(),
 });
 export type Lobby = z.infer<typeof Lobby>;
+
+export const LobbyPayload = Lobby.omit({ game_state: true }).extend({ gameStarted: z.boolean() })
+export type LobbyPayload  = z.infer<typeof LobbyPayload>;
 
 export const LobbyJoinQuery = z.object({
   code: z.string(),

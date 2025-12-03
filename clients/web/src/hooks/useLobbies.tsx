@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Lobby } from "shared";
+import { LobbyPayload } from "shared";
 import { getLobby } from "../services/lobbies";
 import supabase from "../supabase";
 
 export default function useLobbies() {
-  const [lobby, setLobby] = useState<Lobby | null>(null);
+  const [lobby, setLobby] = useState<LobbyPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const [subFlag, setSubFlag] = useState<number>(0);
@@ -13,6 +13,7 @@ export default function useLobbies() {
   useEffect(() => {
     setLoading(true);
     getLobby().then((result) => {
+      console.log("res", result)
       if (result.ok) {
         setLobby(result.value);
       } else {
@@ -30,13 +31,14 @@ export default function useLobbies() {
 
     const channel = supabase.channel(`lobby-${lobby.code}`).subscribe();
 
-    channel.on("broadcast", { event: "*" }, (payload) => {
-      console.log("real time", payload);
-      if (payload.event === "delete") {
+    channel.on("broadcast", { event: "*" }, (update) => {
+      console.log("real time", update);
+      if (update.event === "delete") {
         setLobby(null);
         console.log("lobby deleted");
       } else {
-        const newLobby = Lobby.parse(payload.payload);
+        const newLobby = LobbyPayload.parse(update.payload);
+        setLobby(newLobby)
         console.log("newLobby", newLobby);
       }
     });
@@ -49,7 +51,7 @@ export default function useLobbies() {
   return {
     lobby,
     loading,
-    update: (lobby?: Lobby | null) => {
+    update: (lobby?: LobbyPayload | null) => {
       if (lobby === undefined) {
         setLoading(true);
         getLobby().then((result) => {
@@ -61,10 +63,10 @@ export default function useLobbies() {
           }
           setLoading(false);
         });
+        resubscribe();
       } else {
         setLobby(lobby);
       }
-      resubscribe();
     },
   };
 }

@@ -1,9 +1,11 @@
 import { opposite } from "chessops";
 import { PseudoChess } from "./pseudoChess";
-import type { Bid, AuctionChessState, NormalMove, Color } from "../index";
+import type { Bid, AuctionChessState, NormalMove, Result } from "../index";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const STARTING_BALANCE = 1000;
+
+export type GameResult = Result<AuctionChessState, string>;
 
 export function createGame(): AuctionChessState {
   return {
@@ -20,14 +22,14 @@ export function createGame(): AuctionChessState {
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
-): AuctionChessState | { error: string } {
+): GameResult {
   if (game.phase !== "move") {
-    return { error: "Not in move phase" };
+    return { ok: false, error: "Not in move phase" };
   }
 
   const chess = new PseudoChess(game.chessState.fen);
   if (!chess.movePiece(move, game.turn)) {
-    return { error: "Invalid move" };
+    return { ok: false, error: "Invalid move" };
   }
 
   const newFen = chess.toFen();
@@ -35,24 +37,22 @@ export function movePiece(
   const { balance, bidHistory } = game.auctionState;
   const currentBidStack = bidHistory[bidHistory.length - 1]!;
 
-  // Check if a player is broke
-  if (balance.white === 0 || balance.black === 0) {
-    const brokePlayer: Color = balance.white === 0 ? "white" : "black";
-
-    const richPlayer = opposite(brokePlayer);
-    balance[richPlayer] -= 1;
-    currentBidStack.push({
-      amount: 1,
-      fold: false,
-    });
+  // Check if opponent is broke - they automatically fold
+  const opponent = opposite(game.turn);
+  if (balance[opponent] === 0) {
+    // Push a fold for the broke player
+    currentBidStack.push({ fold: true });
     bidHistory.push([]);
 
     return {
-      chessState: { fen: newFen },
-      auctionState: { balance, bidHistory },
-      turn: richPlayer,
-      phase: "move",
-      winner: outcome.winner,
+      ok: true,
+      value: {
+        chessState: { fen: newFen },
+        auctionState: { balance, bidHistory },
+        turn: game.turn,
+        phase: "move",
+        winner: outcome.winner,
+      },
     };
   }
 
@@ -61,11 +61,14 @@ export function movePiece(
   bidHistory.push([]);
 
   return {
-    chessState: { fen: newFen },
-    auctionState: { balance, bidHistory },
-    turn: nextPlayer,
-    phase: "bid",
-    winner: outcome.winner,
+    ok: true,
+    value: {
+      chessState: { fen: newFen },
+      auctionState: { balance, bidHistory },
+      turn: nextPlayer,
+      phase: "bid",
+      winner: outcome.winner,
+    },
   };
 }
 
@@ -80,24 +83,13 @@ export function makeBid(
   const { balance, bidHistory } = game.auctionState;
   const bidStack = bidHistory[bidHistory.length - 1]!;
   const lastBid = bidStack[bidStack.length - 1];
-  const lastBidAmount = lastBid?.amount ?? 0;
 
-  // Validate non-fold bids
-  if (!bid.fold) {
-    if (bid.amount <= 0) {
-      return { error: "Bid amount must be positive" };
-    }
-    if (bid.amount <= lastBidAmount) {
-      return { error: "Bid must be higher than previous bid" };
-    }
-    if (bid.amount > balance[game.turn]) {
-      return { error: "Insufficient balance" };
-    }
-  }
+  // Get last bid amount, considering it might be a fold
+  const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 
   // Handle fold
-  if (bid.fold) {
-    if (lastBid) {
+  if ("fold" in bid) {
+    if (lastBid && "amount" in lastBid) {
       balance[opposite(game.turn)] -= lastBid.amount;
     }
     bidStack.push(bid);
@@ -109,6 +101,17 @@ export function makeBid(
       phase: "move",
       winner: game.winner,
     };
+  }
+
+  // Validate non-fold bids (bid has "amount" property)
+  if (bid.amount <= 0) {
+    return { error: "Bid amount must be positive" };
+  }
+  if (bid.amount <= lastBidAmount) {
+    return { error: "Bid must be higher than previous bid" };
+  }
+  if (bid.amount > balance[game.turn]) {
+    return { error: "Insufficient balance" };
   }
 
   // Handle bid that opponent can't beat

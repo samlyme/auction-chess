@@ -52,7 +52,7 @@
     "shared": {
       "name": "shared",
       "dependencies": {
-        "chessops": "^0.15.0",
+        "chessops": "0.15.0",
         "zod": "^4.1.13",
       },
       "devDependencies": {
