@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch index.ts",
-    "build": "bun build app.ts --outdir dist --minify",
+    "build": "bun build app.ts --outdir dist",
     "serve": "bun run index.ts"
   },
   "devDependencies": {
