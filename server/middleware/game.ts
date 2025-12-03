@@ -1,6 +1,6 @@
-import type { MiddlewareHandler } from "hono";
+import type { Handler, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { Color } from "shared";
+import { EventType, type Color } from "shared";
 import type { GameEnv, LobbyEnv } from "../types.ts";
 
 export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
@@ -15,9 +15,7 @@ export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
 };
 
 // TODO: broadcast game event.
-export const validatePlayer: MiddlewareHandler<
-  LobbyEnv & { Variables: { playerColor: Color } }
-> = async (c, next) => {
+export const validatePlayer: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
   const user = c.get("user");
 
@@ -33,4 +31,22 @@ export const validatePlayer: MiddlewareHandler<
 
   c.set("playerColor", playerColor);
   await next();
+};
+
+export const validateTurn: MiddlewareHandler<GameEnv> = async (c, next) => {
+  const gameState = c.get("gameState");
+  const playerColor = c.get("playerColor");
+
+  if (playerColor !== gameState.turn)
+    throw new HTTPException(400, {message: "Not your turn"});
+
+  await next();
+}
+
+export const broadcastGame: Handler<GameEnv> = async (c) => {
+  const gameState = c.get("gameState");
+  const channel = c.get("channel");
+
+  channel.httpSend(EventType.GameUpdate, gameState);
+  return c.json(gameState);
 };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { LobbyPayload } from "shared";
+import { Lobby } from "shared";
 import { getLobby } from "../services/lobbies";
 import supabase from "../supabase";
 
 export default function useLobbies() {
-  const [lobby, setLobby] = useState<LobbyPayload | null>(null);
+  const [lobby, setLobby] = useState<Lobby | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const [subFlag, setSubFlag] = useState<number>(0);
@@ -37,7 +37,7 @@ export default function useLobbies() {
         setLobby(null);
         console.log("lobby deleted");
       } else {
-        const newLobby = LobbyPayload.parse(update.payload);
+        const newLobby = Lobby.parse(update.payload);
         setLobby(newLobby)
         console.log("newLobby", newLobby);
       }
@@ -51,7 +51,7 @@ export default function useLobbies() {
   return {
     lobby,
     loading,
-    update: (lobby?: LobbyPayload | null) => {
+    update: (lobby?: Lobby | null) => {
       if (lobby === undefined) {
         setLoading(true);
         getLobby().then((result) => {

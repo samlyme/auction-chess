@@ -6,14 +6,14 @@ import {
   startLobby,
   endLobby,
 } from "../services/lobbies";
-import type { LobbyPayload } from "shared";
+import type { Lobby } from "shared";
 
 export default function LobbyMenu({
   lobby,
   update,
 }: {
-  lobby: LobbyPayload;
-  update: (lobby?: LobbyPayload | null) => void;
+  lobby: Lobby;
+  update: (lobby?: Lobby | null) => void;
 }) {
   const { user } = useContext(AuthContext);
   if (!lobby || !user) return <h1>Loading</h1>;
@@ -58,7 +58,7 @@ export default function LobbyMenu({
     <div>
       {user.id === lobby.host_uid ? (
         <>
-          {lobby.gameStarted ? (
+          {lobby.game_state ? (
             <button onClick={handleEndLobby}>end lobby</button>
           ) : (
             <button onClick={handleStartLobby}>start lobby</button>

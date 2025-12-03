@@ -4,17 +4,24 @@ import { HTTPException } from "hono/http-exception";
 import { Bid, NormalMove, type Color } from "shared";
 import { makeBid as makeBidLogic, movePiece as movePieceLogic } from "shared/game/auctionChess";
 import type { GameEnv } from "../types.ts";
-import { validateGame, validatePlayer } from "../middleware/game.ts";
-import { broadcastLobby } from "../middleware/lobbies.ts";
+import { validateGame, validatePlayer, validateTurn } from "../middleware/game.ts";
+import { broadcastGame } from "../middleware/game.ts";
 
 const app = new Hono<GameEnv>();
 
 // All game routes require validateGame and validatePlayer
 app.use(validateGame, validatePlayer);
 
+app.get("/", (c) => {
+  const gameState = c.get("gameState");
+
+  return c.json(gameState);
+});
+
 // POST /game/bid - Make a bid in the auction phase
 app.post(
   "/bid",
+  validateTurn,
   zValidator("json", Bid),
   async (c, next) => {
     const supabase = c.get("supabase");
@@ -53,12 +60,13 @@ app.post(
     c.set("lobby", updatedLobby);
     await next();
   },
-  broadcastLobby,
+  broadcastGame,
 );
 
 // POST /game/move - Make a chess move
 app.post(
   "/move",
+  validateTurn,
   zValidator("json", NormalMove),
   async (c, next) => {
     const supabase = c.get("supabase");
@@ -97,18 +105,7 @@ app.post(
     c.set("lobby", updatedLobby);
     await next();
   },
-  broadcastLobby,
+  broadcastGame,
 );
-
-// GET /game/state - Get current game state (optional convenience endpoint)
-app.get("/state", (c) => {
-  const gameState = c.get("gameState");
-  const playerColor = c.get("playerColor") as Color;
-
-  return c.json({
-    gameState,
-    playerColor,
-  });
-});
 
 export { app as game };

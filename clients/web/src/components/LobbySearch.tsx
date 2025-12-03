@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { createLobby, joinLobby } from "../services/lobbies";
-import type { LobbyPayload } from "shared";
+import type { Lobby } from "shared";
 
 export default function LobbySearch({
   update,
 }: {
-  update: (lobby?: LobbyPayload | null) => void;
+  update: (lobby?: Lobby | null) => void;
 }) {
   const [code, setCode] = useState<string>("");
 
