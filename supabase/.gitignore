@@ -6,6 +6,3 @@
 .env.keys
 .env.local
 .env.*.local
-
-# built code
-functions/api/server.js

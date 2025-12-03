@@ -17,8 +17,7 @@
     "supabase"
   ],
   "deno.enable": false,
-  // "typescript.tsdk": "node_modules/typescript/lib",
-  // "typescript.enablePromptUseWorkspaceTsdk": true,
+  "deno.lint": false,
   "deno.unstable": [
     "bare-node-builtins",
     "byonm",

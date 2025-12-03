@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "format": "prettier --write ./**",
-    "build:edge": "bun run scripts/build-edge-function.ts"
+    "build:edge": "bun run --filter server build --outdir ../supabase/functions/api"
   },
   "workspaces": [
     "shared",
