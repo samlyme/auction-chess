@@ -14,6 +14,7 @@ export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   await next();
 };
 
+// TODO: broadcast game event.
 export const validatePlayer: MiddlewareHandler<
   LobbyEnv & { Variables: { playerColor: Color } }
 > = async (c, next) => {

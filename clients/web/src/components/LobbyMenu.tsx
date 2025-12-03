@@ -1,14 +1,14 @@
 import { useContext } from "react";
 import { AuthContext } from "../contexts/Auth";
 import { deleteLobby, leaveLobby, startLobby } from "../services/lobbies";
-import type { Lobby } from "shared";
+import type { LobbyPayload } from "shared";
 
 export default function LobbyMenu({
   lobby,
   update,
 }: {
-  lobby: Lobby;
-  update: (lobby?: Lobby | null) => void;
+  lobby: LobbyPayload;
+  update: (lobby?: LobbyPayload | null) => void;
 }) {
   const { user } = useContext(AuthContext);
   if (!lobby || !user) return <h1>Loading</h1>;

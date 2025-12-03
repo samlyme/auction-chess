@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { HTTPException } from "hono/http-exception";
 import type { Database, LobbyConfig, Tables } from "shared";
+
 export function generateCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // skip O/0/I/1 for clarity
   let code = "";
@@ -44,3 +45,4 @@ export async function createLobbyRow(
     message: "Failed to generate unique lobby code after many tries",
   });
 }
+

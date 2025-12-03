@@ -1,10 +1,11 @@
 import { getAuthHeader, apiFetch, BACKEND_URL } from "./utils";
-import { Lobby } from "shared";
+import { LobbyPayload } from "shared";
 import type { Result } from "shared";
+import { z } from "zod";
 
 const BASE_URL = `${BACKEND_URL}/api/lobbies`;
 
-export async function createLobby(): Promise<Result<Lobby>> {
+export async function createLobby(): Promise<Result<LobbyPayload>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -16,11 +17,11 @@ export async function createLobby(): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby,
+    LobbyPayload,
   );
 }
 
-export async function getLobby(): Promise<Result<Lobby | null>> {
+export async function getLobby(): Promise<Result<LobbyPayload | null>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -30,11 +31,11 @@ export async function getLobby(): Promise<Result<Lobby | null>> {
         ...authHeader,
       },
     },
-    Lobby.nullable(),
+    LobbyPayload.nullable(),
   );
 }
 
-export async function deleteLobby(): Promise<Result<Lobby>> {
+export async function deleteLobby(): Promise<Result<any>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -45,11 +46,11 @@ export async function deleteLobby(): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby,
+    z.object(),
   );
 }
 
-export async function joinLobby(code: string): Promise<Result<Lobby>> {
+export async function joinLobby(code: string): Promise<Result<LobbyPayload>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -60,11 +61,11 @@ export async function joinLobby(code: string): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby,
+    LobbyPayload,
   );
 }
 
-export async function leaveLobby(): Promise<Result<Lobby | null>> {
+export async function leaveLobby(): Promise<Result<LobbyPayload | null>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -75,11 +76,11 @@ export async function leaveLobby(): Promise<Result<Lobby | null>> {
         ...authHeader,
       },
     },
-    Lobby.nullable(),
+    LobbyPayload.nullable(),
   );
 }
 
-export async function startLobby(): Promise<Result<Lobby>> {
+export async function startLobby(): Promise<Result<LobbyPayload>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -90,6 +91,6 @@ export async function startLobby(): Promise<Result<Lobby>> {
         ...authHeader,
       },
     },
-    Lobby,
+    LobbyPayload,
   );
 }

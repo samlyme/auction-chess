@@ -1,5 +1,5 @@
 import { type Context, Hono, type Next } from "hono";
-import { Lobby, LobbyJoinQuery, type Tables } from "shared";
+import { AuctionChessState, Lobby, LobbyJoinQuery, LobbyPayload } from "shared";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import {
@@ -10,6 +10,7 @@ import {
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import { createLobbyRow } from "../utils.ts";
+import { createGame } from "shared/game/auctionChess.ts";
 
 const app = new Hono<MaybeLobbyEnv>();
 // could be a perf bottleneck since we are getting their profile on each req.
@@ -34,7 +35,10 @@ app.post(
 
 app.get("", (c: Context<MaybeLobbyEnv>) => {
   const lobby = c.get("lobby");
-  return c.json(lobby);
+  if (!lobby) return c.json(null)
+
+  const lobbyPayload: LobbyPayload = {...lobby, gameStarted: !!lobby.game_state}
+  return c.json(lobbyPayload);
 });
 
 app.delete(
@@ -155,10 +159,7 @@ app.post(
       });
 
     // Initialize default game state for Auction Chess
-    const defaultGameState = {
-      started: true,
-      time: Date.now(),
-    };
+    const defaultGameState: AuctionChessState = createGame();
 
     const { data: updatedLobby, error } = await supabase
       .from("lobbies")
