@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "@supabase/supabase-js";
-import { createApp } from "./server.js";
+import { createApp } from "./app.js";
 
 // Create Deno-compatible Supabase client
 const supabase = createClient(
