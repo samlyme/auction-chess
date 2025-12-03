@@ -29,6 +29,7 @@ Both the `server` and `supabase/functions/api` implementations provide the same 
 ```bash
 bun install              # Install all dependencies
 bun run format          # Format all files with Prettier
+bun run build:edge      # Bundle server code for Supabase Edge Functions
 ```
 
 ### Web Client (`clients/web`)
@@ -52,6 +53,9 @@ bun run serve           # Start server without watch mode
 ### Supabase (Database & Edge Functions)
 
 ```bash
+# From root directory
+bun run build:edge      # Build server code for Deno (required before serving)
+
 # From supabase directory
 supabase start          # Start local Supabase (required for development)
 supabase stop           # Stop local Supabase
@@ -66,18 +70,20 @@ supabase gen types typescript --local > shared/database.types.ts
 
 ### Dual API Implementation
 
-The codebase has two parallel API implementations:
+The codebase has two ways to run the API:
 
-1. **Bun Server** (`server/`): Runs on Bun runtime, uses Hono framework
-2. **Supabase Edge Function** (`supabase/functions/api/`): Runs on Deno runtime, uses Hono framework
+1. **Bun Server** (`server/`): Direct development server using Bun runtime
+2. **Supabase Edge Function** (`supabase/functions/api/`): Production serverless deployment on Deno runtime
 
-Both share the same:
+**Important**: The server code in `server/` is written for Bun (no `.ts` extensions required). When deploying to Supabase Edge Functions:
+- Run `bun run build:edge` to bundle `server/app.ts` → `supabase/functions/api/server.js`
+- The Edge Function (`index.ts`) imports the bundled `server.js`
+- All dependencies (Hono, shared code) are bundled into a single file for Deno compatibility
 
-- Route structure (`/lobbies`, `/profiles`)
-- Middleware patterns (auth validation, lobby validation)
-- Type definitions from `shared/`
-
-When making changes to API logic, consider whether both implementations need updates.
+**When making changes to API logic**:
+- Edit files in `server/` (routes, middleware, etc.)
+- Run `bun run build:edge` to rebuild for Edge Functions
+- The Bun server works directly; Edge Functions need the build step
 
 ### Shared Package
 

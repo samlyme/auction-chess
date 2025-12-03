@@ -1,10 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "@supabase/supabase-js";
-import { createApp } from "server/app.ts";
-import type { Database } from "shared";
+import { createApp } from "./server.js";
 
 // Create Deno-compatible Supabase client
-const supabase = createClient<Database>(
+const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
