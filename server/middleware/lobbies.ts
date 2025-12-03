@@ -35,8 +35,8 @@ export const broadcastLobby: Handler<LobbyEnv> = async (c) => {
   const deleted = c.get("deleted");
 
   if (deleted) {
-    channel.httpSend("delete", {});
-    return c.json({})
+    channel.httpSend("delete", null);
+    return c.json(null)
   }
   else {
     const { game_state, ...lobbyData } = lobby;
