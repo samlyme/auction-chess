@@ -1,6 +1,7 @@
 import type { AuctionChessState, Bid, Color } from "shared";
 import { opposite } from "chessops";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import "./BidPanel.css"
 
 interface GameProps {
   gameState: AuctionChessState;
@@ -147,7 +148,7 @@ function BidMenu({
   );
 }
 
-export function BidPanel({
+export default function BidPanel({
   gameState,
   playerColor,
   hostUsername,
@@ -157,32 +158,25 @@ export function BidPanel({
   const { balance, bidHistory } = gameState.auctionState;
   const opponentColor = opposite(playerColor);
 
+  // TODO: fix this jank
   const bidStack: Bid[] = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.length >= 1 ? bidStack[bidStack.length - 1] : null;
+  const lastBid = bidStack.length >= 1 ? bidStack[bidStack.length - 1] : {amount: 0};
   const secondLastBid =
-    bidStack.length >= 2 ? bidStack[bidStack.length - 2] : null;
+    bidStack.length >= 2 ? bidStack[bidStack.length - 2] : {amount: 0};
 
   // Extract bid amounts from the last two bids
   let prevPlayerBidAmount = 0;
   let prevOppBidAmount = 0;
-
-  // Helper to get bid amount
-  const getBidAmount = (bid: Bid | null): number => {
-    if (!bid) return 0;
-    return "amount" in bid ? bid.amount : 0;
-  };
-
-  // Determine which bids belong to which player
-  // Note: The original code had a "from" field that doesn't exist in the Bid type
-  // We'll need to infer this from the bidding order
-  if (bidStack.length === 1) {
-    // Only one bid exists - assume it's from the player who doesn't have the current turn
-    prevOppBidAmount = getBidAmount(lastBid);
-  } else if (bidStack.length >= 2) {
-    // Two bids exist - they alternate
-    prevPlayerBidAmount = getBidAmount(lastBid);
-    prevOppBidAmount = getBidAmount(secondLastBid);
+  if (gameState.turn !== playerColor) {
+    prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
+    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount: 0;
   }
+  else {
+    prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
+    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount: 0;
+  }
+
+
 
   const [currentBid, setCurrentBid] = useState<number>(0);
 

@@ -5,18 +5,12 @@ import { Bid, NormalMove, type Color } from "shared";
 import { makeBid as makeBidLogic, movePiece as movePieceLogic } from "shared/game/auctionChess";
 import type { GameEnv } from "../types.ts";
 import { validateGame, validatePlayer, validateTurn } from "../middleware/game.ts";
-import { broadcastGame } from "../middleware/game.ts";
+import { broadcastLobby, validateLobby } from "../middleware/lobbies.ts";
 
 const app = new Hono<GameEnv>();
 
 // All game routes require validateGame and validatePlayer
 app.use(validateGame, validatePlayer);
-
-app.get("/", (c) => {
-  const gameState = c.get("gameState");
-
-  return c.json(gameState);
-});
 
 // POST /game/bid - Make a bid in the auction phase
 app.post(
@@ -27,15 +21,7 @@ app.post(
     const supabase = c.get("supabase");
     const lobby = c.get("lobby");
     const gameState = c.get("gameState");
-    const playerColor = c.get("playerColor") as Color;
     const bid = (c.req as any).valid("json");
-
-    // Ensure the bid is from the correct player
-    if (bid.from !== playerColor) {
-      throw new HTTPException(400, {
-        message: `Cannot bid as ${bid.from}, you are ${playerColor}`,
-      });
-    }
 
     const result = makeBidLogic(gameState, bid);
 
@@ -46,12 +32,15 @@ app.post(
     // Update the game state in the database
     const { data: updatedLobby, error } = await supabase
       .from("lobbies")
-      .update({ game_state: result })
+      .update({ game_state: result.value })
       .eq("code", lobby.code)
       .select()
       .single();
 
+    console.log("error in updating bid", error);
+
     if (error) {
+      console.log("error is null, still throwing?");
       throw new HTTPException(500, {
         message: `Failed to update game state: ${error.message}`,
       });
@@ -60,7 +49,8 @@ app.post(
     c.set("lobby", updatedLobby);
     await next();
   },
-  broadcastGame,
+  validateLobby,
+  broadcastLobby,
 );
 
 // POST /game/move - Make a chess move
@@ -91,7 +81,7 @@ app.post(
     // Update the game state in the database
     const { data: updatedLobby, error } = await supabase
       .from("lobbies")
-      .update({ game_state: result })
+      .update({ game_state: result.value })
       .eq("code", lobby.code)
       .select()
       .single();
@@ -105,7 +95,8 @@ app.post(
     c.set("lobby", updatedLobby);
     await next();
   },
-  broadcastGame,
+  validateLobby,
+  broadcastLobby,
 );
 
 export { app as game };

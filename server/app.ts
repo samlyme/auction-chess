@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { lobbies } from "./routes/lobbies.ts";
 import { profiles } from "./routes/profiles.ts";
 import { game } from "./routes/game.ts";
@@ -11,6 +12,8 @@ import type { Database } from "shared";
 
 export function createApp(supabase: SupabaseClient<Database>) {
   const app = new Hono<SupabaseEnv>().basePath("/api");
+
+  app.use(logger());
 
   app.onError((err, c) => {
     if (err instanceof HTTPException) {
@@ -44,9 +47,8 @@ export function createApp(supabase: SupabaseClient<Database>) {
 
   app.use(validateAuth);
 
-  app.route("/lobbies", lobbies);
+  app.route("/lobbies", lobbies.route("/game", game));
   app.route("/profiles", profiles);
-  app.route("/game", game);
 
   return app;
 }

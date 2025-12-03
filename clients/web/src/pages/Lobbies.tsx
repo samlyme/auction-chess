@@ -6,29 +6,34 @@ import LobbyMenu from "../components/LobbyMenu";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
-import type { Tables } from "shared";
+import type { Tables, Color, Bid, NormalMove } from "shared";
 import { getProfile } from "../services/profiles";
-import useLobbies from "../hooks/useLobbies";
+import { makeBid, makeMove } from "../services/game";
+import useLobbyState from "../hooks/useLobbyState";
+import { AuctionChessBoard } from "../components/game/Board";
 
 export default function Lobbies() {
   const { user, loading: authLoading } = useContext(AuthContext);
   const { profile, loading: profileLoading } = useContext(UserProfileContext);
 
-  const { lobby, loading: lobbyLoading, update } = useLobbies();
+  const { lobby, loading: lobbyLoading, update } = useLobbyState();
+  const gameState = lobby?.game_state;
 
   const [host, setHost] = useState<Tables<"profiles"> | null>(null);
   const [guest, setGuest] = useState<Tables<"profiles"> | null>(null);
   const [role, setRole] = useState<"host" | "guest">("host");
+  const [playerColor, setPlayerColor] = useState<Color>("white");
 
   useEffect(() => {
     if (!lobby || !user || !profile) return;
 
-    const { host_uid, guest_uid } = lobby;
+    const { host_uid, guest_uid, config } = lobby;
     if (!guest_uid) setGuest(null);
 
     if (user.id === host_uid) {
       setRole("host");
       setHost(profile);
+      setPlayerColor(config.hostColor);
 
       if (guest_uid) {
         getProfile({ id: guest_uid }).then(setGuest);
@@ -36,10 +41,27 @@ export default function Lobbies() {
     } else if (guest_uid && user.id === guest_uid) {
       setRole("guest");
       setGuest(profile);
+      setPlayerColor(config.hostColor === "white" ? "black" : "white");
 
       getProfile({ id: host_uid }).then(setHost);
     }
   }, [lobby, user, profile, lobbyLoading, authLoading, profileLoading]);
+
+  const handleMakeBid = async (bid: Bid) => {
+    const result = await makeBid(bid);
+    if (!result.ok) {
+      alert(`Error making bid: ${result.error.message}`);
+    }
+    // State will update via real-time subscription
+  };
+
+  const handleMakeMove = async (move: NormalMove) => {
+    const result = await makeMove(move);
+    if (!result.ok) {
+      alert(`Error making move: ${result.error.message}`);
+    }
+    // State will update via real-time subscription
+  };
 
   return (
     <>
@@ -53,18 +75,31 @@ export default function Lobbies() {
 
       {lobby ? (
         <>
-          <LobbyInfo
-            lobby={lobby}
-            hostProfile={host}
-            guestProfile={guest}
-            userRole={role}
-          />
+          {gameState ? (
+            <>
+            <h2>Phase: {gameState.phase}</h2>
+            <h2>Turn: {gameState.turn}</h2>
+            <AuctionChessBoard
+              gameState={gameState}
+              playerColor={playerColor}
+              hostUsername={host?.username ?? "Host"}
+              guestUsername={guest?.username ?? "Guest"}
+              onMakeMove={handleMakeMove}
+              onMakeBid={handleMakeBid}
+            />
+            </>
+          ) : (
+            <LobbyInfo
+              lobby={lobby}
+              hostProfile={host}
+              guestProfile={guest}
+              userRole={role}
+            />
+          )}
           <LobbyMenu lobby={lobby} update={update} />
         </>
       ) : (
-        <>
-          <LobbySearch update={update} />
-        </>
+        <LobbySearch update={update} />
       )}
 
       <button onClick={() => supabase.auth.signOut()}>sign out</button>

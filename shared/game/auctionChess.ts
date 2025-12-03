@@ -72,12 +72,9 @@ export function movePiece(
   };
 }
 
-export function makeBid(
-  game: AuctionChessState,
-  bid: Bid,
-): AuctionChessState | { error: string } {
+export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
   if (game.phase !== "bid") {
-    return { error: "Not in bid phase" };
+    return { ok: false, error: "Not in bid phase" };
   }
 
   const { balance, bidHistory } = game.auctionState;
@@ -95,23 +92,26 @@ export function makeBid(
     bidStack.push(bid);
 
     return {
-      chessState: game.chessState,
-      auctionState: { balance, bidHistory },
-      turn: opposite(game.turn),
-      phase: "move",
-      winner: game.winner,
+      ok: true,
+      value: {
+        chessState: game.chessState,
+        auctionState: { balance, bidHistory },
+        turn: opposite(game.turn),
+        phase: "move",
+        winner: game.winner,
+      },
     };
   }
 
   // Validate non-fold bids (bid has "amount" property)
   if (bid.amount <= 0) {
-    return { error: "Bid amount must be positive" };
+    return { ok: false, error: "Bid amount must be positive" };
   }
   if (bid.amount <= lastBidAmount) {
-    return { error: "Bid must be higher than previous bid" };
+    return { ok: false, error: "Bid must be higher than previous bid" };
   }
   if (bid.amount > balance[game.turn]) {
-    return { error: "Insufficient balance" };
+    return { ok: false, error: "Insufficient balance" };
   }
 
   // Handle bid that opponent can't beat
@@ -120,21 +120,26 @@ export function makeBid(
     bidStack.push(bid);
 
     return {
+      ok: true,
+      value: {
       chessState: game.chessState,
       auctionState: { balance, bidHistory },
       turn: game.turn,
       phase: "move",
       winner: game.winner,
-    };
+    }};
   }
 
   // Normal bid: continue bidding
   bidStack.push(bid);
 
   return {
-    ...game,
-    auctionState: { balance, bidHistory },
-    turn: opposite(game.turn),
+    ok: true,
+    value: {
+      ...game,
+      auctionState: { balance, bidHistory },
+      turn: opposite(game.turn),
+    },
   };
 }
 
