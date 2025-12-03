@@ -123,11 +123,9 @@ export type ProfileUpdate = z.infer<typeof ProfileUpdate>;
 // API types
 // ============================================================================
 
-export enum EventType {
-  LobbyUpdate = "lobby-update",
-  LobbyDelete = "lobby-delete",
-  GameUpdate = "game-update",
-  GameEnd = "game-end",
+export enum LobbyEventType {
+  Update = "lobby-update",
+  Delete = "lobby-delete",
 }
 
 export const HTTPException = z.object({
@@ -164,5 +162,4 @@ export function match<T, E, R>(
 // ============================================================================
 // Database types
 // ============================================================================
-
 export * from "./database.types.ts";
