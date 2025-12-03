@@ -4,8 +4,6 @@
     "@std/dotenv": "jsr:@std/dotenv@^0.225.5",
     "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.86.0",
     "hono": "npm:hono@^4.10.7",
-    "zod": "npm:zod@^4.1.13",
-    "server/": "../../../server/",
-    "shared/": "../../../shared/",
+    "zod": "npm:zod@^4.1.13"
   }
 }

@@ -9,7 +9,8 @@
   },
   "private": true,
   "scripts": {
-    "format": "prettier --write ./**"
+    "format": "prettier --write ./**",
+    "build:edge": "bun run scripts/build-edge-function.ts"
   },
   "workspaces": [
     "shared",
