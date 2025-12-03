@@ -3,6 +3,8 @@ import {  LobbyEventType, Lobby } from "shared";
 import { getLobby } from "../services/lobbies";
 import supabase from "../supabase";
 
+// TODO: separate the Lobby and Game states so you don't rerender and hit the
+// profiles API's every time a move is made.
 // State shape
 interface LobbyState {
   lobby: Lobby | null;
@@ -15,6 +17,12 @@ type LobbyAction =
   | { type: "SET_LOBBY"; payload: Lobby | null }
   | { type: "LOBBY_UPDATE"; payload: Lobby }
   | { type: "LOBBY_DELETE" };
+
+// NOTE: always trust the broadcast data. The DB read data may be out of date
+// due to a delay in Postgres UPDATE. This is a race condition! Avoid that by
+// treating the updates as an "ultimate source of truth".
+// Some weirdness can occur if a client subscribes before the final persistance
+// is completed.
 
 // Reducer function
 function lobbyReducer(state: LobbyState, action: LobbyAction): LobbyState {

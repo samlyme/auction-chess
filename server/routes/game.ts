@@ -23,9 +23,14 @@ app.post(
     const gameState = c.get("gameState");
     const bid = (c.req as any).valid("json");
 
+    // Game verification logic is actually really quick.
+    // It's the db trip that takes a while.
+    // Refactor so the persist actually comes after.
+    // const start = Date.now();
     const result = makeBidLogic(gameState, bid);
+    // console.log(`Verify bid logic: ${Date.now() - start}`);
 
-    if ("error" in result) {
+    if (!result.ok) {
       throw new HTTPException(400, { message: result.error });
     }
 
@@ -37,10 +42,7 @@ app.post(
       .select()
       .single();
 
-    console.log("error in updating bid", error);
-
     if (error) {
-      console.log("error is null, still throwing?");
       throw new HTTPException(500, {
         message: `Failed to update game state: ${error.message}`,
       });
@@ -74,7 +76,7 @@ app.post(
 
     const result = movePieceLogic(gameState, move);
 
-    if ("error" in result) {
+    if (!result.ok) {
       throw new HTTPException(400, { message: result.error });
     }
 
