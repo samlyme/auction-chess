@@ -35,9 +35,7 @@ app.post(
 
 app.get("", (c: Context<MaybeLobbyEnv>) => {
   const lobby = c.get("lobby");
-  if (!lobby) return c.json(null)
-
-  const lobbyPayload: LobbyPayload = {...lobby, gameStarted: !!lobby.game_state}
+  const lobbyPayload: LobbyPayload | null = lobby ? {...lobby, gameStarted: !!lobby.game_state} : null;
   return c.json(lobbyPayload);
 });
 
@@ -180,7 +178,43 @@ app.post(
   broadcastLobby,
 );
 
+app.post(
+  "/end",
+  validateLobby,
+  async (c: Context<LobbyEnv>, next) => {
+    const supabase = c.get("supabase");
+    const lobby = c.get("lobby");
+    const user = c.get("user");
 
+    if (user.id !== lobby.host_uid)
+      throw new HTTPException(400, {
+        message: `user is not host of lobby ${lobby.code}`,
+      });
+
+    if (lobby.game_state === null)
+      throw new HTTPException(400, {
+        message: "lobby not started",
+      });
+
+
+    const { data: updatedLobby, error } = await supabase
+      .from("lobbies")
+      .update({ game_state: null })
+      .eq("code", lobby.code)
+      .select()
+      .single();
+
+    if (error)
+      throw new HTTPException(500, {
+        message: `Failed to end lobby ${lobby.code}`,
+      });
+
+    c.set("lobby", updatedLobby);
+
+    await next();
+  },
+  broadcastLobby,
+);
 
 
 export { app as lobbies };

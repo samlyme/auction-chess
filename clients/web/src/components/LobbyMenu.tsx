@@ -1,6 +1,11 @@
 import { useContext } from "react";
 import { AuthContext } from "../contexts/Auth";
-import { deleteLobby, leaveLobby, startLobby } from "../services/lobbies";
+import {
+  deleteLobby,
+  leaveLobby,
+  startLobby,
+  endLobby,
+} from "../services/lobbies";
 import type { LobbyPayload } from "shared";
 
 export default function LobbyMenu({
@@ -31,6 +36,15 @@ export default function LobbyMenu({
     }
   };
 
+  const handleEndLobby = async () => {
+    const result = await endLobby();
+    if (result.ok) {
+      update(result.value);
+    } else {
+      alert(`Error: ${result.error.message}`);
+    }
+  };
+
   const handleLeaveLobby = async () => {
     const result = await leaveLobby();
     if (result.ok) {
@@ -44,7 +58,11 @@ export default function LobbyMenu({
     <div>
       {user.id === lobby.host_uid ? (
         <>
-          <button onClick={handleStartLobby}>start lobby</button>
+          {lobby.gameStarted ? (
+            <button onClick={handleEndLobby}>end lobby</button>
+          ) : (
+            <button onClick={handleStartLobby}>start lobby</button>
+          )}
           <button onClick={handleDeleteLobby}>delete lobby</button>
         </>
       ) : (

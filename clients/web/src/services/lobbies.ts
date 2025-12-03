@@ -94,3 +94,18 @@ export async function startLobby(): Promise<Result<LobbyPayload>> {
     LobbyPayload,
   );
 }
+
+export async function endLobby(): Promise<Result<LobbyPayload>> {
+  const authHeader = await getAuthHeader();
+
+  return apiFetch(
+    `${BASE_URL}/end`,
+    {
+      method: "POST",
+      headers: {
+        ...authHeader,
+      },
+    },
+    LobbyPayload,
+  );
+}
