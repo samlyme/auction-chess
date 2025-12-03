@@ -1,5 +1,5 @@
 import { type Context, Hono, type Next } from "hono";
-import { AuctionChessState, Lobby, LobbyJoinQuery, LobbyPayload } from "shared";
+import { AuctionChessState, Lobby, LobbyJoinQuery } from "shared";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import {
@@ -18,7 +18,7 @@ app.use(getProfile, validateProfile);
 app.use(getLobby);
 
 app.post(
-  "",
+  "/",
   async (c: Context<MaybeLobbyEnv>, next: Next) => {
     const supabase = c.get("supabase");
     if (c.get("lobby"))
@@ -35,8 +35,7 @@ app.post(
 
 app.get("", (c: Context<MaybeLobbyEnv>) => {
   const lobby = c.get("lobby");
-  const lobbyPayload: LobbyPayload | null = lobby ? {...lobby, gameStarted: !!lobby.game_state} : null;
-  return c.json(lobbyPayload);
+  return c.json(lobby);
 });
 
 app.delete(

@@ -2,7 +2,7 @@ import type { Handler, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
-import type { LobbyPayload } from "shared";
+import { EventType } from "shared";
 
 export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   const supabase = c.get("supabase");
@@ -35,14 +35,11 @@ export const broadcastLobby: Handler<LobbyEnv> = async (c) => {
   const deleted = c.get("deleted");
 
   if (deleted) {
-    channel.httpSend("delete", null);
+    channel.httpSend(EventType.LobbyDelete, null);
     return c.json(null)
   }
   else {
-    const { game_state, ...lobbyData } = lobby;
-    const lobbyPayload: LobbyPayload = { ...lobbyData, gameStarted: !!game_state };
-    channel.httpSend("update", lobbyPayload);
-    return c.json(lobbyPayload);
+    channel.httpSend(EventType.LobbyUpdate, lobby);
+    return c.json(lobby);
   }
-
 };
