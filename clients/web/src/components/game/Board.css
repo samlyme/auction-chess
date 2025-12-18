@@ -1,0 +1,29 @@
+.board-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  flex-wrap: wrap;
+}
+
+.board-wrapper {
+  max-width: 600px;
+  max-height: 600px;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+/* Make the board responsive */
+@media (max-width: 1024px) {
+  .board-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .board-wrapper {
+    max-width: 90vw;
+    max-height: 90vw;
+  }
+}
