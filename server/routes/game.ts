@@ -58,7 +58,7 @@ app.post(
     }
 
     broadcastGameUpdate(channel, updatedLobby.game_state);
-    return c.json(null);
+    return c.body(null, 204);
   },
 );
 
@@ -105,7 +105,7 @@ app.post(
     }
 
     broadcastGameUpdate(channel, updatedLobby.game_state);
-    return c.json(null);
+    return c.body(null, 204);
   },
 );
 
