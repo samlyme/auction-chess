@@ -133,11 +133,13 @@ export type ProfileUpdate = z.infer<typeof ProfileUpdate>;
 // API types
 // ============================================================================
 
-export enum LobbyEventType {
-  LobbyUpdate = "lobby-update",
-  LobbyDelete = "lobby-delete",
-  GameUpdate = "game-update"
-}
+export const LobbyEventType = {
+  LobbyUpdate: "lobby-update",
+  LobbyDelete: "lobby-delete",
+  GameUpdate: "game-update"
+} as const;
+
+export type LobbyEventType = typeof LobbyEventType[keyof typeof LobbyEventType];
 
 export const HTTPException = z.object({
   message: z.string().optional(),

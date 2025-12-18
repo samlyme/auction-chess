@@ -5,7 +5,7 @@ import { Navigate, useLocation } from "react-router";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
 import type { Session } from "@supabase/supabase-js";
-import type { Tables } from "../supabase";
+import type { Tables } from "shared";
 
 export type OnboardingStage = "unauthed" | "createProfile" | "complete";
 
