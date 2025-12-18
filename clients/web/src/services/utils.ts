@@ -19,6 +19,12 @@ export async function apiFetch<T>(
 ): Promise<Result<T, APIError>> {
   try {
     const res = await fetch(url, options);
+
+    if (res.status === 204) {
+      const parsed = schema.parse(null);
+      return Ok(parsed);
+    }
+
     const json = await res.json();
 
     if (!res.ok) {
