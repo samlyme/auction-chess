@@ -1,10 +1,11 @@
 import { getAuthHeader, apiFetch, BACKEND_URL } from "./utils";
 import { Bid, NormalMove, AuctionChessState } from "shared";
-import { LobbyPayload, type  Result } from "shared";
+import { type  Result } from "shared";
+import { z } from "zod";
 
 const BASE_URL = `${BACKEND_URL}/api/lobbies/game`;
 
-export async function makeBid(bid: Bid): Promise<Result<LobbyPayload>> {
+export async function makeBid(bid: Bid): Promise<Result<null>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -17,13 +18,13 @@ export async function makeBid(bid: Bid): Promise<Result<LobbyPayload>> {
       },
       body: JSON.stringify(bid),
     },
-    LobbyPayload,
+    z.null(),
   );
 }
 
 export async function makeMove(
   move: NormalMove,
-): Promise<Result<LobbyPayload>> {
+): Promise<Result<null>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -36,7 +37,7 @@ export async function makeMove(
       },
       body: JSON.stringify(move),
     },
-    LobbyPayload,
+    z.null(),
   );
 }
 
