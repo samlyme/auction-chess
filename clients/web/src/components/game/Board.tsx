@@ -25,6 +25,7 @@ import {
 } from "./BoardStyle";
 import type { AuctionChessState, Bid } from "shared";
 import BidPanel from "./BidPanel";
+import "./Board.css";
 
 interface BoardProps {
   gameState: AuctionChessState;

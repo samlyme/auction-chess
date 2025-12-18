@@ -1,7 +1,9 @@
 /* Dev colors */
 .bid-panel  {
     border: solid;
-    width: 30vmin;
+    width: 300px;
+    min-width: 250px;
+    flex-shrink: 0;
 }
 
 .bid-panel h1, h2, h3, h4, h5, h6 {
