@@ -8,7 +8,13 @@ import {
 } from "../services/lobbies";
 import type { LobbyPayload } from "shared";
 
-export default function LobbyMenu({ lobby }: { lobby: LobbyPayload }) {
+export default function LobbyMenu({
+  lobby,
+  setLobby,
+}: {
+  lobby: LobbyPayload;
+  setLobby: (lobby: LobbyPayload | null) => void;
+}) {
   const { user } = useContext(AuthContext);
   if (!lobby || !user) return <h1>Loading</h1>;
 
@@ -16,32 +22,36 @@ export default function LobbyMenu({ lobby }: { lobby: LobbyPayload }) {
     const result = await startLobby();
     if (!result.ok) {
       alert(`Error: ${result.error.message}`);
+    } else {
+      setLobby(result.value);
     }
-    // State will update via real-time subscription
   };
 
   const handleDeleteLobby = async () => {
     const result = await deleteLobby();
     if (!result.ok) {
       alert(`Error: ${result.error.message}`);
+    } else {
+      setLobby(null);
     }
-    // State will update via real-time subscription
   };
 
   const handleEndLobby = async () => {
     const result = await endLobby();
     if (!result.ok) {
       alert(`Error: ${result.error.message}`);
+    } else {
+      setLobby(result.value);
     }
-    // State will update via real-time subscription
   };
 
   const handleLeaveLobby = async () => {
     const result = await leaveLobby();
     if (!result.ok) {
       alert(`Error: ${result.error.message}`);
+    } else {
+      setLobby(result.value);
     }
-    // State will update via real-time subscription
   };
 
   return (

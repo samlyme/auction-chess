@@ -65,7 +65,6 @@ export default function useRealtime() {
             const newLobby = LobbyPayload.parse(update.payload);
             console.log("newLobby", newLobby);
 
-
             if (
               user?.id &&
               (user.id === newLobby.host_uid || user.id === newLobby.guest_uid)
@@ -96,7 +95,7 @@ export default function useRealtime() {
 
       channel.unsubscribe();
     };
-  }, [loading, error]);
+  }, [lobby?.code, loading, error]);
 
-  return { lobby, gameState, loading };
+  return { lobby, gameState, loading, setLobby };
 }
