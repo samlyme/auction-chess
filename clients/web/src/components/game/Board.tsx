@@ -219,13 +219,13 @@ export function AuctionChessBoard({
           select={playPromotion}
         />
       )}
-      <div className="board-wrapper">
+      <div className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}>
         <Chessboard
           options={{
             position: gameState.chessState.fen,
-            onPieceDrag,
-            onPieceDrop,
-            onSquareClick,
+            onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
+            onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
+            onSquareClick: gameState.phase === "bid" ? undefined : onSquareClick,
             squareStyles,
             boardOrientation: playerColor,
           }}
