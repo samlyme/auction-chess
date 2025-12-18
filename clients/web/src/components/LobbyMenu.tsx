@@ -6,59 +6,49 @@ import {
   startLobby,
   endLobby,
 } from "../services/lobbies";
-import type { Lobby } from "shared";
+import type { LobbyPayload } from "shared";
 
-export default function LobbyMenu({
-  lobby,
-  update,
-}: {
-  lobby: Lobby;
-  update: (lobby?: Lobby | null) => void;
-}) {
+export default function LobbyMenu({ lobby }: { lobby: LobbyPayload }) {
   const { user } = useContext(AuthContext);
   if (!lobby || !user) return <h1>Loading</h1>;
 
   const handleStartLobby = async () => {
     const result = await startLobby();
-    if (result.ok) {
-      update(result.value);
-    } else {
+    if (!result.ok) {
       alert(`Error: ${result.error.message}`);
     }
+    // State will update via real-time subscription
   };
 
   const handleDeleteLobby = async () => {
     const result = await deleteLobby();
-    if (result.ok) {
-      update(null);
-    } else {
+    if (!result.ok) {
       alert(`Error: ${result.error.message}`);
     }
+    // State will update via real-time subscription
   };
 
   const handleEndLobby = async () => {
     const result = await endLobby();
-    if (result.ok) {
-      update(result.value);
-    } else {
+    if (!result.ok) {
       alert(`Error: ${result.error.message}`);
     }
+    // State will update via real-time subscription
   };
 
   const handleLeaveLobby = async () => {
     const result = await leaveLobby();
-    if (result.ok) {
-      update(null);
-    } else {
+    if (!result.ok) {
       alert(`Error: ${result.error.message}`);
     }
+    // State will update via real-time subscription
   };
 
   return (
     <div>
       {user.id === lobby.host_uid ? (
         <>
-          {lobby.game_state ? (
+          {lobby.game_started ? (
             <button onClick={handleEndLobby}>end lobby</button>
           ) : (
             <button onClick={handleStartLobby}>start lobby</button>

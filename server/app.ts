@@ -19,6 +19,8 @@ export function createApp(supabase: SupabaseClient<Database>) {
     if (err instanceof HTTPException) {
       return c.json({ message: err.message }, err.status);
     }
+    console.error(err);
+
 
     return c.json({ message: "Internal Server Error" }, 500);
   });

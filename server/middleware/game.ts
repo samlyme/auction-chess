@@ -1,7 +1,7 @@
-import type { Handler, MiddlewareHandler } from "hono";
+import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { LobbyEventType, type Color } from "shared";
-import type { GameEnv, LobbyEnv } from "../types.ts";
+import type { Color } from "shared";
+import type { GameEnv } from "../types.ts";
 
 export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
@@ -14,7 +14,6 @@ export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   await next();
 };
 
-// TODO: broadcast game event.
 export const validatePlayer: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
   const user = c.get("user");

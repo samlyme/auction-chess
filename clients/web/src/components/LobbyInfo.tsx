@@ -1,4 +1,4 @@
-import type { Lobby, Profile } from "shared";
+import type { LobbyPayload, Profile } from "shared";
 
 export default function LobbyInfo({
   lobby,
@@ -6,14 +6,13 @@ export default function LobbyInfo({
   guestProfile,
   userRole,
 }: {
-  lobby: Lobby;
+  lobby: LobbyPayload;
   hostProfile: Profile | null;
   guestProfile: Profile | null;
   userRole: "host" | "guest";
 }) {
   return (
     <>
-      <h1>lobby: {lobby.id}</h1>
       <h2>code: {lobby.code}</h2>
       <h2>
         host: {hostProfile?.username} {userRole === "host" && <em>(you)</em>}

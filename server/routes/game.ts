@@ -5,22 +5,31 @@ import { Bid, NormalMove, type Color } from "shared";
 import { makeBid as makeBidLogic, movePiece as movePieceLogic } from "shared/game/auctionChess";
 import type { GameEnv } from "../types.ts";
 import { validateGame, validatePlayer, validateTurn } from "../middleware/game.ts";
-import { broadcastLobby, validateLobby } from "../middleware/lobbies.ts";
+import { validateLobby } from "../middleware/lobbies.ts";
+import { broadcastGameUpdate } from "../utils/realtime.ts";
 
 const app = new Hono<GameEnv>();
 
-// All game routes require validateGame and validatePlayer
-app.use(validateGame, validatePlayer);
+// GET /game - Get the current game state
+app.get("/", (c) => {
+  // NOTE: here, gameState is actually nullable.
+  const { game_state }= c.get("lobby");
+  return c.json(game_state || null);
+});
 
 // POST /game/bid - Make a bid in the auction phase
 app.post(
   "/bid",
+  validateLobby,
+  validateGame,
+  validatePlayer,
   validateTurn,
   zValidator("json", Bid),
-  async (c, next) => {
+  async (c) => {
     const supabase = c.get("supabase");
     const lobby = c.get("lobby");
     const gameState = c.get("gameState");
+    const channel = c.get("channel");
     const bid = (c.req as any).valid("json");
 
     // Game verification logic is actually really quick.
@@ -48,22 +57,24 @@ app.post(
       });
     }
 
-    c.set("lobby", updatedLobby);
-    await next();
+    broadcastGameUpdate(channel, updatedLobby.game_state);
+    return c.json(null);
   },
-  validateLobby,
-  broadcastLobby,
 );
 
 // POST /game/move - Make a chess move
 app.post(
   "/move",
+  validateLobby,
+  validateGame,
+  validatePlayer,
   validateTurn,
   zValidator("json", NormalMove),
-  async (c, next) => {
+  async (c) => {
     const supabase = c.get("supabase");
     const lobby = c.get("lobby");
     const gameState = c.get("gameState");
+    const channel = c.get("channel");
     const playerColor = c.get("playerColor") as Color;
     const move = (c.req as any).valid("json");
 
@@ -94,11 +105,9 @@ app.post(
       });
     }
 
-    c.set("lobby", updatedLobby);
-    await next();
+    broadcastGameUpdate(channel, updatedLobby.game_state);
+    return c.json(null);
   },
-  validateLobby,
-  broadcastLobby,
 );
 
 export { app as game };

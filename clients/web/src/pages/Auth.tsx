@@ -64,6 +64,9 @@ export default function Auth() {
             onClick={() => {
               supabase.auth.signInWithOAuth({
                 provider: "google",
+                options: {
+                  redirectTo: origin,
+                },
               });
             }}
           >

@@ -9,15 +9,14 @@ import { UserProfileContext } from "../contexts/UserProfile";
 import type { Tables, Color, Bid, NormalMove } from "shared";
 import { getProfile } from "../services/profiles";
 import { makeBid, makeMove } from "../services/game";
-import useLobbyState from "../hooks/useLobbyState";
 import { AuctionChessBoard } from "../components/game/Board";
+import useRealtime from "../hooks/useRealtime";
 
 export default function Lobbies() {
   const { user, loading: authLoading } = useContext(AuthContext);
   const { profile, loading: profileLoading } = useContext(UserProfileContext);
 
-  const { lobby, loading: lobbyLoading, update } = useLobbyState();
-  const gameState = lobby?.game_state;
+  const { lobby, gameState, loading: realtimeLoading } = useRealtime();
 
   const [host, setHost] = useState<Tables<"profiles"> | null>(null);
   const [guest, setGuest] = useState<Tables<"profiles"> | null>(null);
@@ -45,7 +44,7 @@ export default function Lobbies() {
 
       getProfile({ id: host_uid }).then(setHost);
     }
-  }, [lobby, user, profile, lobbyLoading, authLoading, profileLoading]);
+  }, [lobby, user, profile, realtimeLoading, authLoading, profileLoading]);
 
   const handleMakeBid = async (bid: Bid) => {
     const result = await makeBid(bid);
@@ -96,10 +95,10 @@ export default function Lobbies() {
               userRole={role}
             />
           )}
-          <LobbyMenu lobby={lobby} update={update} />
+          <LobbyMenu lobby={lobby} />
         </>
       ) : (
-        <LobbySearch update={update} />
+        <LobbySearch />
       )}
 
       <button onClick={() => supabase.auth.signOut()}>sign out</button>
