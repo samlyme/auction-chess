@@ -5,11 +5,12 @@ import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 
 export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   const supabase = c.get("supabase");
+
   const { data: lobby } = await supabase
     .from("lobbies")
     .select("*")
     .or(`host_uid.eq.${c.get("user").id},guest_uid.eq.${c.get("user").id}`)
-    .maybeSingle();
+    .single();
 
   c.set("lobby", lobby);
 

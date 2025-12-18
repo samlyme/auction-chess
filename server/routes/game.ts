@@ -10,17 +10,18 @@ import { broadcastGameUpdate } from "../utils/realtime.ts";
 
 const app = new Hono<GameEnv>();
 
+app.use(validateLobby)
+
 // GET /game - Get the current game state
 app.get("/", (c) => {
   // NOTE: here, gameState is actually nullable.
-  const { game_state }= c.get("lobby");
+  const { game_state } = c.get("lobby");
   return c.json(game_state || null);
 });
 
 // POST /game/bid - Make a bid in the auction phase
 app.post(
   "/bid",
-  validateLobby,
   validateGame,
   validatePlayer,
   validateTurn,
@@ -34,7 +35,6 @@ app.post(
 
     // Game verification logic is actually really quick.
     // It's the db trip that takes a while.
-    // Refactor so the persist actually comes after.
     // const start = Date.now();
     const result = makeBidLogic(gameState, bid);
     // console.log(`Verify bid logic: ${Date.now() - start}`);
@@ -65,7 +65,6 @@ app.post(
 // POST /game/move - Make a chess move
 app.post(
   "/move",
-  validateLobby,
   validateGame,
   validatePlayer,
   validateTurn,
