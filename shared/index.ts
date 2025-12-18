@@ -86,6 +86,16 @@ export const Lobby = z.object({
 });
 export type Lobby = z.infer<typeof Lobby>;
 
+export const LobbyPayload = Lobby.omit({ id: true, game_state: true }).extend({ game_started: z.boolean() });
+export type LobbyPayload = z.infer<typeof LobbyPayload>;
+
+export const LobbyToPayload = Lobby.transform(({id, game_state, ...rest}: Lobby) => {
+  return {
+    game_started: !!game_state,
+    ...rest
+  };
+}).pipe(LobbyPayload)
+
 export const LobbyJoinQuery = z.object({
   code: z.string(),
 });
@@ -124,8 +134,9 @@ export type ProfileUpdate = z.infer<typeof ProfileUpdate>;
 // ============================================================================
 
 export enum LobbyEventType {
-  Update = "lobby-update",
-  Delete = "lobby-delete",
+  LobbyUpdate = "lobby-update",
+  LobbyDelete = "lobby-delete",
+  GameUpdate = "game-update"
 }
 
 export const HTTPException = z.object({

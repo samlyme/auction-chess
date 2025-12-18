@@ -1,30 +1,23 @@
 import { useState } from "react";
 import { createLobby, joinLobby } from "../services/lobbies";
-import type { Lobby } from "shared";
 
-export default function LobbySearch({
-  update,
-}: {
-  update: (lobby?: Lobby | null) => void;
-}) {
+export default function LobbySearch() {
   const [code, setCode] = useState<string>("");
 
   const handleCreateLobby = async () => {
     const result = await createLobby();
-    if (result.ok) {
-      update(result.value);
-    } else {
+    if (!result.ok) {
       alert(`Error: ${result.error.message}`);
     }
+    // State will update via real-time subscription
   };
 
   const handleJoinLobby = async () => {
     const result = await joinLobby(code);
-    if (result.ok) {
-      update(result.value);
-    } else {
+    if (!result.ok) {
       alert(`Error: ${result.error.message}`);
     }
+    // State will update via real-time subscription
   };
 
   return (
