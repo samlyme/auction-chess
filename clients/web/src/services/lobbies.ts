@@ -46,7 +46,7 @@ export async function deleteLobby(): Promise<Result<any>> {
         ...authHeader,
       },
     },
-    z.object(),
+    z.object().nullable(),
   );
 }
 
