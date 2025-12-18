@@ -35,7 +35,7 @@ export async function getLobby(): Promise<Result<LobbyPayload | null>> {
   );
 }
 
-export async function deleteLobby(): Promise<Result<any>> {
+export async function deleteLobby(): Promise<Result<null>> {
   const authHeader = await getAuthHeader();
 
   return apiFetch(
@@ -46,7 +46,7 @@ export async function deleteLobby(): Promise<Result<any>> {
         ...authHeader,
       },
     },
-    z.object().nullable(),
+    z.null(),
   );
 }
 

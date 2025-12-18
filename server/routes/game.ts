@@ -30,7 +30,7 @@ app.post(
     const lobby = c.get("lobby");
     const gameState = c.get("gameState");
     const channel = c.get("channel");
-    const bid = (c.req as any).valid("json");
+    const bid = c.req.valid("json");
 
     // Game verification logic is actually really quick.
     // It's the db trip that takes a while.
@@ -76,7 +76,7 @@ app.post(
     const gameState = c.get("gameState");
     const channel = c.get("channel");
     const playerColor = c.get("playerColor") as Color;
-    const move = (c.req as any).valid("json");
+    const move = c.req.valid("json");
 
     // Ensure it's the player's turn
     if (gameState.turn !== playerColor) {
