@@ -60,13 +60,12 @@ app.delete("/", validateLobby, async (c: Context<LobbyEnv>) => {
 app.post(
   "/join",
   zValidator("query", LobbyJoinQuery),
-  async (c: Context<MaybeLobbyEnv>) => {
+  async (c) => {
     const supabase = c.get("supabase");
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
-    // THIS line is haunted lmfao
-    const { code } = (c.req as any).valid("query");
+    const { code } = c.req.valid("query");
 
     const { data: lobbyState } = await supabase
       .from("lobbies")

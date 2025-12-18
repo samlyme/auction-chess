@@ -7,7 +7,7 @@ export function broadcastLobbyUpdate(
   deleted: boolean = false
 ) {
   if (deleted) {
-    channel.httpSend(LobbyEventType.LobbyDelete, null);
+    channel.httpSend(LobbyEventType.LobbyDelete, {});
     return null;
   }
   const payload = LobbyToPayload.parse(lobby);

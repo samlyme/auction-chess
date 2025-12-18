@@ -16,7 +16,7 @@ export default function Lobbies() {
   const { user, loading: authLoading } = useContext(AuthContext);
   const { profile, loading: profileLoading } = useContext(UserProfileContext);
 
-  const { lobby, gameState, loading: realtimeLoading } = useRealtime();
+  const { lobby, gameState, loading: realtimeLoading, setLobby } = useRealtime();
 
   const [host, setHost] = useState<Tables<"profiles"> | null>(null);
   const [guest, setGuest] = useState<Tables<"profiles"> | null>(null);
@@ -95,10 +95,10 @@ export default function Lobbies() {
               userRole={role}
             />
           )}
-          <LobbyMenu lobby={lobby} />
+          <LobbyMenu lobby={lobby} setLobby={setLobby} />
         </>
       ) : (
-        <LobbySearch />
+        <LobbySearch setLobby={setLobby} />
       )}
 
       <button onClick={() => supabase.auth.signOut()}>sign out</button>
