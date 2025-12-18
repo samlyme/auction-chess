@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { UserProfileContext } from "../../contexts/UserProfile";
-import type { Tables } from "../../supabase";
+import type { Tables } from "shared";
 import { AuthContext } from "../../contexts/Auth";
 import { getProfile } from "../../services/profiles";
 

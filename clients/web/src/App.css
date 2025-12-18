@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'Balatro'; /*a name to be used later*/
+    src: url('./assets/balatro.otf'); /*URL to font*/
+}
+
+* {
+  font-family: 'Balatro';
+}
