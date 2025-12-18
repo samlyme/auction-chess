@@ -15,13 +15,15 @@ function TimeAndTitle({
   time,
   username,
   color,
+  isCurrentTurn,
 }: {
   time: string;
   username: string;
   color: string;
+  isCurrentTurn: boolean;
 }) {
   return (
-    <div className="time-and-title">
+    <div className={`time-and-title ${isCurrentTurn ? "current-turn" : ""}`}>
       <div className="time item">
         <p>{time}</p>
       </div>
@@ -176,25 +178,44 @@ export default function BidPanel({
     prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount: 0;
   }
 
-
-
   const [currentBid, setCurrentBid] = useState<number>(0);
+  const [timeRemaining, setTimeRemaining] = useState<number>(15 * 60); // 15 minutes in seconds
 
   useEffect(() => {
     setCurrentBid(Math.max(prevPlayerBidAmount, prevOppBidAmount));
   }, [gameState]);
 
+  // Countdown timer - always counts down from 15:00
+  useEffect(() => {
+    setTimeRemaining(15 * 60); // Reset to 15 minutes on turn change
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameState.turn]);
+
+  // Format time as MM:SS
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const isPlayerTurn = gameState.turn === playerColor;
   const playerUsername =
     playerColor === "white" ? hostUsername : guestUsername;
   const opponentUsername =
     opponentColor === "white" ? hostUsername : guestUsername;
 
   return (
-    <div className="bid-panel">
+    <div className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}>
       <TimeAndTitle
-        time={"15:00"}
+        time={isPlayerTurn ? "15:00" : formatTime(timeRemaining)}
         username={opponentUsername}
         color={opponentColor}
+        isCurrentTurn={!isPlayerTurn}
       />
 
       <CurrentBalance
@@ -210,7 +231,7 @@ export default function BidPanel({
         playerBalance={balance[playerColor] ?? 0}
         oppBalance={balance[opponentColor] ?? 0}
         setCurrentBid={setCurrentBid}
-        makeBid={onMakeBid}
+        makeBid={gameState.phase === "move" ? () => {} : onMakeBid}
       />
 
       <CurrentBalance
@@ -218,7 +239,12 @@ export default function BidPanel({
         nextBalance={(balance[playerColor] ?? 0) - currentBid}
       />
 
-      <TimeAndTitle time={"15:00"} username={playerUsername} color={playerColor} />
+      <TimeAndTitle
+        time={isPlayerTurn ? formatTime(timeRemaining) : "15:00"}
+        username={playerUsername}
+        color={playerColor}
+        isCurrentTurn={isPlayerTurn}
+      />
     </div>
   );
 }
