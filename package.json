@@ -2,7 +2,6 @@
   "name": "auction-chess",
   "devDependencies": {
     "@types/bun": "latest",
-    "concurrently": "^9.2.1",
     "prettier": "^3.6.2"
   },
   "peerDependencies": {
@@ -13,15 +12,11 @@
     "format": "prettier --write ./**",
     "build:edge": "bun run --filter server build --outdir ../supabase/functions/api",
     "build:client": "bun run --filter web build",
-
-    "dev:edge": "concurrently \"bun build server/app.ts --outdir supabase/functions/api --watch\" \"supabase functions serve api --no-verify-jwt\"",
-
+    "dev:edge": "bun build server/app.ts --outdir supabase/functions/api --watch & watchexec --restart -w supabase/functions/api -- supabase functions serve",
     "publish:client": "cd clients/web && wrangler deploy",
     "publish:server": "supabase db push && supabase config push && supabase functions deploy",
-
     "deploy:client": "bun run build:client && bun run publish:client",
     "deploy:server": "bun run build:edge && bun run publish:server",
-
     "build": "bun run build:client && bun run build:edge",
     "publish": "bun run publish:client && bun run publish:server",
     "deploy": "bun run build && bun run publish"
