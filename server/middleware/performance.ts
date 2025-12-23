@@ -52,7 +52,7 @@ export function measureMiddleware<E extends Env = Env>(
     };
 
     try {
-      await middleware(c, wrappedNext);
+      return await middleware(c, wrappedNext);
     } finally {
       const totalDuration = performance.now() - startTotal;
       // Calculate time spent in THIS middleware only (excluding downstream)
@@ -103,12 +103,13 @@ export const requestTimer: MiddlewareHandler = async (c, next) => {
  */
 function logPerformanceMetrics(report: RequestMetrics) {
   const formattedDuration = report.totalDuration.toFixed(2);
+  const lines: string[] = [];
 
-  console.log(`\n🔍 Performance Report: ${report.method} ${report.path}`);
-  console.log(`⏱️  Total Duration: ${formattedDuration}ms`);
+  lines.push(`\n🔍 Performance Report: ${report.method} ${report.path}`);
+  lines.push(`⏱️  Total Duration: ${formattedDuration}ms`);
 
   if (report.middleware.length > 0) {
-    console.log("📊 Middleware Breakdown:");
+    lines.push("📊 Middleware Breakdown:");
 
     // Sort middleware by duration (slowest first) for easier debugging
     const metrics = [...report.middleware].reverse();
@@ -118,7 +119,7 @@ function logPerformanceMetrics(report: RequestMetrics) {
       const duration = metric.duration.toFixed(2);
       const bar = "█".repeat(Math.floor((metric.duration / report.totalDuration) * 10)); // Visual bar
 
-      console.log(`   ${metric.name.padEnd(25)} ${duration.padStart(8)}ms  ${percentage.padStart(5)}%  ${bar}`);
+      lines.push(`   ${metric.name.padEnd(25)} ${duration.padStart(8)}ms  ${percentage.padStart(5)}%  ${bar}`);
     });
 
     // Calculate middleware overhead
@@ -127,16 +128,19 @@ function logPerformanceMetrics(report: RequestMetrics) {
     const bar = "█".repeat(Math.floor((overhead / report.totalDuration) * 10)); // Visual bar
 
     if (overhead > 0.1) {
-      console.log(`   ${"[Other/Handler]".padEnd(25)} ${overhead.toFixed(2).padStart(8)}ms  ${((overhead / report.totalDuration) * 100).toFixed(1).padStart(5)}%  ${bar}`);
+      lines.push(`   ${"[Other/Handler]".padEnd(25)} ${overhead.toFixed(2).padStart(8)}ms  ${((overhead / report.totalDuration) * 100).toFixed(1).padStart(5)}%  ${bar}`);
     }
   }
 
   // Highlight slow requests
   if (report.totalDuration > 1000) {
-    console.log(`⚠️  SLOW REQUEST: This request took ${formattedDuration}ms`);
+    lines.push(`⚠️  SLOW REQUEST: This request took ${formattedDuration}ms`);
   }
 
-  console.log(""); // Empty line for readability
+  lines.push(""); // Empty line for readability
+
+  // Single atomic log to prevent interleaving in concurrent environments
+  console.log(lines.join("\n"));
 }
 
 /**
