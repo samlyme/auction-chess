@@ -35,7 +35,6 @@ app.delete("/", validateLobby, async (c: Context<LobbyEnv>) => {
   const supabase = c.get("supabase");
   const lobby = c.get("lobby");
   const channel = c.get("channel");
-  console.log("delete route", { lobby });
 
   const user = c.get("user");
   if (user.id !== lobby.host_uid)
@@ -110,7 +109,6 @@ app.post("/leave", validateLobby, async (c: Context<LobbyEnv>) => {
     .select()
     .maybeSingle();
 
-  console.log("person left", newLobby);
 
   const payload = broadcastLobbyUpdate(channel, newLobby);
   return c.json(payload);

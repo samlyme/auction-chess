@@ -5,12 +5,14 @@ import { Bid, NormalMove, type Color } from "shared";
 import { makeBid as makeBidLogic, movePiece as movePieceLogic } from "shared/game/auctionChess";
 import type { GameEnv } from "../types.ts";
 import { validateGame, validatePlayer, validateTurn } from "../middleware/game.ts";
-import { validateLobby } from "../middleware/lobbies.ts";
+import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { broadcastGameUpdate } from "../utils/realtime.ts";
+import { getProfile, validateProfile } from "../middleware/profiles.ts";
 
 const app = new Hono<GameEnv>();
 
-app.use(validateLobby)
+app.use(getProfile, validateProfile);
+app.use(getLobby, validateLobby);
 
 // GET /game - Get the current game state
 app.get("/", (c) => {
@@ -37,7 +39,6 @@ app.post(
     // It's the db trip that takes a while.
     // const start = Date.now();
     const result = makeBidLogic(gameState, bid);
-    // console.log(`Verify bid logic: ${Date.now() - start}`);
 
     if (!result.ok) {
       throw new HTTPException(400, { message: result.error });

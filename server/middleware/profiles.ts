@@ -1,7 +1,8 @@
 import type { MiddlewareHandler } from "hono";
 import type { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
+import { measureMiddleware } from "./performance.ts";
 
-export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
+const getProfileImpl: MiddlewareHandler<MaybeProfileEnv> = async (
   c,
   next,
 ) => {
@@ -17,7 +18,7 @@ export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
   await next();
 };
 
-export const validateProfile: MiddlewareHandler<CompleteProfileEnv> = async (
+const validateProfileImpl: MiddlewareHandler<CompleteProfileEnv> = async (
   c,
   next,
 ) => {
@@ -25,3 +26,6 @@ export const validateProfile: MiddlewareHandler<CompleteProfileEnv> = async (
   if (!profile) return c.json({ message: "no profile" }, 400);
   await next();
 };
+
+export const getProfile = measureMiddleware(getProfileImpl, "Get Profile");
+export const validateProfile = measureMiddleware(validateProfileImpl, "Validate Profile");
