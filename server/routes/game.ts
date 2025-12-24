@@ -8,11 +8,12 @@ import { validateGame, validatePlayer, validateTurn } from "../middleware/game.t
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { broadcastGameUpdate } from "../utils/realtime.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
+import { runConcurrently } from "../utils/concurrency.ts";
+import {endTime, startTime, wrapTime} from "hono/timing";
 
 const app = new Hono<GameEnv>();
 
-app.use(getProfile, validateProfile);
-app.use(getLobby, validateLobby);
+app.use(runConcurrently(getProfile, getLobby), validateProfile, validateLobby)
 
 // GET /game - Get the current game state
 app.get("/", (c) => {
@@ -44,21 +45,29 @@ app.post(
       throw new HTTPException(400, { message: result.error });
     }
 
-    // Update the game state in the database
-    const { data: updatedLobby, error } = await supabase
+    const broadcast = broadcastGameUpdate(channel, result.value);
+    const mutate = supabase
       .from("lobbies")
       .update({ game_state: result.value })
       .eq("code", lobby.code)
       .select()
       .single();
+    endTime(c, "mutateGamestate");
 
-    if (error) {
+    const [bRes, mRes] = await wrapTime(c, "broadcastAndMutate", Promise.all([broadcast, mutate]));
+
+    if (!bRes.success) {
       throw new HTTPException(500, {
-        message: `Failed to update game state: ${error.message}`,
+        message: `Failed to broadcast game state: ${bRes.error}`
+      })
+    }
+
+    if (mRes.error) {
+      throw new HTTPException(500, {
+        message: `Failed to update game state: ${mRes.error.message}`,
       });
     }
 
-    broadcastGameUpdate(channel, updatedLobby.game_state);
     return c.body(null, 204);
   },
 );
@@ -91,21 +100,29 @@ app.post(
       throw new HTTPException(400, { message: result.error });
     }
 
-    // Update the game state in the database
-    const { data: updatedLobby, error } = await supabase
+    const broadcast = broadcastGameUpdate(channel, result.value);
+    const mutate = supabase
       .from("lobbies")
       .update({ game_state: result.value })
       .eq("code", lobby.code)
       .select()
       .single();
+    endTime(c, "mutateGamestate");
 
-    if (error) {
+    const [bRes, mRes] = await wrapTime(c, "broadcastAndMutate", Promise.all([broadcast, mutate]));
+
+    if (!bRes.success) {
       throw new HTTPException(500, {
-        message: `Failed to update game state: ${error.message}`,
+        message: `Failed to broadcast game state: ${bRes.error}`
+      })
+    }
+
+    if (mRes.error) {
+      throw new HTTPException(500, {
+        message: `Failed to update game state: ${mRes.error.message}`,
       });
     }
 
-    broadcastGameUpdate(channel, updatedLobby.game_state);
     return c.body(null, 204);
   },
 );

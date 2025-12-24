@@ -8,11 +8,11 @@ import { HTTPException } from "hono/http-exception";
 import { createLobbyRow } from "../utils.ts";
 import { createGame } from "shared/game/auctionChess.ts";
 import { broadcastLobbyUpdate } from "../utils/realtime.ts";
+import { runConcurrently } from "../utils/concurrency.ts";
 
 const app = new Hono<MaybeLobbyEnv>();
 // could be a perf bottleneck since we are getting their profile on each req.
-app.use(getProfile, validateProfile);
-app.use(getLobby);
+app.use(runConcurrently(getLobby, getProfile), validateProfile);
 
 app.post("/", async (c: Context<MaybeLobbyEnv>) => {
   const supabase = c.get("supabase");

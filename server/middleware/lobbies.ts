@@ -2,10 +2,12 @@ import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
-import { measureMiddleware } from "./performance.ts";
+import { endTime, startTime } from "hono/timing";
 
-const getLobbyImpl: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
+export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   const supabase = c.get("supabase");
+
+  startTime(c, "getLobby");
 
   const { data: lobby } = await supabase
     .from("lobbies")
@@ -13,12 +15,14 @@ const getLobbyImpl: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
     .or(`host_uid.eq.${c.get("user").id},guest_uid.eq.${c.get("user").id}`)
     .single();
 
+  endTime(c, "getLobby");
+
   c.set("lobby", lobby);
 
   await next();
 };
 
-const validateLobbyImpl: MiddlewareHandler<LobbyEnv> = async (c, next) => {
+export const validateLobby: MiddlewareHandler<LobbyEnv> = async (c, next) => {
   const lobby = c.get("lobby");
   const supabase = c.get("supabase");
 
@@ -28,6 +32,3 @@ const validateLobbyImpl: MiddlewareHandler<LobbyEnv> = async (c, next) => {
   c.set("deleted", false);
   await next();
 };
-
-export const getLobby = measureMiddleware(getLobbyImpl, "Get Lobby");
-export const validateLobby = measureMiddleware(validateLobbyImpl, "Validate Lobby");

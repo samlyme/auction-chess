@@ -19,5 +19,5 @@ export function broadcastGameUpdate(
   channel: RealtimeChannel,
   gameState: AuctionChessState
 ) {
-  channel.httpSend(LobbyEventType.GameUpdate, gameState);
+  return channel.httpSend(LobbyEventType.GameUpdate, gameState);
 }

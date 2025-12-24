@@ -3,17 +3,18 @@ import {
   SupabaseClient,
   type User,
 } from "@supabase/supabase-js";
+import type { TimingVariables } from "hono/timing";
 import { AuctionChessState, Color, Lobby, Profile } from "shared";
 
-export type SupabaseEnv = {
-  Variables: {
+export type BaseEnv = {
+  Variables: TimingVariables & {
     supabase: SupabaseClient;
   };
 };
 
 // successful log in.
 export type AuthedEnv = {
-  Variables: SupabaseEnv["Variables"] & {
+  Variables: BaseEnv["Variables"] & {
     user: User;
   };
 };

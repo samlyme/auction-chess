@@ -25,5 +25,8 @@
     "shared",
     "server",
     "clients/web"
-  ]
+  ],
+  "dependencies": {
+    "hono": "^4.11.1"
+  }
 }
