@@ -4,18 +4,19 @@ import { logger } from "hono/logger";
 import { lobbies } from "./routes/lobbies.ts";
 import { profiles } from "./routes/profiles.ts";
 import { game } from "./routes/game.ts";
-import type { AuthedEnv, SupabaseEnv } from "./types.ts";
+import type { AuthedEnv, BaseEnv } from "./types.ts";
 import { validateAuth } from "./middleware/auth.ts";
 import { HTTPException } from "hono/http-exception";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "shared";
-import { requestTimer, measureMiddleware } from "./middleware/performance.ts";
+import { timing } from "hono/timing";
 
 export function createApp(supabase: SupabaseClient<Database>) {
-  const app = new Hono<SupabaseEnv>().basePath("/api");
+  const app = new Hono<BaseEnv>().basePath("/api");
+
+  app.use(timing());
 
   app.use(logger());
-  app.use(requestTimer);
 
   app.onError((err, c) => {
     if (err instanceof HTTPException) {
@@ -37,24 +38,22 @@ export function createApp(supabase: SupabaseClient<Database>) {
     ],
   };
   app.use(
-    measureMiddleware(
       cors({
         origin: corsHeaders["Access-Control-Allow-Origin"],
         allowHeaders: corsHeaders["Access-Control-Allow-Headers"],
+        maxAge: 86400, // Cache preflight for 24 hours
       }),
-      "CORS",
-    ),
   );
 
   // Inject supabase client into context
   app.use(
-    measureMiddleware(async (c: Context<SupabaseEnv>, next) => {
+    async (c: Context<BaseEnv>, next) => {
       c.set("supabase", supabase);
       await next();
-    }, "Supabase Injection"),
+    }
   );
 
-  app.use(measureMiddleware(validateAuth, "Auth Validation"));
+  app.use(validateAuth);
 
   app.route("/lobbies/game", game);
   app.route("/lobbies", lobbies);

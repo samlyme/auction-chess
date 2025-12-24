@@ -1,24 +1,29 @@
 import type { MiddlewareHandler } from "hono";
 import type { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
-import { measureMiddleware } from "./performance.ts";
+import { endTime, startTime } from "hono/timing";
 
-const getProfileImpl: MiddlewareHandler<MaybeProfileEnv> = async (
+export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
   c,
   next,
 ) => {
   const supabase = c.get("supabase");
   const user = c.get("user");
+
+  startTime(c, "getProfile");
+
   const { data } = await supabase
     .from("profiles")
     .select()
     .eq("id", user.id)
     .maybeSingle();
 
+  endTime(c, "getProfile")
+
   c.set("profile", data);
   await next();
 };
 
-const validateProfileImpl: MiddlewareHandler<CompleteProfileEnv> = async (
+export const validateProfile: MiddlewareHandler<CompleteProfileEnv> = async (
   c,
   next,
 ) => {
@@ -26,6 +31,3 @@ const validateProfileImpl: MiddlewareHandler<CompleteProfileEnv> = async (
   if (!profile) return c.json({ message: "no profile" }, 400);
   await next();
 };
-
-export const getProfile = measureMiddleware(getProfileImpl, "Get Profile");
-export const validateProfile = measureMiddleware(validateProfileImpl, "Validate Profile");

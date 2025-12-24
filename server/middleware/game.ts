@@ -2,9 +2,8 @@ import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { Color } from "shared";
 import type { GameEnv } from "../types.ts";
-import { measureMiddleware } from "./performance.ts";
 
-const validateGameImpl: MiddlewareHandler<GameEnv> = async (c, next) => {
+export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
 
   if (!lobby.game_state) {
@@ -15,7 +14,7 @@ const validateGameImpl: MiddlewareHandler<GameEnv> = async (c, next) => {
   await next();
 };
 
-const validatePlayerImpl: MiddlewareHandler<GameEnv> = async (c, next) => {
+export const validatePlayer: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
   const user = c.get("user");
 
@@ -33,7 +32,7 @@ const validatePlayerImpl: MiddlewareHandler<GameEnv> = async (c, next) => {
   await next();
 };
 
-const validateTurnImpl: MiddlewareHandler<GameEnv> = async (c, next) => {
+export const validateTurn: MiddlewareHandler<GameEnv> = async (c, next) => {
   const gameState = c.get("gameState");
   const playerColor = c.get("playerColor");
 
@@ -42,7 +41,3 @@ const validateTurnImpl: MiddlewareHandler<GameEnv> = async (c, next) => {
 
   await next();
 };
-
-export const validateGame = measureMiddleware(validateGameImpl, "Validate Game");
-export const validatePlayer = measureMiddleware(validatePlayerImpl, "Validate Player");
-export const validateTurn = measureMiddleware(validateTurnImpl, "Validate Turn");
