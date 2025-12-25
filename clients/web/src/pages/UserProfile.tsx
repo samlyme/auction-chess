@@ -23,8 +23,12 @@ function ProfileForm({ invalidate }: { invalidate: () => void }) {
   const [newProfile, setNewProfile] = useState<ProfileUpdate>({ bio: "" });
   async function submitTask(_e: FormEvent) {
     _e.preventDefault();
-    await updateProfile(newProfile);
-    invalidate();
+    try {
+      await updateProfile(newProfile);
+      invalidate();
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
   }
 
   return (

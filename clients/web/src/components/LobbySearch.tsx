@@ -10,20 +10,20 @@ export default function LobbySearch({
   const [code, setCode] = useState<string>("");
 
   const handleCreateLobby = async () => {
-    const result = await createLobby();
-    if (!result.ok) {
-      alert(`Error: ${result.error.message}`);
-    } else {
-      setLobby(result.value);
+    try {
+      const lobby = await createLobby();
+      setLobby(lobby);
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   const handleJoinLobby = async () => {
-    const result = await joinLobby(code);
-    if (!result.ok) {
-      alert(`Error: ${result.error.message}`);
-    } else {
-      setLobby(result.value);
+    try {
+      const lobby = await joinLobby(code);
+      setLobby(lobby);
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 

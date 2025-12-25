@@ -35,31 +35,37 @@ export default function Lobbies() {
       setPlayerColor(config.hostColor);
 
       if (guest_uid) {
-        getProfile({ id: guest_uid }).then(setGuest);
+        getProfile({ id: guest_uid })
+          .then(setGuest)
+          .catch((error) => console.error("Failed to load guest profile:", error));
       }
     } else if (guest_uid && user.id === guest_uid) {
       setRole("guest");
       setGuest(profile);
       setPlayerColor(config.hostColor === "white" ? "black" : "white");
 
-      getProfile({ id: host_uid }).then(setHost);
+      getProfile({ id: host_uid })
+        .then(setHost)
+        .catch((error) => console.error("Failed to load host profile:", error));
     }
   }, [lobby, user, profile, realtimeLoading, authLoading, profileLoading]);
 
   const handleMakeBid = async (bid: Bid) => {
-    const result = await makeBid(bid);
-    if (!result.ok) {
-      alert(`Error making bid: ${result.error.message}`);
+    try {
+      await makeBid(bid);
+      // State will update via real-time subscription
+    } catch (error) {
+      alert(`Error making bid: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
-    // State will update via real-time subscription
   };
 
   const handleMakeMove = async (move: NormalMove) => {
-    const result = await makeMove(move);
-    if (!result.ok) {
-      alert(`Error making move: ${result.error.message}`);
+    try {
+      await makeMove(move);
+      // State will update via real-time subscription
+    } catch (error) {
+      alert(`Error making move: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
-    // State will update via real-time subscription
   };
 
   return (

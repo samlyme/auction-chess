@@ -19,8 +19,13 @@ export default function UserProfileContextProvider({
 
     (async () => {
       setLoading(true);
-      const profile = await getProfile();
-      setProfile(profile);
+      try {
+        const profile = await getProfile();
+        setProfile(profile);
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+        setProfile(null);
+      }
       setLoading(false);
     })();
   }, [session, authLoading, prevTime]);

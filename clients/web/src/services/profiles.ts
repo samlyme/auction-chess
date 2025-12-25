@@ -1,52 +1,24 @@
-import { Profile, ProfileCreate, ProfileUpdate } from "shared";
-import { BACKEND_URL, getAuthHeader } from "./utils";
+import type { Profile, ProfileCreate, ProfileUpdate } from "shared";
+import { api } from "./api";
 
-const BASE_URL = `${BACKEND_URL}/api/profiles`;
-
-export async function createProfile(profile: ProfileCreate) {
-  const authHeader = await getAuthHeader();
-
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader,
-    },
-    body: JSON.stringify(ProfileCreate.parse(profile)),
-  });
-
-  return Profile.parse(await res.json());
+export async function createProfile(profile: ProfileCreate): Promise<Profile> {
+  const res = await api.api.profiles.$post({ json: profile });
+  return res.json();
 }
 
 export async function getProfile(
   query: { username: string } | { id: string } | null = null,
-) {
-  const authHeader = await getAuthHeader();
-
-  const route = query ? "?" + new URLSearchParams(query).toString() : "/me";
-
-  const res = await fetch(`${BASE_URL}${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader,
-    },
-  });
-
-  return Profile.nullable().parse(await res.json());
+): Promise<Profile | null> {
+  if (query) {
+    const res = await api.api.profiles.$get({ query });
+    return res.json();
+  } else {
+    const res = await api.api.profiles.me.$get();
+    return res.json();
+  }
 }
 
-export async function updateProfile(profile: ProfileUpdate) {
-  const authHeader = await getAuthHeader();
-
-  const res = await fetch(BASE_URL, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader,
-    },
-    body: JSON.stringify(ProfileUpdate.parse(profile)),
-  });
-
-  return Profile.parse(await res.json());
+export async function updateProfile(profile: ProfileUpdate): Promise<Profile> {
+  const res = await api.api.profiles.$patch({ json: profile });
+  return res.json();
 }
