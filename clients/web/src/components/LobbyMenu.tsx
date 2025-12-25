@@ -19,38 +19,38 @@ export default function LobbyMenu({
   if (!lobby || !user) return <h1>Loading</h1>;
 
   const handleStartLobby = async () => {
-    const result = await startLobby();
-    if (!result.ok) {
-      alert(`Error: ${result.error.message}`);
-    } else {
-      setLobby(result.value);
+    try {
+      const lobby = await startLobby();
+      setLobby(lobby);
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   const handleDeleteLobby = async () => {
-    const result = await deleteLobby();
-    if (!result.ok) {
-      alert(`Error: ${result.error.message}`);
-    } else {
+    try {
+      await deleteLobby();
       setLobby(null);
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   const handleEndLobby = async () => {
-    const result = await endLobby();
-    if (!result.ok) {
-      alert(`Error: ${result.error.message}`);
-    } else {
-      setLobby(result.value);
+    try {
+      const lobby = await endLobby();
+      setLobby(lobby);
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   const handleLeaveLobby = async () => {
-    const result = await leaveLobby();
-    if (!result.ok) {
-      alert(`Error: ${result.error.message}`);
-    } else {
-      setLobby(result.value);
+    try {
+      const lobby = await leaveLobby();
+      setLobby(lobby);
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 

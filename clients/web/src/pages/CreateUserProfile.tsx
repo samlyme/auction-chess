@@ -19,8 +19,12 @@ export default function CreateUserProfile() {
 
   async function submitTask(_e: FormEvent) {
     _e.preventDefault();
-    await createProfile(newProfile);
-    invalidate();
+    try {
+      await createProfile(newProfile);
+      invalidate();
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
   }
 
   return (

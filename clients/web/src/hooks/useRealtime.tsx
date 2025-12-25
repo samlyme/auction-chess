@@ -3,7 +3,6 @@ import {
   AuctionChessState,
   LobbyEventType,
   LobbyPayload,
-  type Result,
 } from "shared";
 import { getLobby } from "../services/lobbies";
 import { getGame } from "../services/game";
@@ -26,28 +25,30 @@ export default function useRealtime() {
 
   useEffect(() => {
     getLobby()
-      .then((res: Result<LobbyPayload | null>) => {
-        if (!res.ok) {
-          setError(res.error);
-          console.log("getLobby Error", res.error);
-        } else {
-          setLobby(res.value);
-        }
+      .then((lobby) => {
+        setLobby(lobby);
       })
-      .then(() => setLoading(false));
+      .catch((err) => {
+        setError(err);
+        console.log("getLobby Error", err);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     if (!lobby) return;
     if (!lobby.game_started) {
       setGameState(null);
-    } else
-      getGame().then((res) => {
-        if (!res.ok) {
-          setError(res.error);
-          console.log("getGame Error", res.error);
-        } else setGameState(res.value);
-      });
+    } else {
+      getGame()
+        .then((state) => {
+          setGameState(state);
+        })
+        .catch((err) => {
+          setError(err);
+          console.log("getGame Error", err);
+        });
+    }
   }, [lobby?.game_started]);
 
   useEffect(() => {

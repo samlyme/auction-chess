@@ -1,56 +1,19 @@
-import { getAuthHeader, apiFetch, BACKEND_URL } from "./utils";
-import { Bid, NormalMove, AuctionChessState } from "shared";
-import { type  Result } from "shared";
-import { z } from "zod";
+import type { Bid, NormalMove, AuctionChessState } from "shared";
+import { api } from "./api";
 
-const BASE_URL = `${BACKEND_URL}/api/lobbies/game`;
+export async function makeBid(bid: Bid): Promise<null> {
+  await api.api.lobbies.game.bid.$post({ json: bid });
+  // TODO: make this safe, but idc, i'm rewriting this anyway
 
-export async function makeBid(bid: Bid): Promise<Result<null>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    `${BASE_URL}/bid`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader,
-      },
-      body: JSON.stringify(bid),
-    },
-    z.null(),
-  );
+  return null
 }
 
-export async function makeMove(
-  move: NormalMove,
-): Promise<Result<null>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    `${BASE_URL}/move`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader,
-      },
-      body: JSON.stringify(move),
-    },
-    z.null(),
-  );
+export async function makeMove(move: NormalMove): Promise<null> {
+  await api.api.lobbies.game.move.$post({ json: move });
+  return null;
 }
 
-export async function getGame(): Promise<Result<AuctionChessState | null>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    BASE_URL,
-    {
-      headers: {
-        ...authHeader,
-      },
-    },
-    AuctionChessState.nullable(),
-  );
+export async function getGame(): Promise<AuctionChessState | null> {
+  const res = await api.api.lobbies.game.$get();
+  return res.json();
 }

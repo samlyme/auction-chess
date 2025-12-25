@@ -19,10 +19,12 @@
       "version": "0.0.0",
       "dependencies": {
         "@supabase/supabase-js": "^2.81.1",
+        "hono": "^4.6.17",
         "react": "^19.2.0",
         "react-chessboard": "^5.8.6",
         "react-dom": "^19.2.0",
         "react-router": "^7.9.6",
+        "server": "workspace:*",
         "shared": "workspace:*",
       },
       "devDependencies": {

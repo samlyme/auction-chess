@@ -1,111 +1,37 @@
-import { getAuthHeader, apiFetch, BACKEND_URL } from "./utils";
-import { LobbyPayload } from "shared";
-import type { Result } from "shared";
-import { z } from "zod";
+import type { LobbyPayload } from "shared";
+import { api } from "./api";
 
-const BASE_URL = `${BACKEND_URL}/api/lobbies`;
-
-export async function createLobby(): Promise<Result<LobbyPayload>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    BASE_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader,
-      },
-    },
-    LobbyPayload,
-  );
+export async function createLobby(): Promise<LobbyPayload> {
+  const res = await api.api.lobbies.$post();
+  return res.json();
 }
 
-export async function getLobby(): Promise<Result<LobbyPayload | null>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    BASE_URL,
-    {
-      headers: {
-        ...authHeader,
-      },
-    },
-    LobbyPayload.nullable(),
-  );
+export async function getLobby(): Promise<LobbyPayload | null> {
+  const res = await api.api.lobbies.$get();
+  return res.json();
 }
 
-export async function deleteLobby(): Promise<Result<null>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    BASE_URL,
-    {
-      method: "DELETE",
-      headers: {
-        ...authHeader,
-      },
-    },
-    z.null(),
-  );
+export async function deleteLobby(): Promise<null> {
+  const res = await api.api.lobbies.$delete();
+  return res.json();
 }
 
-export async function joinLobby(code: string): Promise<Result<LobbyPayload>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    `${BASE_URL}/join?code=${code}`,
-    {
-      method: "POST",
-      headers: {
-        ...authHeader,
-      },
-    },
-    LobbyPayload,
-  );
+export async function joinLobby(code: string): Promise<LobbyPayload> {
+  const res = await api.api.lobbies.join.$post({ query: { code } });
+  return res.json();
 }
 
-export async function leaveLobby(): Promise<Result<LobbyPayload | null>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    `${BASE_URL}/leave`,
-    {
-      method: "POST",
-      headers: {
-        ...authHeader,
-      },
-    },
-    LobbyPayload.nullable(),
-  );
+export async function leaveLobby(): Promise<LobbyPayload | null> {
+  const res = await api.api.lobbies.leave.$post();
+  return res.json();
 }
 
-export async function startLobby(): Promise<Result<LobbyPayload>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    `${BASE_URL}/start`,
-    {
-      method: "POST",
-      headers: {
-        ...authHeader,
-      },
-    },
-    LobbyPayload,
-  );
+export async function startLobby(): Promise<LobbyPayload> {
+  const res = await api.api.lobbies.start.$post();
+  return res.json();
 }
 
-export async function endLobby(): Promise<Result<LobbyPayload>> {
-  const authHeader = await getAuthHeader();
-
-  return apiFetch(
-    `${BASE_URL}/end`,
-    {
-      method: "POST",
-      headers: {
-        ...authHeader,
-      },
-    },
-    LobbyPayload,
-  );
+export async function endLobby(): Promise<LobbyPayload> {
+  const res = await api.api.lobbies.end.$post();
+  return res.json();
 }
