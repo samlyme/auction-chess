@@ -10,16 +10,17 @@
   "private": true,
   "scripts": {
     "format": "prettier --write ./**",
-    "build:edge": "bun run --filter server build --outdir ../supabase/functions/api",
     "build:client": "bun run --filter web build",
-    "dev:edge": "bun build server/app.ts --outdir supabase/functions/api --watch & watchexec --restart -w supabase/functions/api -- supabase functions serve",
+
+    "build:server": "bun run --filter server build",
+    "start:server": "bun run --filter server start",
+
     "publish:client": "cd clients/web && wrangler deploy",
     "publish:server:edge": "supabase db push && supabase config push && supabase functions deploy",
-    "publish:server:do": "doctl apps create-deployment $(doctl apps list --format ID --no-header)",
+
     "deploy:client": "bun run build:client && bun run publish:client",
-    "deploy:server:edge": "bun run build:edge && bun run publish:server:edge",
-    "deploy:server:do": "bun run publish:server:do",
-    "build": "bun run build:client && bun run build:edge",
+    "build": "bun run build:client && bun run build:server",
+
     "publish": "bun run publish:client && bun run publish:server:edge",
     "deploy": "bun run build && bun run publish"
   },
