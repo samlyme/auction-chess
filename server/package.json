@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --env-file=.env.development run --watch index.ts",
-    "build": "bun build app.ts --outdir dist",
+    "build": "bun build index.ts --target bun --outdir ./out",
     "serve": "bun --env-file=.env.production run index.ts",
     "start": "bun run index.ts"
   },
