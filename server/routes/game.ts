@@ -14,13 +14,11 @@ import {
 } from "../middleware/game.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { broadcastGameUpdate } from "../utils/realtime.ts";
-import { getProfile, validateProfile } from "../middleware/profiles.ts";
-import { runConcurrently } from "../utils/concurrency.ts";
 import { wrapTime } from "hono/timing";
 import { updateGameState } from "../state/lobbies.ts";
 
 const app = new Hono<GameEnv>()
-  .use(runConcurrently(getProfile, getLobby), validateProfile, validateLobby)
+  .use(getLobby,  validateLobby)
 
   // GET /game - Get the current game state
   .get("/", (c) => {
