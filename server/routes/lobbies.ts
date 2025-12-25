@@ -10,10 +10,13 @@ import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { createLobbyRow } from "../utils.ts";
 import { createGame } from "shared/game/auctionChess.ts";
-import { broadcastLobbyDelete, broadcastLobbyUpdate } from "../utils/realtime.ts";
+import {
+  broadcastLobbyDelete,
+  broadcastLobbyUpdate,
+} from "../utils/realtime.ts";
 import { runConcurrently } from "../utils/concurrency.ts";
+import { createLobby, deleteLobby, endLobby, joinLobby, leaveLobby, startLobby } from "../state/lobbies.ts";
 
 const route = new Hono<MaybeLobbyEnv>()
   // could be a perf bottleneck since we are getting their profile on each req.
@@ -24,7 +27,10 @@ const route = new Hono<MaybeLobbyEnv>()
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
-    const lobby = (await createLobbyRow(supabase, c.get("user").id)) as Lobby;
+    const lobby = createLobby(c.get("user").id);
+    if (!lobby)
+      throw new HTTPException(500, { message: "failed to create lobby" });
+
     const channel = supabase.channel(`lobby-${lobby.code}`);
 
     const payload = broadcastLobbyUpdate(channel, lobby);
@@ -37,7 +43,6 @@ const route = new Hono<MaybeLobbyEnv>()
   })
 
   .delete("/", validateLobby, async (c: Context<LobbyEnv>) => {
-    const supabase = c.get("supabase");
     const lobby = c.get("lobby");
     const channel = c.get("channel");
 
@@ -47,14 +52,9 @@ const route = new Hono<MaybeLobbyEnv>()
         message: `You are not the host of lobby ${lobby.code}`,
       });
 
-    const { error } = await supabase
-      .from("lobbies")
-      .delete()
-      .eq("code", lobby.code)
-      .single();
-    if (error)
+    if (!deleteLobby(user.id, lobby.code))
       throw new HTTPException(500, {
-        message: `DB failed to delete lobby ${lobby.code}`,
+        message: "failed to delete lobby",
       });
 
     broadcastLobbyDelete(channel);
@@ -62,30 +62,17 @@ const route = new Hono<MaybeLobbyEnv>()
   })
 
   .post("/join", zValidator("query", LobbyJoinQuery), async (c) => {
-    const supabase = c.get("supabase");
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
+    const userId = c.get("user").id;
     const { code } = c.req.valid("query");
 
-    const { data: lobbyState } = await supabase
-      .from("lobbies")
-      .select("guest_uid")
-      .eq("code", code)
-      .single();
+    const lobby = joinLobby(userId, code);
 
-    if (lobbyState?.guest_uid)
-      throw new HTTPException(400, { message: "lobby is full" });
+    if (!lobby) throw new HTTPException(400, { message: "could not join lobby" });
 
-    const { data: lobby } = await supabase
-      .from("lobbies")
-      .update({ guest_uid: c.get("user").id })
-      .eq("code", code)
-      .select()
-      .maybeSingle();
-
-    if (!lobby) throw new HTTPException(404, { message: "lobby not found" });
-
+    const supabase = c.get("supabase");
     const channel = supabase.channel(`lobby-${lobby.code}`);
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
@@ -102,17 +89,13 @@ const route = new Hono<MaybeLobbyEnv>()
         message: `user is not guest in lobby ${lobby.code}`,
       });
 
-    const { data: newLobby } = await supabase
-      .from("lobbies")
-      .update({ guest_uid: null })
-      .eq("code", lobby.code)
-      .select()
-      .maybeSingle();
+    const newLobby = leaveLobby(user.id, lobby.code);
 
     const payload = broadcastLobbyUpdate(channel, newLobby);
     return c.json(payload);
   })
 
+  // TODO: use new state manager
   .post("/start", validateLobby, async (c: Context<LobbyEnv>) => {
     const supabase = c.get("supabase");
     const lobby = c.get("lobby");
@@ -135,24 +118,14 @@ const route = new Hono<MaybeLobbyEnv>()
       });
 
     // Initialize default game state for Auction Chess
-    const defaultGameState: AuctionChessState = createGame();
-
-    const { data: updatedLobby, error } = await supabase
-      .from("lobbies")
-      .update({ game_state: defaultGameState })
-      .eq("code", lobby.code)
-      .select()
-      .single();
-
-    if (error)
-      throw new HTTPException(500, {
-        message: `Failed to start lobby ${lobby.code}`,
-      });
+    const updatedLobby = startLobby(user.id, lobby.code);
+    if (!updatedLobby) throw new HTTPException(500, { message: "failed to start lobby" })
 
     const payload = broadcastLobbyUpdate(channel, updatedLobby);
     return c.json(payload);
   })
 
+  // TODO: Use new state manager
   .post("/end", validateLobby, async (c: Context<LobbyEnv>) => {
     const supabase = c.get("supabase");
     const lobby = c.get("lobby");
@@ -169,17 +142,9 @@ const route = new Hono<MaybeLobbyEnv>()
         message: "lobby not started",
       });
 
-    const { data: updatedLobby, error } = await supabase
-      .from("lobbies")
-      .update({ game_state: null })
-      .eq("code", lobby.code)
-      .select()
-      .single();
-
-    if (error)
-      throw new HTTPException(500, {
-        message: `Failed to end lobby ${lobby.code}`,
-      });
+    // Initialize default game state for Auction Chess
+    const updatedLobby = endLobby(user.id, lobby.code);
+    if (!updatedLobby) throw new HTTPException(500, { message: "failed to start lobby" })
 
     const payload = broadcastLobbyUpdate(channel, updatedLobby);
     return c.json(payload);
