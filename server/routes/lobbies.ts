@@ -1,7 +1,5 @@
 import { type Context, Hono } from "hono";
 import {
-  AuctionChessState,
-  Lobby,
   LobbyJoinQuery,
   LobbyToPayload,
 } from "shared";
@@ -10,7 +8,6 @@ import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { createGame } from "shared/game/auctionChess.ts";
 import {
   broadcastLobbyDelete,
   broadcastLobbyUpdate,
