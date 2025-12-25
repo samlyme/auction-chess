@@ -9,7 +9,7 @@ import * as Lobbies from "../state/lobbies.ts"
 export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   startTime(c, "getLobby");
 
-  const lobby = Lobbies.getLobby(c.get("user").id);
+  const lobby = Lobbies.getLobbyByUserId(c.get("user").id);
 
   endTime(c, "getLobby");
 
