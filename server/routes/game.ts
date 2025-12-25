@@ -17,6 +17,7 @@ import { broadcastGameUpdate } from "../utils/realtime.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { runConcurrently } from "../utils/concurrency.ts";
 import { wrapTime } from "hono/timing";
+import { updateGameState } from "../state/lobbies.ts";
 
 const app = new Hono<GameEnv>()
   .use(runConcurrently(getProfile, getLobby), validateProfile, validateLobby)
@@ -51,31 +52,8 @@ const app = new Hono<GameEnv>()
         throw new HTTPException(400, { message: result.error });
       }
 
-      const broadcast = broadcastGameUpdate(channel, result.value);
-      const mutate = supabase
-        .from("lobbies")
-        .update({ game_state: result.value })
-        .eq("code", lobby.code)
-        .select()
-        .single();
-
-      const [bRes, mRes] = await wrapTime(
-        c,
-        "broadcastAndMutate",
-        Promise.all([broadcast, mutate]),
-      );
-
-      if (!bRes.success) {
-        throw new HTTPException(500, {
-          message: `Failed to broadcast game state: ${bRes.error}`,
-        });
-      }
-
-      if (mRes.error) {
-        throw new HTTPException(500, {
-          message: `Failed to update game state: ${mRes.error.message}`,
-        });
-      }
+      wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value))
+      updateGameState(lobby.code, result.value)
 
       return c.body(null, 204);
     },
@@ -109,31 +87,8 @@ const app = new Hono<GameEnv>()
         throw new HTTPException(400, { message: result.error });
       }
 
-      const broadcast = broadcastGameUpdate(channel, result.value);
-      const mutate = supabase
-        .from("lobbies")
-        .update({ game_state: result.value })
-        .eq("code", lobby.code)
-        .select()
-        .single();
-
-      const [bRes, mRes] = await wrapTime(
-        c,
-        "broadcastAndMutate",
-        Promise.all([broadcast, mutate]),
-      );
-
-      if (!bRes.success) {
-        throw new HTTPException(500, {
-          message: `Failed to broadcast game state: ${bRes.error}`,
-        });
-      }
-
-      if (mRes.error) {
-        throw new HTTPException(500, {
-          message: `Failed to update game state: ${mRes.error.message}`,
-        });
-      }
+      wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+      updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);
     },

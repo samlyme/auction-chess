@@ -82,7 +82,7 @@ export const Lobby = z.object({
   game_state: AuctionChessState.nullable(),
   guest_uid: z.string().nullable(),
   host_uid: z.string(),
-  id: z.number(),
+  id: z.string(),
 });
 export type Lobby = z.infer<typeof Lobby>;
 
