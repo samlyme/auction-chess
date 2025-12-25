@@ -8,7 +8,7 @@ import type { BaseEnv } from "./types.ts";
 import { validateAuth } from "./middleware/auth.ts";
 import { HTTPException } from "hono/http-exception";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Lobby } from "shared";
+import type { Database } from "shared";
 import { timing } from "hono/timing";
 
 const corsHeaders = {

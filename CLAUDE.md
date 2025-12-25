@@ -129,10 +129,43 @@ Migrations are in `supabase/migrations/`. Row Level Security (RLS) is enabled on
 
 ## TypeScript Configuration
 
-- Root `tsconfig.json` has strict mode enabled
-- Uses `module: "Preserve"` and `moduleResolution: "bundler"`
-- JSX transform: `react-jsx`
-- Strict options: `noUncheckedIndexedAccess`, `noImplicitOverride`
+The monorepo uses a **hierarchical TypeScript configuration** with the root as a "single source of truth":
+
+### Configuration Hierarchy
+
+```
+Root tsconfig.json (base strict settings)
+├── server/tsconfig.json (extends root + ESNext lib)
+├── shared/tsconfig.json (extends root + ESNext lib)
+└── clients/web/
+    ├── tsconfig.app.json (extends root + DOM libs + JSX)
+    └── tsconfig.node.json (extends root + Node libs)
+```
+
+### Root Configuration (`tsconfig.json`)
+
+The root config provides universal strict settings for all packages:
+
+- **Strict mode**: All strict options enabled including `noUnusedLocals` and `noUnusedParameters`
+- **Module system**: `module: "Preserve"` and `moduleResolution: "bundler"` for Bun/Vite compatibility
+- **No duplication**: Server and shared packages extend root with minimal overrides
+
+### Package Configurations
+
+All packages extend the root config and add only environment-specific settings:
+
+- **Server** (`server/tsconfig.json`): Extends root + `lib: ["ESNext"]` only
+- **Shared** (`shared/tsconfig.json`): Extends root + `lib: ["ESNext"]` only
+- **Web Client**: Uses Vite's multi-config pattern for environment separation
+  - `tsconfig.app.json`: Browser code (extends root + DOM libs + JSX support)
+  - `tsconfig.node.json`: Build tools (extends root + Node types)
+
+### Key Settings
+
+- **Strict unused checks**: Unused variables and parameters are compile errors everywhere
+- **Bundler mode**: Modern module resolution for Bun and Vite
+- **No JSX in backend**: Only web client has JSX support (React)
+- **Environment-specific libs**: DOM for browser, ESNext for server/shared, Node for build tools
 
 ## Important Notes
 

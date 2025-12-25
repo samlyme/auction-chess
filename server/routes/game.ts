@@ -35,7 +35,6 @@ const app = new Hono<GameEnv>()
     validateTurn,
     zValidator("json", Bid),
     async (c) => {
-      const supabase = c.get("supabase");
       const lobby = c.get("lobby");
       const gameState = c.get("gameState");
       const channel = c.get("channel");
@@ -65,7 +64,6 @@ const app = new Hono<GameEnv>()
     validateTurn,
     zValidator("json", NormalMove),
     async (c) => {
-      const supabase = c.get("supabase");
       const lobby = c.get("lobby");
       const gameState = c.get("gameState");
       const channel = c.get("channel");

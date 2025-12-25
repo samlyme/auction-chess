@@ -1,26 +1,30 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    // Build cache
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    // Node/build environment overrides
     "target": "ES2023",
     "lib": ["ES2023"],
     "module": "ESNext",
     "types": ["node"],
-    "skipLibCheck": true,
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    // Additional web-specific checks
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
+
+    // Inherited from root tsconfig.json:
+    // - moduleResolution: bundler
+    // - allowImportingTsExtensions: true
+    // - verbatimModuleSyntax: true
+    // - moduleDetection: force
+    // - noEmit: true
+    // - strict: true
+    // - skipLibCheck: true
+    // - noUnusedLocals: true (now enforced!)
+    // - noUnusedParameters: true (now enforced!)
+    // - noFallthroughCasesInSwitch: true
   },
   "include": ["vite.config.ts"]
 }

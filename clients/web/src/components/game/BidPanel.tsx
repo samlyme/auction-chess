@@ -162,9 +162,8 @@ export default function BidPanel({
 
   // TODO: fix this jank
   const bidStack: Bid[] = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.length >= 1 ? bidStack[bidStack.length - 1] : {amount: 0};
-  const secondLastBid =
-    bidStack.length >= 2 ? bidStack[bidStack.length - 2] : {amount: 0};
+  const lastBid = bidStack.at(-1) ?? {amount: 0};
+  const secondLastBid = bidStack.at(-2) ?? {amount: 0};
 
   // Extract bid amounts from the last two bids
   let prevPlayerBidAmount = 0;
