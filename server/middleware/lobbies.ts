@@ -4,20 +4,16 @@ import { HTTPException } from "hono/http-exception";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
 import { endTime, startTime } from "hono/timing";
 
-export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
-  const supabase = c.get("supabase");
+import * as Lobbies from "../state/lobbies.ts"
 
+export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   startTime(c, "getLobby");
 
-  const { data: lobby } = await supabase
-    .from("lobbies")
-    .select("*")
-    .or(`host_uid.eq.${c.get("user").id},guest_uid.eq.${c.get("user").id}`)
-    .single();
+  const lobby = Lobbies.getLobby(c.get("user").id);
 
   endTime(c, "getLobby");
 
-  c.set("lobby", lobby);
+  c.set("lobby", lobby || undefined);
 
   await next();
 };
