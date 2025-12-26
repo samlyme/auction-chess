@@ -43,6 +43,7 @@ export type LobbyEnv = {
 export type GameEnv = {
   Variables: LobbyEnv["Variables"] & {
     gameState: AuctionChessState;
-    playerColor: Color
+    playerColor: Color;
+    receivedTime: number;
   }
 }

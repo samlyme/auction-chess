@@ -29,8 +29,8 @@ const route = new Hono<MaybeLobbyEnv>()
       gameConfig: {
         hostColor: "white",
         initTime: {
-          white: 30 * 1000, // Thirty seconds for dev.
-          black: 30 * 1000,
+          white: 3 * 1000, // Thirty seconds for dev.
+          black: 3 * 1000,
         }
       }
     });

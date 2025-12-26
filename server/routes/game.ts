@@ -8,8 +8,10 @@ import {
 } from "shared/game/auctionChess";
 import type { GameEnv } from "../types/honoEnvs.ts";
 import {
+  recordReceivedTime,
   validateGame,
   validatePlayer,
+  validateTime,
   validateTurn,
 } from "../middleware/game.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
@@ -18,7 +20,7 @@ import { wrapTime } from "hono/timing";
 import { updateGameState } from "../state/lobbies.ts";
 
 const app = new Hono<GameEnv>()
-  .use(getLobby,  validateLobby)
+  .use(recordReceivedTime,  getLobby, validateLobby)
 
   // GET /game - Get the current game state
   .get("/", (c) => {
@@ -31,6 +33,7 @@ const app = new Hono<GameEnv>()
   .post(
     "/bid",
     validateGame,
+    validateTime,
     validatePlayer,
     validateTurn,
     zValidator("json", Bid),
@@ -40,9 +43,7 @@ const app = new Hono<GameEnv>()
       const channel = c.get("channel");
       const bid = c.req.valid("json");
 
-      // Game verification logic is actually really quick.
-      // It's the db trip that takes a while.
-      // const start = Date.now()
+      // TODO: make this use the receivedTime.
       const result = makeBidLogic(gameState, bid);
 
       if (!result.ok) {
@@ -60,6 +61,7 @@ const app = new Hono<GameEnv>()
   .post(
     "/move",
     validateGame,
+    validateTime,
     validatePlayer,
     validateTurn,
     zValidator("json", NormalMove),
