@@ -74,7 +74,7 @@ auction-chess/
 
 - [Bun](https://bun.sh) v1.2.16 or later
 - [Supabase CLI](https://supabase.com/docs/guides/cli) (for database)
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (for client deployment)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (optional, for manual client deployment)
 
 ### Installation
 
