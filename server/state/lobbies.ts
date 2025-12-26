@@ -19,10 +19,10 @@ export function createLobby(userId: string, config: LobbyConfig = { hostColor: "
   const newLobby: Lobby = {
     code,
     config,
-    created_at: new Date().toISOString(),
-    game_state: null,
-    guest_uid: null,
-    host_uid: userId,
+    createdAt: new Date().toISOString(),
+    gameState: null,
+    guestUid: null,
+    hostUid: userId,
     id: randomUUIDv7(),
   };
 
@@ -33,37 +33,37 @@ export function createLobby(userId: string, config: LobbyConfig = { hostColor: "
 
 export function joinLobby(userId: string, lobbyCode: string): void {
   const lobby = lobbies.get(lobbyCode)!;
-  lobby.guest_uid = userId;
+  lobby.guestUid = userId;
   userIdToLobbyCode.set(userId, lobbyCode);
 }
 
 export function leaveLobby(userId: string): void {
   const lobbyCode = userIdToLobbyCode.get(userId)!;
   const lobby = lobbies.get(lobbyCode)!;
-  lobby.guest_uid = null;
+  lobby.guestUid = null;
   userIdToLobbyCode.delete(userId);
 }
 
 export function deleteLobby(lobbyCode: string): void {
   const lobby = lobbies.get(lobbyCode)!;
-  userIdToLobbyCode.delete(lobby.host_uid);
-  if (lobby.guest_uid) userIdToLobbyCode.delete(lobby.guest_uid);
+  userIdToLobbyCode.delete(lobby.hostUid);
+  if (lobby.guestUid) userIdToLobbyCode.delete(lobby.guestUid);
   lobbies.delete(lobbyCode);
 }
 
 export function startGame(lobbyCode: string): void {
   const lobby = lobbies.get(lobbyCode)!;
-  lobby.game_state = createGame();
+  lobby.gameState = createGame();
 }
 
 export function endGame(lobbyCode: string): void {
   const lobby = lobbies.get(lobbyCode)!;
-  lobby.game_state = null;
+  lobby.gameState = null;
 }
 
 export function updateGameState(lobbyCode: string, gameState: AuctionChessState): void {
   const lobby = lobbies.get(lobbyCode)!;
-  lobby.game_state = gameState;
+  lobby.gameState = gameState;
 }
 
 function generateUniqueCode(): string {

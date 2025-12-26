@@ -6,11 +6,11 @@ import type { GameEnv } from "../types/honoEnvs.ts";
 export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
 
-  if (!lobby.game_state) {
+  if (!lobby.gameState) {
     throw new HTTPException(400, { message: "Game not started" });
   }
 
-  c.set("gameState", lobby.game_state);
+  c.set("gameState", lobby.gameState);
   await next();
 };
 
@@ -20,9 +20,9 @@ export const validatePlayer: MiddlewareHandler<GameEnv> = async (c, next) => {
 
   let playerColor: Color;
 
-  if (user.id === lobby.host_uid) {
+  if (user.id === lobby.hostUid) {
     playerColor = lobby.config.hostColor;
-  } else if (user.id === lobby.guest_uid) {
+  } else if (user.id === lobby.guestUid) {
     playerColor = lobby.config.hostColor === "white" ? "black" : "white";
   } else {
     throw new HTTPException(403, { message: "Not a player in this game" });

@@ -26,7 +26,7 @@ export default function Lobbies() {
   useEffect(() => {
     if (!lobby || !user || !profile) return;
 
-    const { host_uid, guest_uid, config } = lobby;
+    const { hostUid: host_uid, guestUid: guest_uid, config } = lobby;
     if (!guest_uid) setGuest(null);
 
     if (user.id === host_uid) {

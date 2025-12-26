@@ -78,20 +78,20 @@ export type LobbyConfig = z.infer<typeof LobbyConfig>;
 export const Lobby = z.object({
   code: z.string(),
   config: LobbyConfig,
-  created_at: z.string(),
-  game_state: AuctionChessState.nullable(),
-  guest_uid: z.string().nullable(),
-  host_uid: z.string(),
+  createdAt: z.string(),
+  gameState: AuctionChessState.nullable(),
+  guestUid: z.string().nullable(),
+  hostUid: z.string(),
   id: z.string(),
 });
 export type Lobby = z.infer<typeof Lobby>;
 
-export const LobbyPayload = Lobby.omit({ id: true, game_state: true }).extend({ game_started: z.boolean() });
+export const LobbyPayload = Lobby.omit({ id: true, gameState: true }).extend({ gameStarted: z.boolean() });
 export type LobbyPayload = z.infer<typeof LobbyPayload>;
 
-export const LobbyToPayload = Lobby.transform(({id, game_state, ...rest}: Lobby) => {
+export const LobbyToPayload = Lobby.transform(({id, gameState, ...rest}: Lobby) => {
   return {
-    game_started: !!game_state,
+    gameStarted: !!gameState,
     ...rest
   };
 }).pipe(LobbyPayload)

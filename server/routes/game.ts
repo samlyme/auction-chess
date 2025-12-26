@@ -23,8 +23,8 @@ const app = new Hono<GameEnv>()
   // GET /game - Get the current game state
   .get("/", (c) => {
     // NOTE: here, gameState is actually nullable.
-    const { game_state } = c.get("lobby");
-    return c.json(game_state || null);
+    const { gameState } = c.get("lobby");
+    return c.json(gameState || null);
   })
 
   // POST /game/bid - Make a bid in the auction phase
