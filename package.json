@@ -14,6 +14,7 @@
     "client:dev": "bun run --filter web dev",
     "client:build": "bun run --filter web build",
     "client:preview": "bun run --filter web preview",
+    "client:publish": "bun run --filter web publish",
 
     "server:dev": "bun run --filter server dev",
     "server:build": "bun run --filter server build",
