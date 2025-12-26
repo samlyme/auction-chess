@@ -18,7 +18,7 @@ else
 fi
 
 # Squash merge from main
-git merge --squash main || echo "No changes to merge"
+git merge --squash -X theirs main || echo "No changes to merge"
 
 # Commit (allow empty for redeploys)
 COMMIT_MSG="${1:-Deploy supabase $(date '+%Y-%m-%d %H:%M:%S')}"
