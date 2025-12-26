@@ -11,7 +11,7 @@ export const supabase = createClient(
 
 const app = createApp(supabase);
 
-export default {
+Bun.serve({
   port: 8000,
   fetch: app.fetch,
-};
+});

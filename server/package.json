@@ -4,10 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --env-file=.env.development run --watch index.ts",
-    "build": "bun build index.ts --target bun --outdir ./out",
-    "serve": "bun --env-file=.env.production run index.ts",
-    "start": "bun run index.ts"
+    "dev": "bun --hot --env-file=.env.development index.ts",
+    "build": "bun build index.ts --target bun --outdir ./out --sourcemap",
+    "start:local": "bun --env-file=.env.development out/index.js",
+    "start:prod": "bun --env-file=.env.production out/index.js",
+    "start": "bun out/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest"

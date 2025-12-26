@@ -49,7 +49,7 @@ const app = new Hono<GameEnv>()
         throw new HTTPException(400, { message: result.error });
       }
 
-      wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value))
+      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value))
       updateGameState(lobby.code, result.value)
 
       return c.body(null, 204);
@@ -83,7 +83,7 @@ const app = new Hono<GameEnv>()
         throw new HTTPException(400, { message: result.error });
       }
 
-      wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
       updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);
