@@ -31,14 +31,10 @@
     "sb:build": "bun run db:diff",
     "sb:push": "supabase db push && supabase config push",
 
-<<<<<<< HEAD
-    "deploy:supabase": "supabase db push && supabase config push"
-=======
 
     "deploy:client": "./scripts/deploy-client.sh",
     "deploy:server": "./scripts/deploy-server.sh",
     "deploy:sb": "./scripts/deploy-supabase.sh"
->>>>>>> main
   },
   "workspaces": [
     "shared",

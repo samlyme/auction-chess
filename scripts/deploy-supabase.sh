@@ -17,7 +17,7 @@ else
     git checkout -b "${DEPLOY_BRANCH}"
 fi
 
-# Squash merge from main (auto-resolve conflicts by taking main's version)
+# Squash merge from main
 git merge --squash -X theirs main || echo "No changes to merge"
 
 # Commit (allow empty for redeploys)
