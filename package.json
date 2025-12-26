@@ -17,12 +17,15 @@
     "publish:client": "cd clients/web && wrangler deploy",
     "deploy:client": "bun run build:client && bun run publish:client",
 
+    "dev:server": "bun run --filter server dev",
     "build:server": "bun run --filter server build",
+    "start:server:local": "bun run --filter server start:local",
+    "start:server:prod": "bun run --filter server start:prod",
     "start:server": "bun run --filter server start",
 
     "deploy:supabase": "supabase db push && supabase config push",
 
-    "build": "bun run build:client && bun run build:server",
+    "build": "bun run build:client && bun run build:server"
   },
   "workspaces": [
     "shared",
