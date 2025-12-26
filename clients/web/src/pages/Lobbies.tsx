@@ -26,25 +26,25 @@ export default function Lobbies() {
   useEffect(() => {
     if (!lobby || !user || !profile) return;
 
-    const { hostUid: host_uid, guestUid: guest_uid, config } = lobby;
-    if (!guest_uid) setGuest(null);
+    const { hostUid, guestUid, config } = lobby;
+    if (!guestUid) setGuest(null);
 
-    if (user.id === host_uid) {
+    if (user.id === hostUid) {
       setRole("host");
       setHost(profile);
       setPlayerColor(config.hostColor);
 
-      if (guest_uid) {
-        getProfile({ id: guest_uid })
+      if (guestUid) {
+        getProfile({ id: guestUid })
           .then(setGuest)
           .catch((error) => console.error("Failed to load guest profile:", error));
       }
-    } else if (guest_uid && user.id === guest_uid) {
+    } else if (guestUid && user.id === guestUid) {
       setRole("guest");
       setGuest(profile);
       setPlayerColor(config.hostColor === "white" ? "black" : "white");
 
-      getProfile({ id: host_uid })
+      getProfile({ id: hostUid })
         .then(setHost)
         .catch((error) => console.error("Failed to load host profile:", error));
     }

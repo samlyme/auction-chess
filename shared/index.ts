@@ -107,7 +107,7 @@ export type LobbyJoin = z.infer<typeof LobbyJoinQuery>;
 
 export const Profile = z.object({
   bio: z.string(),
-  created_at: z.string(),
+  createdAt: z.string(),
   id: z.string(),
   username: z.string(),
 });
