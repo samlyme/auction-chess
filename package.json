@@ -9,6 +9,8 @@
   },
   "private": true,
   "scripts": {
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "format": "prettier --write ./**",
 
     "client:dev": "bun run --filter web dev",

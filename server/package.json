@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "test": "bun test",
     "dev": "bun --hot --env-file=.env.development index.ts",
     "build": "bun build index.ts --target bun --outdir ./out --sourcemap",
     "start:local": "bun --env-file=.env.development out/index.js",
