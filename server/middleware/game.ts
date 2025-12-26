@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { Color } from "shared";
-import type { GameEnv } from "../types.ts";
+import type { GameEnv } from "../types/honoEnvs.ts";
 
 export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");

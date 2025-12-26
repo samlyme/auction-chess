@@ -3,7 +3,7 @@ import {
   LobbyJoinQuery,
   LobbyToPayload,
 } from "shared";
-import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";

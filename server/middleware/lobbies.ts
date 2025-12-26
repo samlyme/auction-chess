@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
-import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { endTime, startTime } from "hono/timing";
 
 import * as Lobbies from "../state/lobbies.ts"

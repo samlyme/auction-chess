@@ -6,7 +6,7 @@ import {
   makeBid as makeBidLogic,
   movePiece as movePieceLogic,
 } from "shared/game/auctionChess";
-import type { GameEnv } from "../types.ts";
+import type { GameEnv } from "../types/honoEnvs.ts";
 import {
   validateGame,
   validatePlayer,
