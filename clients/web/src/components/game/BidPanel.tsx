@@ -25,9 +25,11 @@ function formatTime(ms: number): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  return [hours, minutes, seconds]
-    .map((v) => v.toString().padStart(2, "0"))
-    .join(":");
+  const times = [];
+  if (hours > 0) times.push(hours);
+  times.push(minutes);
+  times.push(seconds);
+  return times.map((v) => v.toString().padStart(2, "0")).join(":");
 }
 
 function TimeAndTitle({
@@ -51,10 +53,7 @@ function TimeAndTitle({
     setTimeState(time);
   }, [time]);
 
-  const updateTime = useCallback(() => {
-    setTimeState((v) => v - delay);
-    console.log("update time");
-  }, []);
+  const updateTime = useCallback(() => setTimeState((v) => v - delay), []);
 
   // Only run timer when it's the current player's turn
   const timer = useTimer({ delay }, updateTime);
@@ -232,7 +231,12 @@ export default function BidPanel({
       className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}
     >
       <TimeAndTitle
-        time={gameState.timeState.time[opponentColor]}
+        time={
+          gameState.timeState.time[opponentColor] -
+          (gameState.turn === opponentColor
+            ? Date.now() - (gameState.timeState.prev || 0)
+            : 0)
+        }
         countdown={gameState.timeState.prev !== null && !isPlayerTurn}
         username={opponentUsername}
         color={opponentColor}
@@ -261,7 +265,12 @@ export default function BidPanel({
       />
 
       <TimeAndTitle
-        time={gameState.timeState.time[playerColor]}
+        time={
+          gameState.timeState.time[playerColor] -
+          (gameState.turn === playerColor
+            ? Date.now() - (gameState.timeState.prev || 0)
+            : 0)
+        }
         countdown={gameState.timeState.prev !== null && isPlayerTurn}
         username={playerUsername}
         color={playerColor}
