@@ -10,19 +10,27 @@
   "private": true,
   "scripts": {
     "format": "prettier --write ./**",
-    "build:client": "bun run --filter web build",
 
-    "build:server": "bun run --filter server build",
-    "start:server": "bun run --filter server start",
+    "client:dev": "bun run --filter web dev",
+    "client:build": "bun run --filter web build",
+    "client:preview": "bun run --filter web preview",
 
-    "publish:client": "cd clients/web && wrangler deploy",
-    "publish:server:edge": "supabase db push && supabase config push && supabase functions deploy",
+    "server:dev": "bun run --filter server dev",
+    "server:build": "bun run --filter server build",
+    "server:start:local": "bun run --filter server start:local",
+    "server:start:prod": "bun run --filter server start:prod",
+    "server:start": "bun run --filter server start",
 
-    "deploy:client": "bun run build:client && bun run publish:client",
-    "build": "bun run build:client && bun run build:server",
+    "db:diff": "supabase db diff --use-migra",
+    "db:save": "supabase db diff --use-migra -f",
+    "db:test": "supabase db reset",
+    "deploy:preview": "supabase db push --dry-run",
 
-    "publish": "bun run publish:client && bun run publish:server:edge",
-    "deploy": "bun run build && bun run publish"
+    "sb:restart": "supabase stop; supabase start",
+    "sb:build": "bun run db:diff",
+    "sb:push": "supabase db push && supabase config push",
+
+    "deploy:supabase": "supabase db push && supabase config push"
   },
   "workspaces": [
     "shared",
