@@ -6,7 +6,7 @@ import LobbyMenu from "../components/LobbyMenu";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
-import type { Tables, Color, Bid, NormalMove } from "shared";
+import type { Color, Bid, NormalMove, Profile } from "shared";
 import { getProfile } from "../services/profiles";
 import { makeBid, makeMove } from "../services/game";
 import { AuctionChessBoard } from "../components/game/Board";
@@ -18,8 +18,8 @@ export default function Lobbies() {
 
   const { lobby, gameState, loading: realtimeLoading, setLobby } = useRealtime();
 
-  const [host, setHost] = useState<Tables<"profiles"> | null>(null);
-  const [guest, setGuest] = useState<Tables<"profiles"> | null>(null);
+  const [host, setHost] = useState<Profile | null>(null);
+  const [guest, setGuest] = useState<Profile | null>(null);
   const [role, setRole] = useState<"host" | "guest">("host");
   const [playerColor, setPlayerColor] = useState<Color>("white");
 

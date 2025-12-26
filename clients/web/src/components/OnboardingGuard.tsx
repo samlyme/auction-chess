@@ -5,7 +5,7 @@ import { Navigate, useLocation } from "react-router";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
 import type { Session } from "@supabase/supabase-js";
-import type { Tables } from "shared";
+import type { Profile } from "shared";
 
 export type OnboardingStage = "unauthed" | "createProfile" | "complete";
 
@@ -20,7 +20,7 @@ function getStage({
   profile,
 }: {
   session: Session | null;
-  profile: Tables<"profiles"> | null;
+  profile: Profile | null;
 }): OnboardingStage {
   if (!session) return "unauthed";
   if (!profile) return "createProfile";

@@ -1,15 +1,15 @@
 import { useContext, useEffect, useState } from "react";
 import { UserProfileContext } from "../../contexts/UserProfile";
-import type { Tables } from "shared";
 import { AuthContext } from "../../contexts/Auth";
 import { getProfile } from "../../services/profiles";
+import type { Profile } from "shared";
 
 export default function UserProfileContextProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [profile, setProfile] = useState<Tables<"profiles"> | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [prevTime, setPrevTime] = useState<number | null>(null);
   const { session, loading: authLoading } = useContext(AuthContext);
   const [loading, setLoading] = useState<boolean>(false);
