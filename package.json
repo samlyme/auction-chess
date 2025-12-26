@@ -10,19 +10,19 @@
   "private": true,
   "scripts": {
     "format": "prettier --write ./**",
+
+    "dev:client": "bun run --filter web dev",
     "build:client": "bun run --filter web build",
+    "preview:client": "bun run --filter web preview",
+    "publish:client": "cd clients/web && wrangler deploy",
+    "deploy:client": "bun run build:client && bun run publish:client",
 
     "build:server": "bun run --filter server build",
     "start:server": "bun run --filter server start",
 
-    "publish:client": "cd clients/web && wrangler deploy",
-    "publish:server:edge": "supabase db push && supabase config push && supabase functions deploy",
+    "deploy:supabase": "supabase db push && supabase config push",
 
-    "deploy:client": "bun run build:client && bun run publish:client",
     "build": "bun run build:client && bun run build:server",
-
-    "publish": "bun run publish:client && bun run publish:server:edge",
-    "deploy": "bun run build && bun run publish"
   },
   "workspaces": [
     "shared",
