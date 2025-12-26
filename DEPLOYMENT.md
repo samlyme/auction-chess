@@ -54,13 +54,6 @@ main branch (development)
 | Backend | `prod/server` | Digital Ocean App Platform | `https://<your-app>.ondigitalocean.app` |
 | Database | `prod/supabase` | Supabase Cloud | `https://<your-project>.supabase.co` |
 
-### Architecture Evolution
-
-**Why Bun on Digital Ocean instead of Docker?**
-- Original deployment used Docker containers
-- Switched to native Bun runtime on Digital Ocean App Platform
-- **Benefits**: ~40% faster cold starts, simpler deployment, native Bun performance
-
 ---
 
 ## Prerequisites
@@ -163,7 +156,8 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 #### Setting Environment Variables in Hosting Platforms
 
 **Cloudflare Workers:**
-- Environment variables are **baked into the build** at build time
+- Environment variables are tracked by `git` and **baked into the build** at build time
+- No manual `.env` configurations is needed on Cloudflare to deploy the client
 - Vite embeds `VITE_*` variables during `vite build`
 - To change: update `.env.production` and rebuild
 
@@ -172,49 +166,23 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 2. Navigate to Settings → Environment Variables
 3. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
 4. Mark `SUPABASE_SERVICE_ROLE_KEY` as "Encrypt"
+5. **NOTE:** the `server` makes use of privileged keys, and those keys must not be tracked by `git`. Thus, manual configuration is required.
 
 **Supabase:**
 - Local development: `supabase/.env.local` (gitignored)
+- For now, only contains Google OAuth secret key.
 - Production: Set in Supabase Dashboard → Settings → Authentication → External OAuth Providers
 
 ---
 
 ## Client Deployment (Cloudflare)
 
-### Initial Setup
-
-1. **Configure Wrangler** (already done in `clients/web/wrangler.toml`):
-```toml
-name = "<your-app-name>"
-compatibility_date = "2025-12-22"
-assets = { not_found_handling = "single-page-application" }
-
-[[routes]]
-pattern = "<your-domain>.com"
-custom_domain = true
-```
-
-2. **Set up custom domain** in Cloudflare Dashboard:
-   - Add your domain to Cloudflare
-   - Configure DNS records
-   - Update `wrangler.toml` with your domain
-
-3. **Configure Supabase auth redirects** in `supabase/config.toml`:
-```toml
-site_url = "https://<your-domain>.com"
-additional_redirect_urls = ["http://localhost:3000", "http://localhost:4173"]
-```
+The configuration should be tracked in `wrangler.toml`. 
 
 ### Deploy Client
 
 ```bash
-# Option 1: Using deployment script (recommended)
 bun run deploy:client
-
-# Option 2: Manual deployment
-cd clients/web
-bun run build    # Build for production
-wrangler deploy  # Deploy to Cloudflare
 ```
 
 ### What the Script Does
@@ -469,11 +437,6 @@ If deployment fails or introduces bugs:
 git checkout prod/client
 git revert HEAD
 git push origin prod/client
-
-# Option 2: Redeploy previous version from main
-git checkout <previous-commit-hash>
-bun run deploy:client
-git checkout main
 ```
 
 **Server (Digital Ocean):**
@@ -483,6 +446,11 @@ git checkout prod/server
 git revert HEAD
 git push origin prod/server
 ```
+
+**NOTE:** it is also possible to `git reset` on branch `main` then redeploy, however
+this is not recommended as it may be possible to deploy an intermediate commit.
+By using `git revert`, on the `prod/*` branch, we know that we can roll back to 
+a working build.  
 
 **Database (Supabase):**
 ```bash
@@ -496,7 +464,9 @@ bun run db:save rollback_user_profiles
 supabase db push
 ```
 
-**⚠️ Note**: Using `git revert` creates a new commit that undoes changes while preserving history. This is safer than `git reset --hard` + force push, which rewrites history and can cause issues for team members or CI/CD systems.
+**NOTE:** this is why we must be extremely careful when dealing with supabase DB
+migrations. Rollbacks are **NOT GARAUNTEED** unlike the server and client. Changes 
+are destructive, and require manually reconcilation if gone wrong.
 
 ---
 
@@ -655,39 +625,7 @@ bun run build
 # - Type errors in route handlers
 ```
 
-### Runtime Errors
-
-**Frontend shows blank page:**
-1. Check browser console for errors
-2. Verify `VITE_BACKEND_URL` is correct
-3. Check CORS errors (backend must allow frontend domain)
-4. Verify Supabase auth redirects are configured
-
-**Backend returns 500 errors:**
-1. Check Digital Ocean Runtime Logs
-2. Verify environment variables are set (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
-3. Test Supabase connection manually
-4. Check for uncaught exceptions in logs
-
-**Database connection fails:**
-1. Verify `SUPABASE_URL` is correct (should end in `.supabase.co`)
-2. Check service role key has correct permissions
-3. Verify Supabase project is active (not paused)
-4. Check network connectivity from Digital Ocean to Supabase
-
 ### Deployment Issues
-
-**Cloudflare deployment fails:**
-```bash
-# Check Wrangler authentication
-wrangler whoami
-
-# Re-authenticate if needed
-wrangler login
-
-# Check wrangler.toml configuration
-# Verify custom domain is set up in Cloudflare Dashboard
-```
 
 **Digital Ocean deployment fails:**
 1. Check build logs in DO dashboard
