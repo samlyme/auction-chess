@@ -1,7 +1,14 @@
 import type { AuctionChessState, Bid, Color } from "shared";
 import { opposite } from "chessops";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import "./BidPanel.css"
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import "./BidPanel.css";
+import { useTimer } from "react-use-precision-timer";
 
 interface GameProps {
   gameState: AuctionChessState;
@@ -15,27 +22,55 @@ function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
 
   const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) /60);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  return [hours, minutes, seconds].map((v) => v.toString().padStart(2, "0")).join(":");
+  return [hours, minutes, seconds]
+    .map((v) => v.toString().padStart(2, "0"))
+    .join(":");
 }
 
 function TimeAndTitle({
   time,
+  countdown,
   username,
   color,
   isCurrentTurn,
 }: {
   time: number;
+  countdown: boolean;
   username: string;
   color: string;
   isCurrentTurn: boolean;
 }) {
+  const delay = 100; // ms
+  const [timeState, setTimeState] = useState<number>(time);
+
+  // Sync local time state with server time updates
+  useEffect(() => {
+    setTimeState(time);
+  }, [time]);
+
+  const updateTime = useCallback(() => {
+    setTimeState((v) => v - delay);
+    console.log("update time");
+  }, []);
+
+  // Only run timer when it's the current player's turn
+  const timer = useTimer({ delay }, updateTime);
+
+  useEffect(() => {
+    if (countdown) {
+      timer.start();
+    } else {
+      timer.stop();
+    }
+  }, [countdown, timer]);
+
   return (
     <div className={`time-and-title ${isCurrentTurn ? "current-turn" : ""}`}>
       <div className="time item">
-        <p>{formatTime(time)}</p>
+        <p>{formatTime(timeState)}</p>
       </div>
       <div className="title item">
         <p>
@@ -101,10 +136,7 @@ function BidMenu({
           <div className="item">${currentBid}</div>
         </div>
         <div className="bid-fold">
-          <div
-            className="item"
-            onClick={() => makeBid({ amount: currentBid })}
-          >
+          <div className="item" onClick={() => makeBid({ amount: currentBid })}>
             BID
           </div>
           <div className="item" onClick={() => makeBid({ fold: true })}>
@@ -113,9 +145,7 @@ function BidMenu({
         </div>
         <div
           className="item"
-          onClick={() =>
-            setCurrentBid(Math.min(playerBalance, oppBalance))
-          }
+          onClick={() => setCurrentBid(Math.min(playerBalance, oppBalance))}
         >
           MAX
         </div>
@@ -172,19 +202,18 @@ export default function BidPanel({
 
   // TODO: fix this jank
   const bidStack: Bid[] = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.at(-1) ?? {amount: 0};
-  const secondLastBid = bidStack.at(-2) ?? {amount: 0};
+  const lastBid = bidStack.at(-1) ?? { amount: 0 };
+  const secondLastBid = bidStack.at(-2) ?? { amount: 0 };
 
   // Extract bid amounts from the last two bids
   let prevPlayerBidAmount = 0;
   let prevOppBidAmount = 0;
   if (gameState.turn !== playerColor) {
     prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount: 0;
-  }
-  else {
+    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
+  } else {
     prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount: 0;
+    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
   }
 
   const [currentBid, setCurrentBid] = useState<number>(0);
@@ -194,15 +223,17 @@ export default function BidPanel({
   }, [gameState]);
 
   const isPlayerTurn = gameState.turn === playerColor;
-  const playerUsername =
-    playerColor === "white" ? hostUsername : guestUsername;
+  const playerUsername = playerColor === "white" ? hostUsername : guestUsername;
   const opponentUsername =
     opponentColor === "white" ? hostUsername : guestUsername;
 
   return (
-    <div className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}>
+    <div
+      className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}
+    >
       <TimeAndTitle
         time={gameState.timeState.time[opponentColor]}
+        countdown={gameState.timeState.prev !== null && !isPlayerTurn}
         username={opponentUsername}
         color={opponentColor}
         isCurrentTurn={!isPlayerTurn}
@@ -231,6 +262,7 @@ export default function BidPanel({
 
       <TimeAndTitle
         time={gameState.timeState.time[playerColor]}
+        countdown={gameState.timeState.prev !== null && isPlayerTurn}
         username={playerUsername}
         color={playerColor}
         isCurrentTurn={isPlayerTurn}
