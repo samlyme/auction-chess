@@ -171,8 +171,3 @@ export function match<T, E, R>(
 ): R {
   return result.ok ? handlers.ok(result.value) : handlers.err(result.error);
 }
-
-// ============================================================================
-// Database types
-// ============================================================================
-export * from "./database.types.ts";
