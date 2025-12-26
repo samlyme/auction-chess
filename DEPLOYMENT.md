@@ -1,195 +1,765 @@
 # Deployment Guide
 
-This guide covers deploying the Auction Chess application to production.
+This guide covers deploying the Auction Chess application to production using a git branch-based deployment strategy.
 
-## Server Deployment to Digital Ocean
+## Table of Contents
 
-The backend server can be deployed to Digital Ocean App Platform, which natively supports Bun.
+- [Deployment Architecture](#deployment-architecture)
+- [Prerequisites](#prerequisites)
+- [Environment Variables](#environment-variables)
+- [Client Deployment (Cloudflare)](#client-deployment-cloudflare)
+- [Server Deployment (Digital Ocean)](#server-deployment-digital-ocean)
+- [Database Deployment (Supabase)](#database-deployment-supabase)
+- [Pre-Deployment Checklist](#pre-deployment-checklist)
+- [Deployment Commands](#deployment-commands)
+- [Common Gotchas & Footguns](#common-gotchas--footguns)
+- [Troubleshooting](#troubleshooting)
 
-### Prerequisites
+---
 
-1. **Digital Ocean Account**: Sign up at https://cloud.digitalocean.com
-2. **doctl CLI** (optional but recommended): Install the Digital Ocean CLI
-   ```bash
-   brew install doctl  # macOS
-   # Or download from: https://docs.digitalocean.com/reference/doctl/how-to/install/
-   ```
-3. **Authenticate doctl** (if using CLI):
-   ```bash
-   doctl auth init
-   ```
+## Deployment Architecture
 
-### Deployment Methods
+### Git Branch-Based Strategy
 
-#### Option 1: Using Digital Ocean Dashboard (Recommended for first deployment)
+This project uses a **git branch-based deployment** strategy instead of traditional CI/CD pipelines:
 
-1. **Push your code to GitHub** (if not already done)
-   ```bash
-   git add .
-   git commit -m "Prepare for Digital Ocean deployment"
-   git push origin main
-   ```
+```
+main branch (development)
+    │
+    ├─── squash merge ──→ prod/client  ──→ Cloudflare Pages (auto-deploy)
+    │
+    ├─── squash merge ──→ prod/server  ──→ Digital Ocean (auto-deploy)
+    │
+    └─── squash merge ──→ prod/supabase ──→ Supabase CLI deployment
+```
 
-2. **Create a new App in Digital Ocean**:
+**How it works:**
+1. Development happens on `main` or feature branches
+2. When ready to deploy, run a deployment script
+3. Script squash merges `main` → deployment branch (`prod/*`)
+4. Script pushes deployment branch to remote
+5. Hosting platform watches deployment branch and auto-deploys
+
+**Key characteristics:**
+- No GitHub Actions or CI/CD configuration needed
+- Squash merge strategy uses `-X theirs` (always accepts incoming changes)
+- Each deployment creates a single commit on the deployment branch
+- Deployment branches accumulate squash commits over time
+
+### Deployment Targets
+
+| Component | Branch | Platform | URL |
+|-----------|--------|----------|-----|
+| Frontend | `prod/client` | Cloudflare Workers/Pages | `https://<your-domain>.com` |
+| Backend | `prod/server` | Digital Ocean App Platform | `https://<your-app>.ondigitalocean.app` |
+| Database | `prod/supabase` | Supabase Cloud | `https://<your-project>.supabase.co` |
+
+### Architecture Evolution
+
+**Why Bun on Digital Ocean instead of Docker?**
+- Original deployment used Docker containers
+- Switched to native Bun runtime on Digital Ocean App Platform
+- **Benefits**: ~40% faster cold starts, simpler deployment, native Bun performance
+
+---
+
+## Prerequisites
+
+### Required Accounts
+
+1. **Cloudflare Account** - For frontend hosting
+   - Sign up: https://dash.cloudflare.com/sign-up
+   - Set up Workers/Pages in dashboard
+
+2. **Digital Ocean Account** - For backend hosting
+   - Sign up: https://cloud.digitalocean.com
+   - Create App Platform app
+
+3. **Supabase Account** - For database and auth
+   - Sign up: https://supabase.com
+   - Create a new project
+
+### Required CLI Tools
+
+```bash
+# Bun (if not already installed)
+curl -fsSL https://bun.sh/install | bash
+
+# Supabase CLI
+brew install supabase/tap/supabase
+# Or: https://supabase.com/docs/guides/cli
+
+# Wrangler (Cloudflare CLI)
+bun install -g wrangler
+# Or: npm install -g wrangler
+
+# Optional: doctl (Digital Ocean CLI)
+brew install doctl
+# Or: https://docs.digitalocean.com/reference/doctl/how-to/install/
+```
+
+### Link Your Project
+
+```bash
+# Link Supabase project
+supabase link --project-ref <your-project-id>
+
+# Authenticate Wrangler
+wrangler login
+
+# Authenticate doctl (optional)
+doctl auth init
+```
+
+---
+
+## Environment Variables
+
+### Production Environment Variables
+
+You must set these environment variables **before building/deploying**.
+
+#### Client (Frontend)
+
+Create `clients/web/.env.production`:
+
+```env
+VITE_SUPABASE_PUB_KEY=<your-supabase-anon-key>
+VITE_SUPABASE_URL=https://<your-project>.supabase.co
+VITE_BACKEND_URL=https://<your-app>.ondigitalocean.app
+```
+
+**Where to find values:**
+- `VITE_SUPABASE_PUB_KEY`: Supabase Dashboard → Settings → API → `anon` `public` key
+- `VITE_SUPABASE_URL`: Supabase Dashboard → Settings → API → Project URL
+- `VITE_BACKEND_URL`: Digital Ocean App Platform → App → URL
+
+#### Server (Backend)
+
+Create `server/.env.production`:
+
+```env
+SUPABASE_URL=https://<your-project>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+```
+
+**Where to find values:**
+- `SUPABASE_URL`: Same as client
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase Dashboard → Settings → API → `service_role` `secret` key
+
+**⚠️ CRITICAL**: The service role key must be kept secret. Set it in Digital Ocean's environment variables dashboard, not committed to git.
+
+#### Supabase (Local Development)
+
+Create `supabase/.env.local`:
+
+```env
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
+```
+
+**Where to find values:**
+- Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client
+
+#### Setting Environment Variables in Hosting Platforms
+
+**Cloudflare Workers:**
+- Environment variables are **baked into the build** at build time
+- Vite embeds `VITE_*` variables during `vite build`
+- To change: update `.env.production` and rebuild
+
+**Digital Ocean App Platform:**
+1. Go to your app in DO dashboard
+2. Navigate to Settings → Environment Variables
+3. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
+4. Mark `SUPABASE_SERVICE_ROLE_KEY` as "Encrypt"
+
+**Supabase:**
+- Local development: `supabase/.env.local` (gitignored)
+- Production: Set in Supabase Dashboard → Settings → Authentication → External OAuth Providers
+
+---
+
+## Client Deployment (Cloudflare)
+
+### Initial Setup
+
+1. **Configure Wrangler** (already done in `clients/web/wrangler.toml`):
+```toml
+name = "<your-app-name>"
+compatibility_date = "2025-12-22"
+assets = { not_found_handling = "single-page-application" }
+
+[[routes]]
+pattern = "<your-domain>.com"
+custom_domain = true
+```
+
+2. **Set up custom domain** in Cloudflare Dashboard:
+   - Add your domain to Cloudflare
+   - Configure DNS records
+   - Update `wrangler.toml` with your domain
+
+3. **Configure Supabase auth redirects** in `supabase/config.toml`:
+```toml
+site_url = "https://<your-domain>.com"
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:4173"]
+```
+
+### Deploy Client
+
+```bash
+# Option 1: Using deployment script (recommended)
+bun run deploy:client
+
+# Option 2: Manual deployment
+cd clients/web
+bun run build    # Build for production
+wrangler deploy  # Deploy to Cloudflare
+```
+
+### What the Script Does
+
+The `deploy:client` script (`scripts/deploy-client.sh`):
+
+1. Checks out or creates `prod/client` branch
+2. Squash merges from `main` (using `-X theirs` strategy)
+3. Commits with timestamp or custom message
+4. Pushes to `origin prod/client`
+5. Returns to your original branch
+
+**Custom commit message:**
+```bash
+./scripts/deploy-client.sh "Release v2.1.0"
+```
+
+### Verification
+
+After deployment:
+1. Check Cloudflare Dashboard → Workers & Pages → Your app → Deployments
+2. Visit your production URL
+3. Test authentication flow (Google OAuth)
+4. Check browser console for errors
+
+---
+
+## Server Deployment (Digital Ocean)
+
+### Initial Setup
+
+1. **Create App in Digital Ocean**:
    - Go to https://cloud.digitalocean.com/apps
    - Click "Create App"
-   - Select "GitHub" as source
+   - Select GitHub as source
    - Authorize Digital Ocean to access your repository
-   - Select your `auction-chess` repository
-   - Choose the branch (usually `main`)
+   - Select the `auction-chess` repository
+   - Choose branch: `prod/server`
 
-3. **Configure the App**:
-   - Digital Ocean should auto-detect the `.do/app.yaml` configuration
-   - OR manually configure:
-     - **Source Directory**: `/server`
-     - **Dockerfile Path**: `server/Dockerfile`
-     - **HTTP Port**: `8000`
-     - **HTTP Route**: `/api`
+2. **Configure App**:
+   - **Source Directory**: `/server`
+   - **Build Command**: `bun install && bun run build`
+   - **Run Command**: `bun run start:prod`
+   - **HTTP Port**: `8000`
+   - **HTTP Route**: `/api` (optional)
+   - **Environment**: Select "Bun" as runtime
 
-4. **Set Environment Variables**:
-   - In the App settings, add these environment variables:
-     - `SUPABASE_URL` - Your Supabase project URL
-     - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key (encrypt this!)
-     - `PORT` - `8000`
+3. **Set Environment Variables** in DO Dashboard:
+   - `SUPABASE_URL` = `https://<your-project>.supabase.co`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `<your-service-role-key>` (encrypted)
+   - `PORT` = `8000` (usually auto-set)
 
-5. **Deploy**:
-   - Click "Create Resources"
-   - Wait for the build and deployment to complete
-   - Your API will be available at: `https://your-app-name.ondigitalocean.app/api`
+4. **Choose Instance Size**:
+   - Development: Basic ($5/month)
+   - Production: Basic XS or higher ($12+/month)
 
-#### Option 2: Using doctl CLI
-
-1. **Update `.do/app.yaml`**:
-   - Edit `.do/app.yaml` and update the GitHub repo path with your username:
-     ```yaml
-     github:
-       repo: YOUR_GITHUB_USERNAME/auction-chess
-     ```
-
-2. **Create the app**:
-   ```bash
-   doctl apps create --spec .do/app.yaml
-   ```
-
-3. **Set environment variables**:
-   ```bash
-   # Get your app ID
-   APP_ID=$(doctl apps list --format ID --no-header)
-
-   # Set environment variables (you'll need to do this via the dashboard for secrets)
-   # Or create a separate env file and update via dashboard
-   ```
-
-4. **Deploy updates** (after initial creation):
-   ```bash
-   bun run deploy:server:do
-   ```
-
-#### Option 3: Using App Platform YAML Spec
-
-If you prefer to manage everything via code:
-
-1. Update `.do/app.yaml` with your GitHub repo details
-2. Set secrets via dashboard (required for sensitive data)
-3. Deploy with:
-   ```bash
-   doctl apps create --spec .do/app.yaml
-   # or update existing:
-   doctl apps update YOUR_APP_ID --spec .do/app.yaml
-   ```
-
-### Environment Variables Required
-
-Make sure to set these in Digital Ocean App Platform:
-
-- `SUPABASE_URL` - Your Supabase project URL (e.g., `https://xxx.supabase.co`)
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key (keep this secret!)
-- `PORT` - `8000` (already set in app.yaml)
-
-### Connecting Your Frontend
-
-After deployment, update your frontend environment variables to point to your Digital Ocean API:
-
-In `clients/web/.env.production`:
-```env
-VITE_API_URL=https://your-app-name.ondigitalocean.app
-```
-
-## Client Deployment to Cloudflare Pages
-
-The frontend is deployed to Cloudflare Pages (as configured in package.json).
+### Deploy Server
 
 ```bash
-# Build and deploy the frontend
-bun run deploy:client
+# Option 1: Using deployment script (recommended)
+bun run deploy:server
+
+# Option 2: Manual
+./scripts/deploy-server.sh
+
+# Custom commit message
+./scripts/deploy-server.sh "Deploy API v2.1.0"
 ```
 
-## Database (Supabase)
+### What the Script Does
 
-The database is hosted on Supabase. To deploy database changes:
+The `deploy:server` script (`scripts/deploy-server.sh`):
+
+1. Checks out or creates `prod/server` branch
+2. Squash merges from `main`
+3. Commits and pushes to `origin prod/server`
+4. Digital Ocean detects push and auto-deploys
+5. Returns to your original branch
+
+### Verification
+
+After deployment:
+1. Check Digital Ocean Dashboard → Apps → Your app → Runtime Logs
+2. Test health endpoint: `https://<your-app>.ondigitalocean.app/api`
+3. Check logs for any connection errors to Supabase
+4. Verify CORS headers allow your frontend domain
+
+---
+
+## Database Deployment (Supabase)
+
+### Deployment Process
+
+Database deployment involves two steps:
+1. **Database schema** (migrations)
+2. **Supabase configuration** (auth, realtime, etc.)
+
+### Deploy Database
 
 ```bash
-# Push database migrations
+# Option 1: Using deployment script (recommended)
+bun run deploy:sb
+
+# Option 2: Manual
+./scripts/deploy-supabase.sh
+
+# Custom commit message
+./scripts/deploy-supabase.sh "Add user profiles table"
+```
+
+### What the Script Does
+
+The `deploy:sb` script (`scripts/deploy-supabase.sh`):
+
+1. Checks out or creates `prod/supabase` branch
+2. Squash merges from `main`
+3. Commits and pushes to `origin prod/supabase`
+4. Runs `supabase db push` (deploys migrations)
+5. Runs `supabase config push` (deploys config)
+6. Returns to your original branch
+
+### Manual Database Deployment
+
+If you need more control:
+
+```bash
+# Preview migrations (dry-run)
+bun run deploy:preview
+# Or: supabase db push --dry-run
+
+# Push migrations to production
 supabase db push
 
-# Or deploy edge functions (alternative to DO)
-bun run deploy:server:edge
+# Push configuration to production
+supabase config push
+
+# Both at once
+bun run sb:push
 ```
 
-## Quick Reference Commands
+### Creating Migrations
 
 ```bash
-# Development
-bun run dev                  # Start all dev servers
+# 1. Make schema changes in Supabase Studio (local)
+#    http://localhost:54323
 
-# Client deployment
-bun run deploy:client        # Build and deploy frontend to Cloudflare
+# 2. Generate migration diff
+bun run db:diff
 
-# Server deployment
-bun run deploy:server:do     # Deploy server to Digital Ocean
-bun run deploy:server:edge   # Deploy server to Supabase Edge Functions
+# 3. Save migration to file
+bun run db:save migration_name
 
-# Full deployment
-bun run deploy              # Deploy everything
+# 4. Review generated SQL in supabase/migrations/
+
+# 5. Test migration locally
+bun run db:test
+
+# 6. Deploy (see above)
 ```
 
-## Monitoring and Logs
+### Database Type Generation
 
-### Digital Ocean
-- **Logs**: View in App Platform dashboard under "Runtime Logs"
-- **Metrics**: CPU, Memory, and Request metrics available in dashboard
-- **Alerts**: Set up alerts for downtime or resource usage
+After schema changes, regenerate TypeScript types:
 
-### Debugging Deployment Issues
+```bash
+supabase gen types typescript --local > shared/database.types.ts
+```
 
-1. **Check build logs** in Digital Ocean dashboard
-2. **Verify environment variables** are set correctly
-3. **Test the health check endpoint**: `https://your-app.ondigitalocean.app/api`
-4. **Check Supabase connectivity** from DO logs
+**⚠️ Important**: This is a **manual step** and not automated in deployment scripts.
 
-## Cost Optimization
+### Verification
 
-- **Basic XXS instance** ($5/month) should be sufficient for development
-- **Auto-scaling**: Enable if you expect variable traffic
-- **Production**: Consider upgrading to Basic XS ($12/month) for better performance
+After deployment:
+1. Check Supabase Dashboard → Database → Migrations
+2. Verify latest migration is applied
+3. Check Table Editor to confirm schema changes
+4. Test RLS policies in Dashboard → Authentication → Policies
+
+---
+
+## Pre-Deployment Checklist
+
+Before deploying to production, verify:
+
+### Code Quality
+- [ ] All TypeScript type errors resolved (`bun run client:build`, `bun run server:build`)
+- [ ] Code formatted with Prettier (`bun run format`)
+- [ ] No console.log or debugging code left in production code
+
+### Testing
+- [ ] Manual testing completed locally
+- [ ] Authentication flow tested (Google OAuth)
+- [ ] API endpoints tested with Postman/Hoppscotch
+- [ ] Real-time features tested (lobby system)
+
+### Environment Variables
+- [ ] `clients/web/.env.production` has correct production values
+- [ ] `server/.env.production` has correct production values
+- [ ] Digital Ocean environment variables are set and encrypted
+- [ ] Supabase auth redirects include production frontend URL
+
+### Database
+- [ ] Migrations tested locally (`bun run db:test`)
+- [ ] Migrations previewed for production (`bun run deploy:preview`)
+- [ ] Database types regenerated if schema changed
+- [ ] RLS policies reviewed for security
+
+### Configuration
+- [ ] CORS configuration allows production frontend domain
+- [ ] Supabase `config.toml` has correct `site_url`
+- [ ] Cloudflare `wrangler.toml` has correct custom domain
+- [ ] Google OAuth credentials configured for production domain
+
+### Git
+- [ ] All changes committed to `main` branch
+- [ ] Working directory is clean (`git status`)
+- [ ] Latest changes pulled from remote
+
+---
+
+## Deployment Commands
+
+### Quick Reference
+
+```bash
+# Deploy everything (in order)
+bun run deploy:sb      # Deploy database first
+bun run deploy:server  # Deploy backend second
+bun run deploy:client  # Deploy frontend last
+
+# Deploy individually with custom messages
+./scripts/deploy-client.sh "Release v2.1.0"
+./scripts/deploy-server.sh "Fix authentication bug"
+./scripts/deploy-supabase.sh "Add profiles table"
+
+# Preview database changes (dry-run)
+bun run deploy:preview
+
+# Database operations
+bun run db:diff        # Generate migration diff
+bun run db:save <name> # Save migration
+bun run db:test        # Test migrations locally
+```
+
+### Rollback Strategy
+
+If deployment fails or introduces bugs:
+
+**Client (Cloudflare):**
+```bash
+# Option 1: Revert the problematic commit (recommended - safe for shared branches)
+git checkout prod/client
+git revert HEAD
+git push origin prod/client
+
+# Option 2: Redeploy previous version from main
+git checkout <previous-commit-hash>
+bun run deploy:client
+git checkout main
+```
+
+**Server (Digital Ocean):**
+```bash
+# Revert the problematic commit
+git checkout prod/server
+git revert HEAD
+git push origin prod/server
+```
+
+**Database (Supabase):**
+```bash
+# Create a rollback migration
+# Supabase doesn't support automatic rollback
+# You must create a new migration that reverses changes
+
+# Example:
+bun run db:save rollback_user_profiles
+# Then manually write SQL to reverse the changes
+supabase db push
+```
+
+**⚠️ Note**: Using `git revert` creates a new commit that undoes changes while preserving history. This is safer than `git reset --hard` + force push, which rewrites history and can cause issues for team members or CI/CD systems.
+
+---
+
+## Common Gotchas & Footguns
+
+### 1. Environment Variables Baked at Build Time
+
+**Problem**: Vite embeds `VITE_*` environment variables during build, not at runtime.
+
+**Impact**: Changing `.env.production` after deployment requires a rebuild and redeploy.
+
+**Solution**:
+- Always verify `.env.production` before building
+- Test builds locally before deploying
+- If you need to change env vars post-deployment, rebuild and redeploy
+
+### 2. JWT Signing Keys Not in Git
+
+**Problem**: `supabase/signing_keys.json` is gitignored and must be manually created for local development.
+
+**Impact**: New developers or machines can't run local Supabase without generating keys.
+
+**Solution**:
+```bash
+# Generate signing keys for local development
+supabase start
+# Keys are auto-generated and stored in signing_keys.json
+```
+
+**Why**: Private EC keys must not be committed to git for security.
+
+### 3. Squash Merge Strategy Overwrites
+
+**Problem**: Deployment scripts use `git merge --squash -X theirs`, which always accepts incoming changes.
+
+**Impact**: Manual fixes directly on deployment branches get overwritten on next deploy.
+
+**Solution**:
+- Never commit directly to `prod/*` branches
+- Always fix issues on `main` and redeploy
+- If emergency fix needed on prod branch, backport to `main` immediately
+
+### 4. Database Type Generation is Manual
+
+**Problem**: After schema changes, TypeScript types must be manually regenerated.
+
+**Impact**: Stale types cause TypeScript errors or runtime bugs.
+
+**Solution**:
+```bash
+# After any database schema change
+supabase gen types typescript --local > shared/database.types.ts
+git add shared/database.types.ts
+git commit -m "Update database types"
+```
+
+### 5. CORS Configuration
+
+**Problem**: Backend currently allows all origins (`Access-Control-Allow-Origin: *`).
+
+**Impact**: Any website can call your API (security risk).
+
+**Solution**:
+- Update `server/app.ts` CORS headers to only allow production frontend domain
+- Example:
+```typescript
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://your-domain.com",
+  // ...
+};
+```
+
+### 6. Supabase Auth Redirects
+
+**Problem**: OAuth redirects must be explicitly allowed in `config.toml`.
+
+**Impact**: Users can't log in via Google OAuth if redirect URL isn't configured.
+
+**Solution**:
+- Update `supabase/config.toml`:
+```toml
+site_url = "https://your-production-domain.com"
+additional_redirect_urls = ["http://localhost:3000"]
+```
+- Run `bun run deploy:sb` to apply changes
+
+### 7. Google OAuth Secrets
+
+**Problem**: Google OAuth client secret stored in `.env.local`, not in a vault.
+
+**Impact**: Secret must be manually set by each developer.
+
+**Solution**:
+- Get secret from Google Cloud Console
+- Add to `supabase/.env.local`
+- Never commit `.env.local` to git (it's in .gitignore)
+
+### 8. No Automated Testing
+
+**Problem**: No CI/CD pipeline or automated tests run before deployment.
+
+**Impact**: Bugs can be deployed to production.
+
+**Solution**:
+- Manual testing checklist (see above)
+- Consider adding test suite and GitHub Actions in future
+
+### 9. Migration Destructiveness
+
+**Problem**: Some migrations drop entire tables (see: `20251225085246_drop_lobbies.sql`).
+
+**Impact**: Data loss in production.
+
+**Solution**:
+- Always run `bun run deploy:preview` first
+- Review generated SQL before deploying
+- Back up production data before major migrations
+- Consider migration safeguards (e.g., require explicit confirmation)
+
+### 10. Deployment Branch Cleanup
+
+**Problem**: Prod branches accumulate squash commits over time.
+
+**Impact**: Large git history, slow clones.
+
+**Solution**:
+- Periodically squash deployment branch history
+- Or: delete and recreate deployment branches (requires force push setup in hosting platforms)
+
+---
 
 ## Troubleshooting
 
-### Build fails
-- Check that `server/Dockerfile` is present
-- Verify all dependencies are in `package.json`
-- Check build logs for specific errors
+### Build Failures
 
-### Runtime errors
-- Verify environment variables are set
-- Check that `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are correct
-- View runtime logs in DO dashboard
+**Client build fails:**
+```bash
+# Check TypeScript errors
+cd clients/web
+bun run build
 
-### CORS issues
-- Update CORS settings in `server/app.ts` if needed
-- Add your frontend domain to allowed origins
+# Common issues:
+# - Unused imports (strict mode)
+# - Type mismatches
+# - Missing environment variables
+```
 
-### Database connection fails
-- Verify Supabase project is active
-- Check that service role key has correct permissions
-- Ensure Supabase URL is correct (should end in `.supabase.co`)
+**Server build fails:**
+```bash
+# Check TypeScript errors
+cd server
+bun run build
+
+# Common issues:
+# - Import path issues
+# - Type errors in route handlers
+```
+
+### Runtime Errors
+
+**Frontend shows blank page:**
+1. Check browser console for errors
+2. Verify `VITE_BACKEND_URL` is correct
+3. Check CORS errors (backend must allow frontend domain)
+4. Verify Supabase auth redirects are configured
+
+**Backend returns 500 errors:**
+1. Check Digital Ocean Runtime Logs
+2. Verify environment variables are set (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
+3. Test Supabase connection manually
+4. Check for uncaught exceptions in logs
+
+**Database connection fails:**
+1. Verify `SUPABASE_URL` is correct (should end in `.supabase.co`)
+2. Check service role key has correct permissions
+3. Verify Supabase project is active (not paused)
+4. Check network connectivity from Digital Ocean to Supabase
+
+### Deployment Issues
+
+**Cloudflare deployment fails:**
+```bash
+# Check Wrangler authentication
+wrangler whoami
+
+# Re-authenticate if needed
+wrangler login
+
+# Check wrangler.toml configuration
+# Verify custom domain is set up in Cloudflare Dashboard
+```
+
+**Digital Ocean deployment fails:**
+1. Check build logs in DO dashboard
+2. Verify `prod/server` branch exists and has latest changes
+3. Check if DO is watching the correct branch
+4. Verify environment variables are set
+
+**Supabase push fails:**
+```bash
+# Check project linkage
+supabase link --project-ref <your-project-id>
+
+# Re-authenticate if needed
+supabase login
+
+# Verify migration SQL is valid
+supabase db push --dry-run
+```
+
+### CORS Issues
+
+**Symptoms**: Frontend shows CORS errors in console
+
+**Solutions**:
+1. Check backend CORS headers in `server/app.ts`
+2. Ensure backend allows frontend domain
+3. Verify preflight requests (OPTIONS) are handled
+4. Check Digital Ocean app allows CORS
+
+**Quick fix for testing** (not for production):
+```typescript
+// server/app.ts
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*", // Allow all (development only)
+  // ...
+};
+```
+
+### Authentication Issues
+
+**Google OAuth fails:**
+1. Verify Google OAuth credentials in Google Cloud Console
+2. Check authorized redirect URIs include your production domain
+3. Verify Supabase `config.toml` has correct `site_url`
+4. Check `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET` is set
+
+**Session expires immediately:**
+1. Check JWT expiry in `supabase/config.toml` (default: 3600 seconds)
+2. Verify browser allows cookies from Supabase domain
+3. Check for clock skew between client and server
+
+---
+
+## Getting Help
+
+If you encounter issues not covered here:
+
+1. **Check logs**:
+   - Cloudflare: Dashboard → Workers & Pages → Deployments → Logs
+   - Digital Ocean: Dashboard → Apps → Runtime Logs
+   - Supabase: Dashboard → Logs
+
+2. **Review documentation**:
+   - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+   - [Digital Ocean App Platform Docs](https://docs.digitalocean.com/products/app-platform/)
+   - [Supabase Docs](https://supabase.com/docs)
+
+3. **Common issues**:
+   - Search this repository's issue tracker
+   - Check deployment script comments for hints
+
+4. **Contact support**:
+   - Cloudflare: https://support.cloudflare.com
+   - Digital Ocean: https://www.digitalocean.com/support
+   - Supabase: https://supabase.com/support
