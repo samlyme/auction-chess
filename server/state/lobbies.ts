@@ -16,10 +16,7 @@ export function getLobbyByUserId(userId: string): Lobby | undefined {
 
 export function createLobby(
   userId: string,
-  config: LobbyConfig = {
-    hostColor: "white",
-    initTime: { time: { white: 900000, black: 900000 }, prev: null },
-  },
+  config: LobbyConfig,
 ): Lobby {
   const code = generateUniqueCode();
   const newLobby: Lobby = {
@@ -59,7 +56,7 @@ export function deleteLobby(lobbyCode: string): void {
 
 export function startGame(lobbyCode: string): void {
   const lobby = lobbies.get(lobbyCode)!;
-  lobby.gameState = createGame();
+  lobby.gameState = createGame(lobby.config.gameConfig);
 }
 
 export function endGame(lobbyCode: string): void {

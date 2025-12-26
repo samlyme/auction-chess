@@ -21,9 +21,9 @@ export const validatePlayer: MiddlewareHandler<GameEnv> = async (c, next) => {
   let playerColor: Color;
 
   if (user.id === lobby.hostUid) {
-    playerColor = lobby.config.hostColor;
+    playerColor = lobby.config.gameConfig.hostColor;
   } else if (user.id === lobby.guestUid) {
-    playerColor = lobby.config.hostColor === "white" ? "black" : "white";
+    playerColor = lobby.config.gameConfig.hostColor === "white" ? "black" : "white";
   } else {
     throw new HTTPException(403, { message: "Not a player in this game" });
   }

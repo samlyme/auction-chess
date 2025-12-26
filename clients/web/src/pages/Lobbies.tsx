@@ -32,7 +32,7 @@ export default function Lobbies() {
     if (user.id === hostUid) {
       setRole("host");
       setHost(profile);
-      setPlayerColor(config.hostColor);
+      setPlayerColor(config.gameConfig.hostColor);
 
       if (guestUid) {
         getProfile({ id: guestUid })
@@ -42,7 +42,7 @@ export default function Lobbies() {
     } else if (guestUid && user.id === guestUid) {
       setRole("guest");
       setGuest(profile);
-      setPlayerColor(config.hostColor === "white" ? "black" : "white");
+      setPlayerColor(config.gameConfig.hostColor === "white" ? "black" : "white");
 
       getProfile({ id: hostUid })
         .then(setHost)

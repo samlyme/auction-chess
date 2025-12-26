@@ -73,13 +73,18 @@ export const AuctionChessState = z.object({
 });
 export type AuctionChessState = z.infer<typeof AuctionChessState>;
 
+export const GameConfig = z.object({
+  hostColor: Color,
+  initTime: z.record(Color, z.number()),
+})
+export type GameConfig = z.infer<typeof GameConfig>;
+
 // ============================================================================
 // Lobby types
 // ============================================================================
 
 export const LobbyConfig = z.object({
-  hostColor: Color,
-  initTime: TimeState,
+  gameConfig: GameConfig,
 });
 export type LobbyConfig = z.infer<typeof LobbyConfig>;
 

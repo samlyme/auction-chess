@@ -7,6 +7,7 @@ import type {
   Result,
   TimeState,
   Color,
+  GameConfig,
 } from "../index";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -14,11 +15,11 @@ const STARTING_BALANCE = 1000;
 
 export type GameResult = Result<AuctionChessState, string>;
 
-export function createGame(): AuctionChessState {
+export function createGame(config: GameConfig): AuctionChessState {
   return {
     chessState: { fen: STARTING_FEN },
     timeState: {
-      time: { white: 900000, black: 900000 },
+      time: config.initTime,
       prev: null,
     },
     auctionState: {

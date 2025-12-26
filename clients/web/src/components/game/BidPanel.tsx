@@ -227,14 +227,12 @@ export default function BidPanel({
     opponentColor === "white" ? hostUsername : guestUsername;
 
   return (
-    <div
-      className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}
-    >
+    <div>
       <TimeAndTitle
         time={
           gameState.timeState.time[opponentColor] -
-          (gameState.turn === opponentColor
-            ? Date.now() - (gameState.timeState.prev || 0)
+          (gameState.timeState.prev
+            ? Date.now() - gameState.timeState.prev
             : 0)
         }
         countdown={gameState.timeState.prev !== null && !isPlayerTurn}
@@ -243,32 +241,36 @@ export default function BidPanel({
         isCurrentTurn={!isPlayerTurn}
       />
 
-      <CurrentBalance
-        balance={balance[opponentColor] ?? 0}
-        nextBalance={(balance[opponentColor] ?? 0) - prevOppBidAmount}
-      />
+      <div
+        className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}
+      >
+        <CurrentBalance
+          balance={balance[opponentColor] ?? 0}
+          nextBalance={(balance[opponentColor] ?? 0) - prevOppBidAmount}
+        />
 
-      <BidInfo playerBid={prevPlayerBidAmount} oppBid={prevOppBidAmount} />
+        <BidInfo playerBid={prevPlayerBidAmount} oppBid={prevOppBidAmount} />
 
-      <BidMenu
-        currentBid={currentBid}
-        prevBid={Math.max(prevPlayerBidAmount, prevOppBidAmount)}
-        playerBalance={balance[playerColor] ?? 0}
-        oppBalance={balance[opponentColor] ?? 0}
-        setCurrentBid={setCurrentBid}
-        makeBid={gameState.phase === "move" ? () => {} : onMakeBid}
-      />
+        <BidMenu
+          currentBid={currentBid}
+          prevBid={Math.max(prevPlayerBidAmount, prevOppBidAmount)}
+          playerBalance={balance[playerColor] ?? 0}
+          oppBalance={balance[opponentColor] ?? 0}
+          setCurrentBid={setCurrentBid}
+          makeBid={gameState.phase === "move" ? () => {} : onMakeBid}
+        />
 
-      <CurrentBalance
-        balance={balance[playerColor] ?? 0}
-        nextBalance={(balance[playerColor] ?? 0) - currentBid}
-      />
+        <CurrentBalance
+          balance={balance[playerColor] ?? 0}
+          nextBalance={(balance[playerColor] ?? 0) - currentBid}
+        />
+      </div>
 
       <TimeAndTitle
         time={
           gameState.timeState.time[playerColor] -
-          (gameState.turn === playerColor
-            ? Date.now() - (gameState.timeState.prev || 0)
+          (gameState.timeState.prev
+            ? Date.now() - gameState.timeState.prev
             : 0)
         }
         countdown={gameState.timeState.prev !== null && isPlayerTurn}

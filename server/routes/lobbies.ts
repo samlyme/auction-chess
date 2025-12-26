@@ -24,7 +24,16 @@ const route = new Hono<MaybeLobbyEnv>()
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
-    const lobby = createLobby(c.get("user").id);
+    // TODO: implement body parsing for lobby config.
+    const lobby = createLobby(c.get("user").id, {
+      gameConfig: {
+        hostColor: "white",
+        initTime: {
+          white: 30 * 1000, // Thirty seconds for dev.
+          black: 30 * 1000,
+        }
+      }
+    });
     if (!lobby)
       throw new HTTPException(500, { message: "failed to create lobby" });
 
