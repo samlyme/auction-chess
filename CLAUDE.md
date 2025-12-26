@@ -95,6 +95,8 @@ The `shared` package contains:
 
 Import from `shared` package in all workspace packages.
 
+**Naming Convention**: API-level types use **camelCase** (e.g., `createdAt`, `gameState`, `hostUid`, `guestUid`), while the underlying database schema uses **snake_case** (e.g., `created_at`, `game_state`, `host_uid`, `guest_uid`). This follows TypeScript/JavaScript conventions at the API layer while maintaining PostgreSQL conventions at the database layer.
+
 ### Authentication Flow
 
 - Supabase Auth handles user authentication
