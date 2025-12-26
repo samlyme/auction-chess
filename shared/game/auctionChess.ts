@@ -1,6 +1,13 @@
 import { opposite } from "chessops";
 import { PseudoChess } from "./pseudoChess";
-import type { Bid, AuctionChessState, NormalMove, Result } from "../index";
+import type {
+  Bid,
+  AuctionChessState,
+  NormalMove,
+  Result,
+  TimeState,
+  Color,
+} from "../index";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const STARTING_BALANCE = 1000;
@@ -10,12 +17,28 @@ export type GameResult = Result<AuctionChessState, string>;
 export function createGame(): AuctionChessState {
   return {
     chessState: { fen: STARTING_FEN },
+    timeState: {
+      time: { white: 900000, black: 900000 },
+      prev: null,
+    },
     auctionState: {
       balance: { white: STARTING_BALANCE, black: STARTING_BALANCE },
       bidHistory: [[]],
     },
     turn: "white",
     phase: "bid",
+  };
+}
+
+function updateTime(timeState: TimeState, turn: Color): TimeState {
+  const now = Date.now();
+  const { time, prev } = timeState;
+  const diff = prev === null ? 0 : now - prev;
+  const newTime = { ...time };
+  newTime[turn] -= diff;
+  return {
+    time: newTime,
+    prev: now,
   };
 }
 
@@ -37,6 +60,7 @@ export function movePiece(
   const { balance, bidHistory } = game.auctionState;
   const currentBidStack = bidHistory[bidHistory.length - 1]!;
 
+  const newTime = updateTime(game.timeState, game.turn);
   // Check if opponent is broke - they automatically fold
   const opponent = opposite(game.turn);
   if (balance[opponent] === 0) {
@@ -49,6 +73,7 @@ export function movePiece(
       value: {
         chessState: { fen: newFen },
         auctionState: { balance, bidHistory },
+        timeState: newTime,
         turn: game.turn,
         phase: "move",
         winner: outcome.winner,
@@ -65,6 +90,7 @@ export function movePiece(
     value: {
       chessState: { fen: newFen },
       auctionState: { balance, bidHistory },
+      timeState: newTime,
       turn: nextPlayer,
       phase: "bid",
       winner: outcome.winner,
@@ -84,6 +110,7 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
   // Get last bid amount, considering it might be a fold
   const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 
+  const newTime = updateTime(game.timeState, game.turn);
   // Handle fold
   if ("fold" in bid) {
     if (lastBid && "amount" in lastBid) {
@@ -96,6 +123,7 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
       value: {
         chessState: game.chessState,
         auctionState: { balance, bidHistory },
+        timeState: newTime,
         turn: opposite(game.turn),
         phase: "move",
         winner: game.winner,
@@ -122,12 +150,14 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
     return {
       ok: true,
       value: {
-      chessState: game.chessState,
-      auctionState: { balance, bidHistory },
-      turn: game.turn,
-      phase: "move",
-      winner: game.winner,
-    }};
+        chessState: game.chessState,
+        auctionState: { balance, bidHistory },
+        timeState: newTime,
+        turn: game.turn,
+        phase: "move",
+        winner: game.winner,
+      },
+    };
   }
 
   // Normal bid: continue bidding

@@ -57,9 +57,16 @@ export const ChessState = z.object({
 });
 export type ChessState = z.infer<typeof ChessState>;
 
+export const TimeState = z.object({
+  time: z.record(Color, z.number()),
+  prev: z.number().nullable(),
+});
+export type TimeState = z.infer<typeof TimeState>;
+
 export const AuctionChessState = z.object({
   chessState: ChessState,
   auctionState: AuctionState,
+  timeState: TimeState,
   turn: Color,
   phase: Phase,
   winner: Color.optional(),
@@ -72,6 +79,7 @@ export type AuctionChessState = z.infer<typeof AuctionChessState>;
 
 export const LobbyConfig = z.object({
   hostColor: Color,
+  initTime: TimeState,
 });
 export type LobbyConfig = z.infer<typeof LobbyConfig>;
 
@@ -107,7 +115,8 @@ export type LobbyJoin = z.infer<typeof LobbyJoinQuery>;
 
 export const Profile = z.object({
   bio: z.string(),
-  createdAt: z.string(),
+  // stop messing with DB naming conventions lol. Just leave it, it's not worth.
+  created_at: z.string(),
   id: z.string(),
   username: z.string(),
 });

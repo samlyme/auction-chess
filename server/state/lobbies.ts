@@ -14,7 +14,13 @@ export function getLobbyByUserId(userId: string): Lobby | undefined {
   return lobbyCode ? lobbies.get(lobbyCode) : undefined;
 }
 
-export function createLobby(userId: string, config: LobbyConfig = { hostColor: "white" }): Lobby {
+export function createLobby(
+  userId: string,
+  config: LobbyConfig = {
+    hostColor: "white",
+    initTime: { time: { white: 900000, black: 900000 }, prev: null },
+  },
+): Lobby {
   const code = generateUniqueCode();
   const newLobby: Lobby = {
     code,
@@ -61,7 +67,10 @@ export function endGame(lobbyCode: string): void {
   lobby.gameState = null;
 }
 
-export function updateGameState(lobbyCode: string, gameState: AuctionChessState): void {
+export function updateGameState(
+  lobbyCode: string,
+  gameState: AuctionChessState,
+): void {
   const lobby = lobbies.get(lobbyCode)!;
   lobby.gameState = gameState;
 }

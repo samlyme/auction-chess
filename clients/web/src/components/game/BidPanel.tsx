@@ -11,13 +11,23 @@ interface GameProps {
   onMakeBid: (bid: Bid) => void;
 }
 
+function formatTime(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) /60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds].map((v) => v.toString().padStart(2, "0")).join(":");
+}
+
 function TimeAndTitle({
   time,
   username,
   color,
   isCurrentTurn,
 }: {
-  time: string;
+  time: number;
   username: string;
   color: string;
   isCurrentTurn: boolean;
@@ -25,7 +35,7 @@ function TimeAndTitle({
   return (
     <div className={`time-and-title ${isCurrentTurn ? "current-turn" : ""}`}>
       <div className="time item">
-        <p>{time}</p>
+        <p>{formatTime(time)}</p>
       </div>
       <div className="title item">
         <p>
@@ -178,29 +188,10 @@ export default function BidPanel({
   }
 
   const [currentBid, setCurrentBid] = useState<number>(0);
-  const [timeRemaining, setTimeRemaining] = useState<number>(15 * 60); // 15 minutes in seconds
 
   useEffect(() => {
     setCurrentBid(Math.max(prevPlayerBidAmount, prevOppBidAmount));
   }, [gameState]);
-
-  // Countdown timer - always counts down from 15:00
-  useEffect(() => {
-    setTimeRemaining(15 * 60); // Reset to 15 minutes on turn change
-
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => Math.max(0, prev - 1));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [gameState.turn]);
-
-  // Format time as MM:SS
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const isPlayerTurn = gameState.turn === playerColor;
   const playerUsername =
@@ -211,7 +202,7 @@ export default function BidPanel({
   return (
     <div className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}>
       <TimeAndTitle
-        time={isPlayerTurn ? "15:00" : formatTime(timeRemaining)}
+        time={gameState.timeState.time[opponentColor]}
         username={opponentUsername}
         color={opponentColor}
         isCurrentTurn={!isPlayerTurn}
@@ -239,7 +230,7 @@ export default function BidPanel({
       />
 
       <TimeAndTitle
-        time={isPlayerTurn ? formatTime(timeRemaining) : "15:00"}
+        time={gameState.timeState.time[playerColor]}
         username={playerUsername}
         color={playerColor}
         isCurrentTurn={isPlayerTurn}
