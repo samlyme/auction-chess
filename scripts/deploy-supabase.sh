@@ -29,7 +29,7 @@ git push origin "${DEPLOY_BRANCH}"
 
 # Deploy to Supabase
 echo "📤 Deploying to Supabase..."
-bun run deploy:supabase
+bun run sb:push
 
 # Return to original branch
 git checkout "${CURRENT_BRANCH}"
