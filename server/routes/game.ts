@@ -43,14 +43,18 @@ const app = new Hono<GameEnv>()
       const channel = c.get("channel");
       const bid = c.req.valid("json");
 
+      const receivedTime = c.get("receivedTime");
+      const usedTime = gameState.timeState.prev === null ? 0 : receivedTime - gameState.timeState.prev;
       // TODO: make this use the receivedTime.
-      const result = makeBidLogic(gameState, bid);
+      const result = makeBidLogic(gameState, bid, usedTime);
 
       if (!result.ok) {
         throw new HTTPException(400, { message: result.error });
       }
 
       await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value))
+      // Lag compensation for realtime service.
+      // result.value.timeState.prev = Date.now();
       updateGameState(lobby.code, result.value)
 
       return c.body(null, 204);
@@ -72,6 +76,9 @@ const app = new Hono<GameEnv>()
       const playerColor = c.get("playerColor") as Color;
       const move = c.req.valid("json");
 
+      const receivedTime = c.get("receivedTime");
+      const usedTime = gameState.timeState.prev === null ? 0 : receivedTime - gameState.timeState.prev;
+
       // Ensure it's the player's turn
       if (gameState.turn !== playerColor) {
         throw new HTTPException(400, {
@@ -79,13 +86,15 @@ const app = new Hono<GameEnv>()
         });
       }
 
-      const result = movePieceLogic(gameState, move);
+      const result = movePieceLogic(gameState, move, usedTime);
 
       if (!result.ok) {
         throw new HTTPException(400, { message: result.error });
       }
 
       await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+      // Supabase Realtime Service Lag comp.
+      // result.value.timeState.prev = Date.now();
       updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);

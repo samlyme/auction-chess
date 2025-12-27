@@ -5,8 +5,6 @@ import type {
   AuctionChessState,
   NormalMove,
   Result,
-  TimeState,
-  Color,
   GameConfig,
 } from "../index";
 
@@ -31,22 +29,16 @@ export function createGame(config: GameConfig): AuctionChessState {
   };
 }
 
-function updateTime(timeState: TimeState, turn: Color): TimeState {
-  const now = Date.now();
-  const { time, prev } = timeState;
-  const diff = prev === null ? 0 : now - prev;
-  const newTime = { ...time };
-  newTime[turn] -= diff;
-  return {
-    time: newTime,
-    prev: now,
-  };
-}
-
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
+  usedTime: number,
 ): GameResult {
+  if (usedTime >= game.timeState.time[game.turn]) {
+    // This should genuinely never happen.
+    return { ok: false, error: "Move came after timeout." }
+  }
+
   if (game.phase !== "move") {
     return { ok: false, error: "Not in move phase" };
   }
@@ -61,7 +53,10 @@ export function movePiece(
   const { balance, bidHistory } = game.auctionState;
   const currentBidStack = bidHistory[bidHistory.length - 1]!;
 
-  const newTime = updateTime(game.timeState, game.turn);
+  const newTime = game.timeState;
+  newTime.time[game.turn] -= usedTime;
+  newTime.prev = Date.now();
+
   // Check if opponent is broke - they automatically fold
   const opponent = opposite(game.turn);
   if (balance[opponent] === 0) {
@@ -99,7 +94,12 @@ export function movePiece(
   };
 }
 
-export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
+export function makeBid(game: AuctionChessState, bid: Bid, usedTime: number): GameResult {
+  if (usedTime >= game.timeState.time[game.turn]) {
+    // This should genuinely never happen.
+    return { ok: false, error: "Move came after timeout." }
+  }
+
   if (game.phase !== "bid") {
     return { ok: false, error: "Not in bid phase" };
   }
@@ -111,7 +111,9 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
   // Get last bid amount, considering it might be a fold
   const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 
-  const newTime = updateTime(game.timeState, game.turn);
+  const newTime = game.timeState;
+  newTime.time[game.turn] -= usedTime;
+  newTime.prev = Date.now();
   // Handle fold
   if ("fold" in bid) {
     if (lastBid && "amount" in lastBid) {
