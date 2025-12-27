@@ -30,9 +30,7 @@ function formatTime(ms: number): string {
   if (hours > 0) times.push(hours);
   times.push(minutes);
   times.push(seconds);
-  return times.map((v) => v.toString().padStart(2, "0")).join(":") + (
-    seconds < 5 ? "." + (Math.floor((ms % 1000) / 10)).toString().padStart(2, "0") : ""
-  );
+  return times.map((v) => v.toString().padStart(2, "0")).join(":");
 }
 
 function TimeAndTitle({
