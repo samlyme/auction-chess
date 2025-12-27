@@ -22,8 +22,9 @@
     "server:start:prod": "bun run --filter server start:prod",
     "server:start": "bun run --filter server start",
 
-    "db:diff": "supabase db diff --use-migra",
-    "db:save": "supabase db diff --use-migra -f",
+    "db:types": "supabase gen types typescript --local > server/types/database.types.ts",
+    "db:diff": "bun run db:types && supabase db diff --use-migra",
+    "db:save": "bun run db:types && supabase db diff --use-migra -f",
     "db:test": "supabase db reset",
     "deploy:preview": "supabase db push --dry-run",
 

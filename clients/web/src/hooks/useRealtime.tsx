@@ -37,7 +37,7 @@ export default function useRealtime() {
 
   useEffect(() => {
     if (!lobby) return;
-    if (!lobby.game_started) {
+    if (!lobby.gameStarted) {
       setGameState(null);
     } else {
       getGame()
@@ -49,7 +49,7 @@ export default function useRealtime() {
           console.log("getGame Error", err);
         });
     }
-  }, [lobby?.game_started]);
+  }, [lobby?.gameStarted]);
 
   useEffect(() => {
     if (loading || error || !lobby) return;
@@ -68,7 +68,7 @@ export default function useRealtime() {
 
             if (
               user?.id &&
-              (user.id === newLobby.host_uid || user.id === newLobby.guest_uid)
+              (user.id === newLobby.hostUid || user.id === newLobby.guestUid)
             ) {
               setLobby(newLobby);
             }

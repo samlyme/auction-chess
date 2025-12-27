@@ -6,10 +6,12 @@ import {
   makeBid as makeBidLogic,
   movePiece as movePieceLogic,
 } from "shared/game/auctionChess";
-import type { GameEnv } from "../types.ts";
+import type { GameEnv } from "../types/honoEnvs.ts";
 import {
+  recordReceivedTime,
   validateGame,
   validatePlayer,
+  validateTime,
   validateTurn,
 } from "../middleware/game.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
@@ -18,19 +20,20 @@ import { wrapTime } from "hono/timing";
 import { updateGameState } from "../state/lobbies.ts";
 
 const app = new Hono<GameEnv>()
-  .use(getLobby,  validateLobby)
+  .use(recordReceivedTime, getLobby, validateLobby)
 
   // GET /game - Get the current game state
   .get("/", (c) => {
     // NOTE: here, gameState is actually nullable.
-    const { game_state } = c.get("lobby");
-    return c.json(game_state || null);
+    const { gameState } = c.get("lobby");
+    return c.json(gameState || null);
   })
 
   // POST /game/bid - Make a bid in the auction phase
   .post(
     "/bid",
     validateGame,
+    validateTime,
     validatePlayer,
     validateTurn,
     zValidator("json", Bid),
@@ -40,17 +43,26 @@ const app = new Hono<GameEnv>()
       const channel = c.get("channel");
       const bid = c.req.valid("json");
 
-      // Game verification logic is actually really quick.
-      // It's the db trip that takes a while.
-      // const start = Date.now()
-      const result = makeBidLogic(gameState, bid);
+      const receivedTime = c.get("receivedTime");
+      const usedTime =
+        gameState.timeState.prev === null
+          ? 0
+          : receivedTime - gameState.timeState.prev;
+      // TODO: make this use the receivedTime.
+      const result = makeBidLogic(gameState, bid, usedTime);
 
       if (!result.ok) {
         throw new HTTPException(400, { message: result.error });
       }
 
-      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value))
-      updateGameState(lobby.code, result.value)
+      await wrapTime(
+        c,
+        "broadcast",
+        broadcastGameUpdate(channel, result.value),
+      );
+      // Lag compensation for realtime service.
+      // result.value.timeState.prev = Date.now();
+      updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);
     },
@@ -60,6 +72,7 @@ const app = new Hono<GameEnv>()
   .post(
     "/move",
     validateGame,
+    validateTime,
     validatePlayer,
     validateTurn,
     zValidator("json", NormalMove),
@@ -70,6 +83,12 @@ const app = new Hono<GameEnv>()
       const playerColor = c.get("playerColor") as Color;
       const move = c.req.valid("json");
 
+      const receivedTime = c.get("receivedTime");
+      const usedTime =
+        gameState.timeState.prev === null
+          ? 0
+          : receivedTime - gameState.timeState.prev;
+
       // Ensure it's the player's turn
       if (gameState.turn !== playerColor) {
         throw new HTTPException(400, {
@@ -77,17 +96,45 @@ const app = new Hono<GameEnv>()
         });
       }
 
-      const result = movePieceLogic(gameState, move);
+      const result = movePieceLogic(gameState, move, usedTime);
 
       if (!result.ok) {
         throw new HTTPException(400, { message: result.error });
       }
 
-      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+      await wrapTime(
+        c,
+        "broadcast",
+        broadcastGameUpdate(channel, result.value),
+      );
+      // Supabase Realtime Service Lag comp.
+      // result.value.timeState.prev = Date.now();
       updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);
     },
-  );
+  )
+
+  .post("/timecheck", validateGame, async (c) => {
+    const gameState = c.get("gameState");
+    const receivedTime = c.get("receivedTime");
+    const usedTime =
+      gameState.timeState.prev === null
+        ? 0
+        : receivedTime - gameState.timeState.prev;
+
+    if (usedTime >= gameState.timeState.time[gameState.turn]) {
+      // TODO: make a helper function for this
+      gameState.timeState.prev = null;
+      gameState.timeState.time[gameState.turn] = 0;
+      gameState.outcome = {
+        winner: gameState.turn === "white" ? "black" : "white",
+        message: "timeout",
+      };
+    }
+    const channel = c.get("channel");
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameState));
+    return c.body(null, 204);
+  });
 
 export { app as game };

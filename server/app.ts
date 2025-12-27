@@ -4,11 +4,11 @@ import { logger } from "hono/logger";
 import { lobbies } from "./routes/lobbies.ts";
 import { profiles } from "./routes/profiles.ts";
 import { game } from "./routes/game.ts";
-import type { BaseEnv } from "./types.ts";
+import type { BaseEnv } from "./types/honoEnvs.ts";
 import { validateAuth } from "./middleware/auth.ts";
 import { HTTPException } from "hono/http-exception";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "shared";
+import type { Database } from "./types/database.types.ts";
 import { timing } from "hono/timing";
 
 const corsHeaders = {

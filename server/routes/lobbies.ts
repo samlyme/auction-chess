@@ -3,7 +3,7 @@ import {
   LobbyJoinQuery,
   LobbyToPayload,
 } from "shared";
-import type { LobbyEnv, MaybeLobbyEnv } from "../types.ts";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
@@ -24,7 +24,16 @@ const route = new Hono<MaybeLobbyEnv>()
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
-    const lobby = createLobby(c.get("user").id);
+    // TODO: implement body parsing for lobby config.
+    const lobby = createLobby(c.get("user").id, {
+      gameConfig: {
+        hostColor: "white",
+        initTime: {
+          white: 3 * 1000, // Thirty seconds for dev.
+          black: 3 * 1000,
+        }
+      }
+    });
     if (!lobby)
       throw new HTTPException(500, { message: "failed to create lobby" });
 
@@ -44,7 +53,7 @@ const route = new Hono<MaybeLobbyEnv>()
     const channel = c.get("channel");
 
     const user = c.get("user");
-    if (user.id !== lobby.host_uid)
+    if (user.id !== lobby.hostUid)
       throw new HTTPException(401, {
         message: `You are not the host of lobby ${lobby.code}`,
       });
@@ -63,7 +72,7 @@ const route = new Hono<MaybeLobbyEnv>()
 
     const lobby = getLobbyByCode(code);
     if (!lobby) throw new HTTPException(404, { message: "lobby not found" });
-    if (lobby.guest_uid) throw new HTTPException(400, { message: "lobby full" });
+    if (lobby.guestUid) throw new HTTPException(400, { message: "lobby full" });
 
     joinLobby(userId, code);
 
@@ -77,7 +86,7 @@ const route = new Hono<MaybeLobbyEnv>()
     const lobby = c.get("lobby");
 
     const user = c.get("user");
-    if (user.id !== lobby.guest_uid)
+    if (user.id !== lobby.guestUid)
       throw new HTTPException(400, {
         message: `user is not guest in lobby ${lobby.code}`,
       });
@@ -95,17 +104,17 @@ const route = new Hono<MaybeLobbyEnv>()
     const channel = c.get("channel");
     const user = c.get("user");
 
-    if (user.id !== lobby.host_uid)
+    if (user.id !== lobby.hostUid)
       throw new HTTPException(400, {
         message: `user is not host of lobby ${lobby.code}`,
       });
 
-    if (!lobby.guest_uid)
+    if (!lobby.guestUid)
       throw new HTTPException(400, {
         message: "cannot start lobby without a guest",
       });
 
-    if (lobby.game_state !== null)
+    if (lobby.gameState !== null)
       throw new HTTPException(400, {
         message: "lobby already started",
       });
@@ -117,18 +126,18 @@ const route = new Hono<MaybeLobbyEnv>()
     return c.json(payload);
   })
 
-  // TODO: Use new state manager
+  // TODO: somehow ending the lobby doesn't reset timers.
   .post("/end", validateLobby, async (c: Context<LobbyEnv>) => {
     const lobby = c.get("lobby");
     const channel = c.get("channel");
     const user = c.get("user");
 
-    if (user.id !== lobby.host_uid)
+    if (user.id !== lobby.hostUid)
       throw new HTTPException(400, {
         message: `user is not host of lobby ${lobby.code}`,
       });
 
-    if (lobby.game_state === null)
+    if (lobby.gameState === null)
       throw new HTTPException(400, {
         message: "lobby not started",
       });
