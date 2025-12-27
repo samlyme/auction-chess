@@ -30,7 +30,9 @@ function formatTime(ms: number): string {
   if (hours > 0) times.push(hours);
   times.push(minutes);
   times.push(seconds);
-  return times.map((v) => v.toString().padStart(2, "0")).join(":");
+  return times.map((v) => v.toString().padStart(2, "0")).join(":") + (
+    seconds < 5 ? "." + (Math.floor((ms % 1000) / 10)).toString().padStart(2, "0") : ""
+  );
 }
 
 function TimeAndTitle({
@@ -46,7 +48,7 @@ function TimeAndTitle({
   color: string;
   isCurrentTurn: boolean;
 }) {
-  const delay = 100; // ms
+  const delay = 25; // ms
   const [timeState, setTimeState] = useState<number>(time);
 
   // Sync local time state with server time updates
