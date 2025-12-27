@@ -19,6 +19,6 @@ export async function getProfile(
 }
 
 export async function updateProfile(profile: ProfileUpdate): Promise<Profile> {
-  const res = await api.api.profiles.$patch({ json: profile });
+  const res = await api.api.profiles.$put({ json: profile });
   return res.json();
 }
