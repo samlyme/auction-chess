@@ -22,7 +22,8 @@ import { updateGameState } from "../state/lobbies.ts";
 const app = new Hono<GameEnv>()
   .use(recordReceivedTime, getLobby, validateLobby)
 
-  // GET /game - Get the current game state
+  // TODO: move this to the lobby route. Eventually when done with my own websockets,
+  // this feature can be eliminated.
   .get("/", (c) => {
     // NOTE: here, gameState is actually nullable.
     const { gameState } = c.get("lobby");
@@ -48,7 +49,6 @@ const app = new Hono<GameEnv>()
         gameState.timeState.prev === null
           ? 0
           : receivedTime - gameState.timeState.prev;
-      // TODO: make this use the receivedTime.
       const result = makeBidLogic(gameState, bid, usedTime);
 
       if (!result.ok) {

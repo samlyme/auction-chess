@@ -126,7 +126,6 @@ const route = new Hono<MaybeLobbyEnv>()
     return c.json(payload);
   })
 
-  // TODO: somehow ending the lobby doesn't reset timers.
   .post("/end", validateLobby, async (c: Context<LobbyEnv>) => {
     const lobby = c.get("lobby");
     const channel = c.get("channel");

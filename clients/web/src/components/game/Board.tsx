@@ -1,4 +1,3 @@
-// TODO: for multiplayer, think about browser to browser connections.
 import { PseudoChess } from "shared/game/pseudoChess";
 import {
   makeSquare,

@@ -39,7 +39,6 @@ export type LobbyEnv = {
   };
 };
 
-// TODO: make MaybeGameEnv
 export type GameEnv = {
   Variables: LobbyEnv["Variables"] & {
     gameState: AuctionChessState;
