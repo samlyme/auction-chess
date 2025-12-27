@@ -55,6 +55,7 @@ function TimeAndTitle({
   }, [time]);
 
   const updateTime = useCallback(() => setTimeState((v) => {
+    // TODO: stop timer when possible.
     if (v <= 0) timecheck();
     return Math.max(v - delay, 0);
   }), []);
