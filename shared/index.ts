@@ -63,13 +63,22 @@ export const TimeState = z.object({
 });
 export type TimeState = z.infer<typeof TimeState>;
 
+export const OutcomeMessage = z.enum(["mate", "ff", "stalemate", "draw", "timeout"]);
+export type OutcomeMessage = z.infer<typeof OutcomeMessage>;
+
+export const Outcome = z.object({
+  winner: Color.nullable(),
+  message: OutcomeMessage,
+})
+export type Outcome = z.infer<typeof Outcome>;
+
 export const AuctionChessState = z.object({
   chessState: ChessState,
   auctionState: AuctionState,
   timeState: TimeState,
   turn: Color,
   phase: Phase,
-  winner: Color.optional(),
+  outcome: Outcome.optional(),
 });
 export type AuctionChessState = z.infer<typeof AuctionChessState>;
 

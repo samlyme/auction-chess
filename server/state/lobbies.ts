@@ -71,7 +71,6 @@ export function updateGameState(
   const lobby = lobbies.get(lobbyCode)!;
   lobby.gameState = gameState;
   console.log("new game state", gameState);
-
 }
 
 function generateUniqueCode(): string {

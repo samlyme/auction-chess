@@ -6,6 +6,7 @@ import type {
   NormalMove,
   Result,
   GameConfig,
+  Outcome,
 } from "../index";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -49,7 +50,11 @@ export function movePiece(
   }
 
   const newFen = chess.toFen();
-  const outcome = chess.outcome();
+  const chessOutcome = chess.outcome();
+  const outcome: Outcome | undefined = chessOutcome.winner ? {
+    winner: chessOutcome.winner,
+    message: "mate",
+  } : undefined;
   const { balance, bidHistory } = game.auctionState;
   const currentBidStack = bidHistory[bidHistory.length - 1]!;
 
@@ -72,7 +77,7 @@ export function movePiece(
         timeState: newTime,
         turn: game.turn,
         phase: "move",
-        winner: outcome.winner,
+        outcome
       },
     };
   }
@@ -89,7 +94,7 @@ export function movePiece(
       timeState: newTime,
       turn: nextPlayer,
       phase: "bid",
-      winner: outcome.winner,
+      outcome
     },
   };
 }
@@ -129,7 +134,6 @@ export function makeBid(game: AuctionChessState, bid: Bid, usedTime: number): Ga
         timeState: newTime,
         turn: opposite(game.turn),
         phase: "move",
-        winner: game.winner,
       },
     };
   }
@@ -158,7 +162,6 @@ export function makeBid(game: AuctionChessState, bid: Bid, usedTime: number): Ga
         timeState: newTime,
         turn: game.turn,
         phase: "move",
-        winner: game.winner,
       },
     };
   }
