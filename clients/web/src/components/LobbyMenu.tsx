@@ -56,9 +56,9 @@ export default function LobbyMenu({
 
   return (
     <div>
-      {user.id === lobby.host_uid ? (
+      {user.id === lobby.hostUid ? (
         <>
-          {lobby.game_started ? (
+          {lobby.gameStarted ? (
             <button onClick={handleEndLobby}>end lobby</button>
           ) : (
             <button onClick={handleStartLobby}>start lobby</button>

@@ -17,3 +17,8 @@ export async function getGame(): Promise<AuctionChessState | null> {
   const res = await api.api.lobbies.game.$get();
   return res.json();
 }
+
+export async function timecheck(): Promise<null> {
+  await api.api.lobbies.game.timecheck.$post();
+  return null;
+}

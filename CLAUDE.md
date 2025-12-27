@@ -9,18 +9,16 @@ Auction Chess is a multiplayer chess variant built with:
 - **Frontend**: React + TypeScript + Vite (in `clients/web`)
 - **Backend**: Hono API server running on Bun (in `server`)
 - **Database**: Supabase (PostgreSQL) with local development support
-- **Serverless**: Supabase Edge Functions using Deno (in `supabase/functions/api`)
 - **Shared code**: Common types and database schema (in `shared`)
+- **Deployment**: Git branch-based deployment to Cloudflare (client), Digital Ocean (server), and Supabase (database)
 
 ## Monorepo Structure
 
 This is a Bun workspace with three main packages:
 
-- `clients/web` - React web client
-- `server` - Hono API server (alternative to Supabase Edge Functions)
+- `clients/web` - React web client deployed to Cloudflare Workers/Pages
+- `server` - Hono API server deployed to Digital Ocean App Platform
 - `shared` - Shared TypeScript types and Zod schemas
-
-Both the `server` and `supabase/functions/api` implementations provide the same API (using Hono), but one runs on Bun and the other on Deno. They share similar structure and logic.
 
 ## Development Commands
 
@@ -29,7 +27,9 @@ Both the `server` and `supabase/functions/api` implementations provide the same 
 ```bash
 bun install              # Install all dependencies
 bun run format          # Format all files with Prettier
-bun run build:edge      # Bundle server code for Supabase Edge Functions
+bun run deploy:client   # Deploy frontend to Cloudflare
+bun run deploy:server   # Deploy backend to Digital Ocean
+bun run deploy:sb       # Deploy database to Supabase
 ```
 
 ### Web Client (`clients/web`)
@@ -50,17 +50,16 @@ bun run dev             # Start server with watch mode on port 8000
 bun run serve           # Start server without watch mode
 ```
 
-### Supabase (Database & Edge Functions)
+### Supabase (Database)
 
 ```bash
-# From root directory
-bun run build:edge      # Build server code for Deno (required before serving)
-
-# From supabase directory
+# From supabase directory or root
 supabase start          # Start local Supabase (required for development)
 supabase stop           # Stop local Supabase
 supabase db reset       # Reset database and run migrations
-supabase functions serve api  # Serve the api edge function locally
+bun run db:diff         # Generate migration diff
+bun run db:save <name>  # Save migration to file
+bun run deploy:preview  # Preview database deployment (dry-run)
 
 # Generate TypeScript types from database schema
 supabase gen types typescript --local > shared/database.types.ts
@@ -68,22 +67,23 @@ supabase gen types typescript --local > shared/database.types.ts
 
 ## Key Architecture Patterns
 
-### Dual API Implementation
+### API Server Implementation
 
-The codebase has two ways to run the API:
+The backend API is built with **Hono** running on **Bun**:
 
-1. **Bun Server** (`server/`): Direct development server using Bun runtime
-2. **Supabase Edge Function** (`supabase/functions/api/`): Production serverless deployment on Deno runtime
+- **Development**: Local Bun server at `http://localhost:8000`
+- **Production**: Digital Ocean App Platform with native Bun runtime
+- **Type-safe RPC**: Hono RPC client provides end-to-end type safety between frontend and backend
 
-**Important**: The server code in `server/` is written for Bun (no `.ts` extensions required). When deploying to Supabase Edge Functions:
-- Run `bun run build:edge` to bundle `server/app.ts` → `supabase/functions/api/server.js`
-- The Edge Function (`index.ts`) imports the bundled `server.js`
-- All dependencies (Hono, shared code) are bundled into a single file for Deno compatibility
+**Why Bun over Docker?**
+- ~40% faster cold starts on Digital Ocean
+- Simpler deployment (no Dockerfile needed)
+- Native TypeScript execution without transpilation
 
 **When making changes to API logic**:
 - Edit files in `server/` (routes, middleware, etc.)
-- Run `bun run build:edge` to rebuild for Edge Functions
-- The Bun server works directly; Edge Functions need the build step
+- The Bun server automatically reloads during development
+- For production deployment, use `bun run deploy:server` (see `DEPLOYMENT.md`)
 
 ### Shared Package
 
@@ -94,6 +94,8 @@ The `shared` package contains:
 - Type exports used by both frontend and backend
 
 Import from `shared` package in all workspace packages.
+
+**Naming Convention**: API-level types use **camelCase** (e.g., `createdAt`, `gameState`, `hostUid`, `guestUid`), while the underlying database schema uses **snake_case** (e.g., `created_at`, `game_state`, `host_uid`, `guest_uid`). This follows TypeScript/JavaScript conventions at the API layer while maintaining PostgreSQL conventions at the database layer.
 
 ### Authentication Flow
 
@@ -170,21 +172,73 @@ All packages extend the root config and add only environment-specific settings:
 ## Important Notes
 
 - This project uses **Bun** as the primary runtime (not Node.js)
-- The web client runs on port 3000, servers run on port 8000
+- The web client runs on port 3000, server runs on port 8000
 - Supabase local instance runs on port 54321 (API), 54322 (DB), 54323 (Studio)
-- Environment variables are in `.env` files (gitignored)
+- Environment variables are in `.env` files (`.env.development` and `.env.production` are committed, `.env.local` is gitignored)
 - Format code with Prettier before committing (`bun run format`)
 - Database types should be regenerated after schema changes using `supabase gen types`
+
+## Deployment
+
+**⚠️ Important**: This project uses a git branch-based deployment strategy. See `DEPLOYMENT.md` for comprehensive deployment documentation.
+
+### Quick Deployment Reference
+
+```bash
+# Deploy in order: database → server → client
+bun run deploy:sb        # Deploy database migrations and config to Supabase
+bun run deploy:server    # Deploy backend to Digital Ocean
+bun run deploy:client    # Deploy frontend to Cloudflare
+```
+
+### Deployment Gotchas
+
+When working with deployments, be aware of these common issues:
+
+1. **Environment variables are baked at build time** - Client env vars are embedded during `vite build`, not at runtime
+2. **Database type generation is manual** - Always run `supabase gen types` after schema changes
+3. **Squash merge strategy** - Deployment scripts use `git merge --squash -X theirs`, never commit directly to `prod/*` branches
+4. **CORS configuration** - Backend must explicitly allow frontend domain in production
+5. **Supabase auth redirects** - Production URL must be added to `supabase/config.toml`
+
+For detailed deployment instructions, troubleshooting, and the complete list of gotchas, see `DEPLOYMENT.md`.
 
 ## Common Development Workflows
 
 ### Adding a new API endpoint
 
-1. Define Zod schema in `shared/index.ts` if needed
-2. Add route handler in both `server/routes/` and `supabase/functions/api/routes/`
-3. Add middleware in corresponding `middleware/` directories if needed
-4. Register route in `index.ts` of both servers
-5. Update frontend service in `clients/web/src/services/`
+1. Define Zod schema in `shared/index.ts` for request/response validation (if needed)
+2. Add route handler in `server/routes/`
+3. Add middleware in `server/middleware/` if needed
+4. Register route in `server/app.ts` or `server/index.ts`
+5. Update frontend service in `clients/web/src/services/` using Hono RPC client
+
+**Example**:
+```typescript
+// shared/index.ts - Define schema
+export const GameMoveSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  promotion: z.string().optional()
+});
+
+// server/routes/game.ts - Add route
+import { zValidator } from "@hono/zod-validator";
+import { GameMoveSchema } from "shared";
+
+export const gameRoutes = new Hono();
+
+gameRoutes.post("/move", zValidator("json", GameMoveSchema), async (c) => {
+  const move = c.req.valid("json");
+  // Handle move logic
+  return c.json({ success: true });
+});
+
+// clients/web/src/services/api.ts - Call from frontend
+const result = await client.game.move.$post({
+  json: { from: "e2", to: "e4" }
+});
+```
 
 ### Modifying database schema
 

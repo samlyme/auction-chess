@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { type MaybeProfileEnv } from "../types.ts";
+import { type MaybeProfileEnv } from "../types/honoEnvs.ts";
 import { Profile, ProfileCreate } from "shared";
 import { ProfileUpdate } from "shared";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";

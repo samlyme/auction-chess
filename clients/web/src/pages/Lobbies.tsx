@@ -6,7 +6,7 @@ import LobbyMenu from "../components/LobbyMenu";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
-import type { Tables, Color, Bid, NormalMove } from "shared";
+import type { Color, Bid, NormalMove, Profile } from "shared";
 import { getProfile } from "../services/profiles";
 import { makeBid, makeMove } from "../services/game";
 import { AuctionChessBoard } from "../components/game/Board";
@@ -18,33 +18,33 @@ export default function Lobbies() {
 
   const { lobby, gameState, loading: realtimeLoading, setLobby } = useRealtime();
 
-  const [host, setHost] = useState<Tables<"profiles"> | null>(null);
-  const [guest, setGuest] = useState<Tables<"profiles"> | null>(null);
+  const [host, setHost] = useState<Profile | null>(null);
+  const [guest, setGuest] = useState<Profile | null>(null);
   const [role, setRole] = useState<"host" | "guest">("host");
   const [playerColor, setPlayerColor] = useState<Color>("white");
 
   useEffect(() => {
     if (!lobby || !user || !profile) return;
 
-    const { host_uid, guest_uid, config } = lobby;
-    if (!guest_uid) setGuest(null);
+    const { hostUid, guestUid, config } = lobby;
+    if (!guestUid) setGuest(null);
 
-    if (user.id === host_uid) {
+    if (user.id === hostUid) {
       setRole("host");
       setHost(profile);
-      setPlayerColor(config.hostColor);
+      setPlayerColor(config.gameConfig.hostColor);
 
-      if (guest_uid) {
-        getProfile({ id: guest_uid })
+      if (guestUid) {
+        getProfile({ id: guestUid })
           .then(setGuest)
           .catch((error) => console.error("Failed to load guest profile:", error));
       }
-    } else if (guest_uid && user.id === guest_uid) {
+    } else if (guestUid && user.id === guestUid) {
       setRole("guest");
       setGuest(profile);
-      setPlayerColor(config.hostColor === "white" ? "black" : "white");
+      setPlayerColor(config.gameConfig.hostColor === "white" ? "black" : "white");
 
-      getProfile({ id: host_uid })
+      getProfile({ id: hostUid })
         .then(setHost)
         .catch((error) => console.error("Failed to load host profile:", error));
     }

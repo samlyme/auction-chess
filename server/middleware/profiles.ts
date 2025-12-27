@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from "hono";
-import type { CompleteProfileEnv, MaybeProfileEnv } from "../types.ts";
+import type { CompleteProfileEnv, MaybeProfileEnv } from "../types/honoEnvs.ts";
 import { endTime, startTime } from "hono/timing";
 
 export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
