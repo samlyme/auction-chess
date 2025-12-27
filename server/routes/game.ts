@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { Bid, NormalMove, type Color } from "shared";
+import { Bid, NormalMove } from "shared";
 import {
   makeBid as makeBidLogic,
   movePiece as movePieceLogic,
+  timecheck,
 } from "shared/game/auctionChess";
 import type { GameEnv } from "../types/honoEnvs.ts";
 import {
@@ -37,11 +38,7 @@ const gameplay = new Hono<GameEnv>()
     const bid = c.req.valid("json");
 
     const receivedTime = c.get("receivedTime");
-    const usedTime =
-      gameState.timeState.prev === null
-        ? 0
-        : receivedTime - gameState.timeState.prev;
-    const result = makeBidLogic(gameState, bid, usedTime);
+    const result = makeBidLogic(gameState, bid, receivedTime);
 
     if (!result.ok) {
       throw new HTTPException(400, { message: result.error });
@@ -60,23 +57,10 @@ const gameplay = new Hono<GameEnv>()
     const lobby = c.get("lobby");
     const gameState = c.get("gameState");
     const channel = c.get("channel");
-    const playerColor = c.get("playerColor") as Color;
     const move = c.req.valid("json");
 
     const receivedTime = c.get("receivedTime");
-    const usedTime =
-      gameState.timeState.prev === null
-        ? 0
-        : receivedTime - gameState.timeState.prev;
-
-    // Ensure it's the player's turn
-    if (gameState.turn !== playerColor) {
-      throw new HTTPException(400, {
-        message: `Not your turn (current turn: ${gameState.turn})`,
-      });
-    }
-
-    const result = movePieceLogic(gameState, move, usedTime);
+    const result = movePieceLogic(gameState, move, receivedTime);
 
     if (!result.ok) {
       throw new HTTPException(400, { message: result.error });
@@ -90,7 +74,7 @@ const gameplay = new Hono<GameEnv>()
     return c.body(null, 204);
   });
 
-const timecheck = new Hono()
+const timecheckRoute = new Hono()
   .use(
     recordReceivedTime,
     getLobby,
@@ -100,27 +84,19 @@ const timecheck = new Hono()
   .post("/", async (c) => {
     const gameState = c.get("gameState");
     const receivedTime = c.get("receivedTime");
-    const usedTime =
-      gameState.timeState.prev === null
-        ? 0
-        : receivedTime - gameState.timeState.prev;
 
-    if (usedTime >= gameState.timeState.time[gameState.turn]) {
-      // TODO: make a helper function for this
-      gameState.timeState.prev = null;
-      gameState.timeState.time[gameState.turn] = 0;
-      gameState.outcome = {
-        winner: gameState.turn === "white" ? "black" : "white",
-        message: "timeout",
-      };
+    const result = timecheck(gameState, receivedTime);
+
+    if (!result.ok) {
+      throw new HTTPException(500, { message: "timecheck failed." })
     }
     const channel = c.get("channel");
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameState));
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
     return c.body(null, 204);
   });
 
 const app = new Hono<GameEnv>()
   .route("/play", gameplay)
-  .route("/timecheck", timecheck);
+  .route("/timecheck", timecheckRoute);
 
 export { app as game };

@@ -19,7 +19,7 @@ export function createGame(config: GameConfig): AuctionChessState {
   return {
     chessState: { fen: STARTING_FEN },
     timeState: {
-      time: {...config.initTime}, // if this is not deep copied, strange things happen.
+      time: { ...config.initTime }, // if this is not deep copied, strange things happen.
       prev: null,
     },
     auctionState: {
@@ -28,17 +28,18 @@ export function createGame(config: GameConfig): AuctionChessState {
     },
     turn: "white",
     phase: "bid",
-  };
+  } as AuctionChessState; // Cast to satisfy Immutable type
 }
 
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
-  usedTime: number,
+  receivedTime: number,
 ): GameResult {
+  const usedTime = timeUsed(game, receivedTime);
   if (usedTime >= game.timeState.time[game.turn]) {
     // This should genuinely never happen.
-    return { ok: false, error: "Move came after timeout." }
+    return { ok: false, error: "Move came after timeout." };
   }
 
   if (game.phase !== "move") {
@@ -55,18 +56,21 @@ export function movePiece(
 
   const newFen = chess.toFen();
   const chessOutcome = chess.outcome();
-  const outcome: Outcome | undefined = chessOutcome.winner ? {
-    winner: chessOutcome.winner,
-    message: "mate",
-  } : undefined;
+  const outcome: Outcome | undefined = chessOutcome.winner
+    ? {
+        winner: chessOutcome.winner,
+        message: "mate",
+      }
+    : undefined;
 
-  const nextState = produce(game, draft => {
+  const nextState = produce(game, (draft) => {
     draft.chessState.fen = newFen;
     draft.timeState.time[draft.turn] -= usedTime;
     draft.timeState.prev = Date.now();
 
     const opponent = opposite(draft.turn);
-    const currentBidStack = draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
+    const currentBidStack =
+      draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
 
     // Check if opponent is broke - they automatically fold
     if (draft.auctionState.balance[opponent] === 0) {
@@ -93,17 +97,24 @@ export function movePiece(
   };
 }
 
-export function makeBid(game: AuctionChessState, bid: Bid, usedTime: number): GameResult {
+export function makeBid(
+  game: AuctionChessState,
+  bid: Bid,
+  receivedTime: number,
+): GameResult {
+  const usedTime = timeUsed(game, receivedTime);
+
   if (usedTime >= game.timeState.time[game.turn]) {
     // This should genuinely never happen.
-    return { ok: false, error: "Move came after timeout." }
+    return { ok: false, error: "Move came after timeout." };
   }
 
   if (game.phase !== "bid") {
     return { ok: false, error: "Not in bid phase" };
   }
 
-  const bidStack = game.auctionState.bidHistory[game.auctionState.bidHistory.length - 1]!;
+  const bidStack =
+    game.auctionState.bidHistory[game.auctionState.bidHistory.length - 1]!;
   const lastBid = bidStack[bidStack.length - 1];
 
   // Get last bid amount, considering it might be a fold
@@ -122,8 +133,9 @@ export function makeBid(game: AuctionChessState, bid: Bid, usedTime: number): Ga
     }
   }
 
-  const nextState = produce(game, draft => {
-    const currentBidStack = draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
+  const nextState = produce(game, (draft) => {
+    const currentBidStack =
+      draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
 
     draft.timeState.time[draft.turn] -= usedTime;
     draft.timeState.prev = Date.now();
@@ -159,7 +171,37 @@ export function makeBid(game: AuctionChessState, bid: Bid, usedTime: number): Ga
   };
 }
 
-export function getCurrentBidStack(game: AuctionChessState): Bid[] {
+export function timecheck(
+  gameState: AuctionChessState,
+  receivedTime: number,
+): GameResult {
+  const usedTime =
+    gameState.timeState.prev === null
+      ? 0
+      : receivedTime - gameState.timeState.prev;
+
+  const nextState = produce(gameState, (draft) => {
+    if (usedTime >= draft.timeState.time[draft.turn]) {
+      // TODO: make a helper function for this
+      draft.timeState.prev = null;
+      draft.timeState.time[draft.turn] = 0;
+      draft.outcome = {
+        winner: draft.turn === "white" ? "black" : "white",
+        message: "timeout",
+      };
+    }
+  });
+
+  return { ok: true, value: nextState };
+}
+
+function timeUsed(gameState: AuctionChessState, receivedTime: number): number {
+  return gameState.timeState.prev === null
+    ? 0
+    : receivedTime - gameState.timeState.prev;
+}
+
+export function getCurrentBidStack(game: AuctionChessState) {
   return game.auctionState.bidHistory[game.auctionState.bidHistory.length - 1]!;
 }
 

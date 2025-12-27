@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Immutable } from "immer";
 
 // ============================================================================
 // Chess types (from chessops)
@@ -80,7 +81,8 @@ export const AuctionChessState = z.object({
   phase: Phase,
   outcome: Outcome.optional(),
 });
-export type AuctionChessState = z.infer<typeof AuctionChessState>;
+// Game state is immutable - only modified via Immer's produce()
+export type AuctionChessState = Immutable<z.infer<typeof AuctionChessState>>;
 
 export const GameConfig = z.object({
   hostColor: Color,
@@ -108,7 +110,11 @@ export const Lobby = z.object({
   hostUid: z.string(),
   id: z.string(),
 });
-export type Lobby = z.infer<typeof Lobby>;
+// Override inferred type to use immutable AuctionChessState
+// Type magic to express that Lobby is mutable, but AuctionChessState is not.
+export type Lobby = Omit<z.infer<typeof Lobby>, 'gameState'> & {
+  gameState: AuctionChessState | null;
+};
 
 export const LobbyPayload = Lobby.omit({ id: true, gameState: true }).extend({ gameStarted: z.boolean() });
 export type LobbyPayload = z.infer<typeof LobbyPayload>;
