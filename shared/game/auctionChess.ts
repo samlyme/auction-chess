@@ -18,7 +18,7 @@ export function createGame(config: GameConfig): AuctionChessState {
   return {
     chessState: { fen: STARTING_FEN },
     timeState: {
-      time: config.initTime,
+      time: {...config.initTime}, // if this is not deep copied, strange things happen.
       prev: null,
     },
     auctionState: {

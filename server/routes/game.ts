@@ -20,7 +20,7 @@ import { wrapTime } from "hono/timing";
 import { updateGameState } from "../state/lobbies.ts";
 
 const app = new Hono<GameEnv>()
-  .use(recordReceivedTime,  getLobby, validateLobby)
+  .use(recordReceivedTime, getLobby, validateLobby)
 
   // GET /game - Get the current game state
   .get("/", (c) => {
@@ -44,7 +44,10 @@ const app = new Hono<GameEnv>()
       const bid = c.req.valid("json");
 
       const receivedTime = c.get("receivedTime");
-      const usedTime = gameState.timeState.prev === null ? 0 : receivedTime - gameState.timeState.prev;
+      const usedTime =
+        gameState.timeState.prev === null
+          ? 0
+          : receivedTime - gameState.timeState.prev;
       // TODO: make this use the receivedTime.
       const result = makeBidLogic(gameState, bid, usedTime);
 
@@ -52,10 +55,14 @@ const app = new Hono<GameEnv>()
         throw new HTTPException(400, { message: result.error });
       }
 
-      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value))
+      await wrapTime(
+        c,
+        "broadcast",
+        broadcastGameUpdate(channel, result.value),
+      );
       // Lag compensation for realtime service.
       // result.value.timeState.prev = Date.now();
-      updateGameState(lobby.code, result.value)
+      updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);
     },
@@ -77,7 +84,10 @@ const app = new Hono<GameEnv>()
       const move = c.req.valid("json");
 
       const receivedTime = c.get("receivedTime");
-      const usedTime = gameState.timeState.prev === null ? 0 : receivedTime - gameState.timeState.prev;
+      const usedTime =
+        gameState.timeState.prev === null
+          ? 0
+          : receivedTime - gameState.timeState.prev;
 
       // Ensure it's the player's turn
       if (gameState.turn !== playerColor) {
@@ -92,13 +102,39 @@ const app = new Hono<GameEnv>()
         throw new HTTPException(400, { message: result.error });
       }
 
-      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+      await wrapTime(
+        c,
+        "broadcast",
+        broadcastGameUpdate(channel, result.value),
+      );
       // Supabase Realtime Service Lag comp.
       // result.value.timeState.prev = Date.now();
       updateGameState(lobby.code, result.value);
 
       return c.body(null, 204);
     },
-  );
+  )
+
+  .post("/timecheck", validateGame, async (c) => {
+    const gameState = c.get("gameState");
+    const receivedTime = c.get("receivedTime");
+    const usedTime =
+      gameState.timeState.prev === null
+        ? 0
+        : receivedTime - gameState.timeState.prev;
+
+    if (usedTime >= gameState.timeState.time[gameState.turn]) {
+      // TODO: make a helper function for this
+      gameState.timeState.prev = null;
+      gameState.timeState.time[gameState.turn] = 0;
+      gameState.outcome = {
+        winner: gameState.turn === "white" ? "black" : "white",
+        message: "timeout",
+      };
+    }
+    const channel = c.get("channel");
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameState));
+    return c.body(null, 204);
+  });
 
 export { app as game };

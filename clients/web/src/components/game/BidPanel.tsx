@@ -9,6 +9,7 @@ import {
 } from "react";
 import "./BidPanel.css";
 import { useTimer } from "react-use-precision-timer";
+import { timecheck } from "../../services/game";
 
 interface GameProps {
   gameState: AuctionChessState;
@@ -53,7 +54,10 @@ function TimeAndTitle({
     setTimeState(time);
   }, [time]);
 
-  const updateTime = useCallback(() => setTimeState((v) => v - delay), []);
+  const updateTime = useCallback(() => setTimeState((v) => {
+    if (v <= 0) timecheck();
+    return Math.max(v - delay, 0);
+  }), []);
 
   // Only run timer when it's the current player's turn
   const timer = useTimer({ delay }, updateTime);
@@ -235,7 +239,7 @@ export default function BidPanel({
             ? Date.now() - gameState.timeState.prev
             : 0)
         }
-        countdown={gameState.timeState.prev !== null && !isPlayerTurn}
+        countdown={!gameState.outcome && gameState.timeState.prev !== null && !isPlayerTurn}
         username={opponentUsername}
         color={opponentColor}
         isCurrentTurn={!isPlayerTurn}
@@ -273,7 +277,7 @@ export default function BidPanel({
             ? Date.now() - gameState.timeState.prev
             : 0)
         }
-        countdown={gameState.timeState.prev !== null && isPlayerTurn}
+        countdown={!gameState.outcome && gameState.timeState.prev !== null && isPlayerTurn}
         username={playerUsername}
         color={playerColor}
         isCurrentTurn={isPlayerTurn}
