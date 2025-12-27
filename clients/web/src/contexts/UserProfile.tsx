@@ -1,9 +1,9 @@
 import { createContext } from "react";
-import type { Tables } from "shared";
+import type { Profile } from "shared";
 
 export interface UserProfileContextType {
-  profile: Tables<"profiles"> | null;
-  update: (profile?: Tables<"profiles">) => void;
+  profile: Profile | null;
+  update: (profile?: Profile) => void;
   loading: boolean;
 }
 
