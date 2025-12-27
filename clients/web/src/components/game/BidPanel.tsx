@@ -231,7 +231,7 @@ export default function BidPanel({
       <TimeAndTitle
         time={
           gameState.timeState.time[opponentColor] -
-          (gameState.timeState.prev
+          (gameState.timeState.prev && gameState.turn === opponentColor
             ? Date.now() - gameState.timeState.prev
             : 0)
         }
@@ -269,7 +269,7 @@ export default function BidPanel({
       <TimeAndTitle
         time={
           gameState.timeState.time[playerColor] -
-          (gameState.timeState.prev
+          (gameState.timeState.prev && gameState.turn === playerColor
             ? Date.now() - gameState.timeState.prev
             : 0)
         }
