@@ -19,103 +19,85 @@ import { broadcastGameUpdate } from "../utils/realtime.ts";
 import { wrapTime } from "hono/timing";
 import { updateGameState } from "../state/lobbies.ts";
 
-const app = new Hono<GameEnv>()
-  .use(recordReceivedTime, getLobby, validateLobby)
+const gameplay = new Hono<GameEnv>()
+  .use(
+    recordReceivedTime,
+    getLobby,
+    validateLobby,
+    validateGame,
+    validateTime,
+    validatePlayer,
+    validateTurn,
+  )
+  // POST /game/bid - Make a bid in the auction phase
+  .post("/bid", zValidator("json", Bid), async (c) => {
+    const lobby = c.get("lobby");
+    const gameState = c.get("gameState");
+    const channel = c.get("channel");
+    const bid = c.req.valid("json");
 
-  // TODO: move this to the lobby route. Eventually when done with my own websockets,
-  // this feature can be eliminated.
-  .get("/", (c) => {
-    // NOTE: here, gameState is actually nullable.
-    const { gameState } = c.get("lobby");
-    return c.json(gameState || null);
+    const receivedTime = c.get("receivedTime");
+    const usedTime =
+      gameState.timeState.prev === null
+        ? 0
+        : receivedTime - gameState.timeState.prev;
+    const result = makeBidLogic(gameState, bid, usedTime);
+
+    if (!result.ok) {
+      throw new HTTPException(400, { message: result.error });
+    }
+
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+    // Lag compensation for realtime service.
+    // result.value.timeState.prev = Date.now();
+    updateGameState(lobby.code, result.value);
+
+    return c.body(null, 204);
   })
 
-  // POST /game/bid - Make a bid in the auction phase
-  .post(
-    "/bid",
-    validateGame,
-    validateTime,
-    validatePlayer,
-    validateTurn,
-    zValidator("json", Bid),
-    async (c) => {
-      const lobby = c.get("lobby");
-      const gameState = c.get("gameState");
-      const channel = c.get("channel");
-      const bid = c.req.valid("json");
-
-      const receivedTime = c.get("receivedTime");
-      const usedTime =
-        gameState.timeState.prev === null
-          ? 0
-          : receivedTime - gameState.timeState.prev;
-      const result = makeBidLogic(gameState, bid, usedTime);
-
-      if (!result.ok) {
-        throw new HTTPException(400, { message: result.error });
-      }
-
-      await wrapTime(
-        c,
-        "broadcast",
-        broadcastGameUpdate(channel, result.value),
-      );
-      // Lag compensation for realtime service.
-      // result.value.timeState.prev = Date.now();
-      updateGameState(lobby.code, result.value);
-
-      return c.body(null, 204);
-    },
-  )
-
   // POST /game/move - Make a chess move
-  .post(
-    "/move",
+  .post("/move", zValidator("json", NormalMove), async (c) => {
+    const lobby = c.get("lobby");
+    const gameState = c.get("gameState");
+    const channel = c.get("channel");
+    const playerColor = c.get("playerColor") as Color;
+    const move = c.req.valid("json");
+
+    const receivedTime = c.get("receivedTime");
+    const usedTime =
+      gameState.timeState.prev === null
+        ? 0
+        : receivedTime - gameState.timeState.prev;
+
+    // Ensure it's the player's turn
+    if (gameState.turn !== playerColor) {
+      throw new HTTPException(400, {
+        message: `Not your turn (current turn: ${gameState.turn})`,
+      });
+    }
+
+    const result = movePieceLogic(gameState, move, usedTime);
+
+    if (!result.ok) {
+      throw new HTTPException(400, { message: result.error });
+    }
+
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+    // Supabase Realtime Service Lag comp.
+    // result.value.timeState.prev = Date.now();
+    updateGameState(lobby.code, result.value);
+
+    return c.body(null, 204);
+  });
+
+const timecheck = new Hono()
+  .use(
+    recordReceivedTime,
+    getLobby,
+    validateLobby,
     validateGame,
-    validateTime,
-    validatePlayer,
-    validateTurn,
-    zValidator("json", NormalMove),
-    async (c) => {
-      const lobby = c.get("lobby");
-      const gameState = c.get("gameState");
-      const channel = c.get("channel");
-      const playerColor = c.get("playerColor") as Color;
-      const move = c.req.valid("json");
-
-      const receivedTime = c.get("receivedTime");
-      const usedTime =
-        gameState.timeState.prev === null
-          ? 0
-          : receivedTime - gameState.timeState.prev;
-
-      // Ensure it's the player's turn
-      if (gameState.turn !== playerColor) {
-        throw new HTTPException(400, {
-          message: `Not your turn (current turn: ${gameState.turn})`,
-        });
-      }
-
-      const result = movePieceLogic(gameState, move, usedTime);
-
-      if (!result.ok) {
-        throw new HTTPException(400, { message: result.error });
-      }
-
-      await wrapTime(
-        c,
-        "broadcast",
-        broadcastGameUpdate(channel, result.value),
-      );
-      // Supabase Realtime Service Lag comp.
-      // result.value.timeState.prev = Date.now();
-      updateGameState(lobby.code, result.value);
-
-      return c.body(null, 204);
-    },
   )
-
-  .post("/timecheck", validateGame, async (c) => {
+  .post("/", async (c) => {
     const gameState = c.get("gameState");
     const receivedTime = c.get("receivedTime");
     const usedTime =
@@ -136,5 +118,9 @@ const app = new Hono<GameEnv>()
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameState));
     return c.body(null, 204);
   });
+
+const app = new Hono<GameEnv>()
+  .route("/play", gameplay)
+  .route("/timecheck", timecheck);
 
 export { app as game };

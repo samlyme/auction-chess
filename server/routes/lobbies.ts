@@ -12,12 +12,11 @@ import {
   broadcastLobbyDelete,
   broadcastLobbyUpdate,
 } from "../utils/realtime.ts";
-import { runConcurrently } from "../utils/concurrency.ts";
 import { createLobby, deleteLobby, endGame, getLobbyByCode, joinLobby, leaveLobby, startGame } from "../state/lobbies.ts";
 
 const route = new Hono<MaybeLobbyEnv>()
   // could be a perf bottleneck since we are getting their profile on each req.
-  .use(runConcurrently(getLobby, getProfile), validateProfile)
+  .use(getLobby, getProfile, validateProfile)
 
   .post("/", async (c: Context<MaybeLobbyEnv>) => {
     const supabase = c.get("supabase");
@@ -43,9 +42,15 @@ const route = new Hono<MaybeLobbyEnv>()
     return c.json(payload);
   })
 
-  .get("", (c: Context<MaybeLobbyEnv>) => {
+  .get("/", (c: Context<MaybeLobbyEnv>) => {
     const lobby = c.get("lobby");
     return c.json(lobby ? LobbyToPayload.parse(lobby) : null);
+  })
+
+  .get("/game", validateLobby, (c) => {
+    // NOTE: here, gameState is actually nullable.
+    const { gameState } = c.get("lobby");
+    return c.json(gameState);
   })
 
   .delete("/", validateLobby, async (c: Context<LobbyEnv>) => {

@@ -6,6 +6,7 @@ export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
   c,
   next,
 ) => {
+  // TODO: implement LRU cache for user profiles.
   const supabase = c.get("supabase");
   const user = c.get("user");
 
