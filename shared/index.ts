@@ -102,6 +102,8 @@ export const Lobby = z.object({
   config: LobbyConfig,
   createdAt: z.string(),
   gameState: AuctionChessState.nullable(),
+  // TODO: implement game history.
+  // gameStateHistory: z.array(AuctionChessState),
   guestUid: z.string().nullable(),
   hostUid: z.string(),
   id: z.string(),
