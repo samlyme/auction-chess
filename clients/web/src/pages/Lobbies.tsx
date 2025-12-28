@@ -1,8 +1,8 @@
 import { Link } from "react-router";
 import supabase from "../supabase";
-import LobbyInfo from "../components/LobbyInfo";
-import LobbySearch from "../components/LobbySearch";
-import LobbyMenu from "../components/LobbyMenu";
+import LobbyInfo from "../components/lobby/Info";
+import LobbySearch from "../components/lobby/Search";
+import LobbyMenu from "../components/lobby/Menu";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
@@ -11,6 +11,8 @@ import { getProfile } from "../services/profiles";
 import { makeBid, makeMove } from "../services/game";
 import { AuctionChessBoard } from "../components/game/Board";
 import useRealtime from "../hooks/useRealtime";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Lobbies() {
   const { user, loading: authLoading } = useContext(AuthContext);
@@ -53,7 +55,6 @@ export default function Lobbies() {
   const handleMakeBid = async (bid: Bid) => {
     try {
       await makeBid(bid);
-      // State will update via real-time subscription
     } catch (error) {
       alert(`Error making bid: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
@@ -62,52 +63,60 @@ export default function Lobbies() {
   const handleMakeMove = async (move: NormalMove) => {
     try {
       await makeMove(move);
-      // State will update via real-time subscription
     } catch (error) {
       alert(`Error making move: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   return (
-    <>
-      <h1>Lobbies</h1>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Auction Chess</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to={"/profile/me"}>Profile</Link>
+            </Button>
+            <Button variant="secondary" onClick={() => supabase.auth.signOut()}>
+              Sign Out
+            </Button>
+          </div>
+        </div>
 
-      <h2>
-        <Link to={"/profile/me"} replace>
-          User Profile
-        </Link>
-      </h2>
-
-      {lobby ? (
-        <>
-          {gameState ? (
-            <>
-            <h2>Phase: {gameState.phase}</h2>
-            <h2>Turn: {gameState.turn}</h2>
-            <AuctionChessBoard
-              gameState={gameState}
-              playerColor={playerColor}
-              hostUsername={host?.username ?? "Host"}
-              guestUsername={guest?.username ?? "Guest"}
-              onMakeMove={handleMakeMove}
-              onMakeBid={handleMakeBid}
-            />
-            </>
-          ) : (
-            <LobbyInfo
-              lobby={lobby}
-              hostProfile={host}
-              guestProfile={guest}
-              userRole={role}
-            />
-          )}
-          <LobbyMenu lobby={lobby} setLobby={setLobby} />
-        </>
-      ) : (
-        <LobbySearch setLobby={setLobby} />
-      )}
-
-      <button onClick={() => supabase.auth.signOut()}>sign out</button>
-    </>
+        {lobby ? (
+          <div className="space-y-4">
+            {gameState ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    Game in Progress - Phase: {gameState.phase} | Turn: {gameState.turn}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AuctionChessBoard
+                    gameState={gameState}
+                    playerColor={playerColor}
+                    hostUsername={host?.username ?? "Host"}
+                    guestUsername={guest?.username ?? "Guest"}
+                    onMakeMove={handleMakeMove}
+                    onMakeBid={handleMakeBid}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <LobbyInfo
+                lobby={lobby}
+                hostProfile={host}
+                guestProfile={guest}
+                userRole={role}
+              />
+            )}
+            <LobbyMenu lobby={lobby} setLobby={setLobby} />
+          </div>
+        ) : (
+          <LobbySearch setLobby={setLobby} />
+        )}
+      </div>
+    </div>
   );
 }

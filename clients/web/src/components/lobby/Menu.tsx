@@ -1,12 +1,14 @@
 import { useContext } from "react";
-import { AuthContext } from "../contexts/Auth";
+import { AuthContext } from "../../contexts/Auth";
 import {
   deleteLobby,
   leaveLobby,
   startLobby,
   endLobby,
-} from "../services/lobbies";
+} from "../../services/lobbies";
 import type { LobbyPayload } from "shared";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function LobbyMenu({
   lobby,
@@ -16,7 +18,7 @@ export default function LobbyMenu({
   setLobby: (lobby: LobbyPayload | null) => void;
 }) {
   const { user } = useContext(AuthContext);
-  if (!lobby || !user) return <h1>Loading</h1>;
+  if (!lobby || !user) return <div>Loading...</div>;
 
   const handleStartLobby = async () => {
     try {
@@ -55,21 +57,21 @@ export default function LobbyMenu({
   };
 
   return (
-    <div>
-      {user.id === lobby.hostUid ? (
-        <>
-          {lobby.gameStarted ? (
-            <button onClick={handleEndLobby}>end lobby</button>
-          ) : (
-            <button onClick={handleStartLobby}>start lobby</button>
-          )}
-          <button onClick={handleDeleteLobby}>delete lobby</button>
-        </>
-      ) : (
-        <>
-          <button onClick={handleLeaveLobby}>leave lobby</button>
-        </>
-      )}
-    </div>
+    <Card>
+      <CardContent className="flex gap-2 pt-6">
+        {user.id === lobby.hostUid ? (
+          <>
+            {lobby.gameStarted ? (
+              <Button variant="secondary" onClick={handleEndLobby}>End Game</Button>
+            ) : (
+              <Button onClick={handleStartLobby}>Start Game</Button>
+            )}
+            <Button variant="destructive" onClick={handleDeleteLobby}>Delete Lobby</Button>
+          </>
+        ) : (
+          <Button variant="secondary" onClick={handleLeaveLobby}>Leave Lobby</Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }

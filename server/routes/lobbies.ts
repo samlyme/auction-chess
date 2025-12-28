@@ -1,5 +1,6 @@
 import { type Context, Hono } from "hono";
 import {
+  LobbyConfig,
   LobbyJoinQuery,
   LobbyToPayload,
 } from "shared";
@@ -18,26 +19,22 @@ const route = new Hono<MaybeLobbyEnv>()
   // could be a perf bottleneck since we are getting their profile on each req.
   .use(getLobby, getProfile, validateProfile)
 
-  .post("/", async (c: Context<MaybeLobbyEnv>) => {
-    const supabase = c.get("supabase");
+  .post("/", zValidator("json", LobbyConfig), async (c) => {
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
+    const lobbyConfig = c.req.valid("json");
+
     // TODO: implement body parsing for lobby config.
-    const lobby = createLobby(c.get("user").id, {
-      gameConfig: {
-        hostColor: "white",
-        initTime: {
-          white: 5 * 1000, // Thirty seconds for dev.
-          black: 5 * 1000,
-        }
-      }
-    });
+    const lobby = createLobby(c.get("user").id, lobbyConfig);
     if (!lobby)
       throw new HTTPException(500, { message: "failed to create lobby" });
 
+    // Here, need to manually send update for because the middleware for realtime
+    // lobby updates can't be run. Ideally, this should just return back the lobby
+    // data, and not have to send an update.
+    const supabase = c.get("supabase");
     const channel = supabase.channel(`lobby-${lobby.code}`);
-
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
   })

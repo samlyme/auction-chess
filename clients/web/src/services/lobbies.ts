@@ -1,8 +1,8 @@
-import type { LobbyPayload } from "shared";
+import type { LobbyConfig, LobbyPayload } from "shared";
 import { api } from "./api";
 
-export async function createLobby(): Promise<LobbyPayload> {
-  const res = await api.api.lobbies.$post();
+export async function createLobby(lobbyConfig: LobbyConfig): Promise<LobbyPayload> {
+  const res = await api.api.lobbies.$post({ json: lobbyConfig });
   return res.json();
 }
 

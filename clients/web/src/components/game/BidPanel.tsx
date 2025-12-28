@@ -7,9 +7,11 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import "./BidPanel.css";
 import { useTimer } from "react-use-precision-timer";
 import { timecheck } from "../../services/game";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface GameProps {
   gameState: AuctionChessState;
@@ -74,15 +76,20 @@ function TimeAndTitle({
   }, [countdown, timer]);
 
   return (
-    <div className={`time-and-title ${isCurrentTurn ? "current-turn" : ""}`}>
-      <div className="time item">
-        <p>{formatTime(timeState)}</p>
-      </div>
-      <div className="title item">
-        <p>
+    <div className={cn(
+      "grid grid-cols-[1fr_3fr] transition-all duration-300",
+      isCurrentTurn && "bg-primary rounded-lg p-1 shadow-[0_0_15px_rgba(74,144,226,0.6)]"
+    )}>
+      <Card className={cn("m-0.5", isCurrentTurn && "border-[#5aa0f2]")}>
+        <CardContent className="p-2 text-center text-lg">
+          {formatTime(timeState)}
+        </CardContent>
+      </Card>
+      <Card className={cn("m-0.5", isCurrentTurn && "border-[#5aa0f2]")}>
+        <CardContent className="p-2 text-center text-lg">
           {username} ({color})
-        </p>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -95,26 +102,32 @@ function CurrentBalance({
   nextBalance: number;
 }) {
   return (
-    <div className="current-balance item">
-      <h5>Current Balance</h5>
-      <h2>
-        ${balance} <em>{nextBalance}</em>
-      </h2>
-    </div>
+    <Card className="m-0.5">
+      <CardContent className="p-2 text-center">
+        <h5 className="text-sm mb-2">Current Balance</h5>
+        <h2 className="text-xl font-bold">
+          ${balance} <em className="text-muted-foreground">${nextBalance}</em>
+        </h2>
+      </CardContent>
+    </Card>
   );
 }
 
 function BidInfo({ playerBid, oppBid }: { playerBid: number; oppBid: number }) {
   return (
-    <div className="bid-info">
-      <div className="item">
-        <p>Your Bid</p>
-        <h2>${playerBid}</h2>
-      </div>
-      <div className="item">
-        <p>Opp. Bid</p>
-        <h2>${oppBid}</h2>
-      </div>
+    <div className="flex gap-0.5">
+      <Card className="flex-1 m-0.5">
+        <CardContent className="p-4 text-center border border-border">
+          <p className="text-sm mb-1">Your Bid</p>
+          <h2 className="text-xl font-bold">${playerBid}</h2>
+        </CardContent>
+      </Card>
+      <Card className="flex-1 m-0.5">
+        <CardContent className="p-4 text-center border border-border">
+          <p className="text-sm mb-1">Opp. Bid</p>
+          <h2 className="text-xl font-bold">${oppBid}</h2>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -135,64 +148,89 @@ function BidMenu({
   makeBid: (bid: Bid) => void;
 }) {
   return (
-    <div className="bid-menu item">
-      <div className="left">
-        <div className="item">
-          <p>Current Bid</p>
-          <div className="item">${currentBid}</div>
+    <Card className="m-0.5">
+      <CardContent className="p-2">
+        <div className="flex gap-0.5">
+          <div className="flex-[2] space-y-0.5">
+            <Card>
+              <CardContent className="p-2 text-center">
+                <p className="text-sm">Current Bid</p>
+                <Card className="mt-1 bg-secondary">
+                  <CardContent className="p-2 text-lg font-bold">
+                    ${currentBid}
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
+            <div className="flex gap-0.5">
+              <Button
+                className="flex-1"
+                onClick={() => makeBid({ amount: currentBid })}
+              >
+                BID
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => makeBid({ fold: true })}
+              >
+                FOLD
+              </Button>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setCurrentBid(Math.min(playerBalance, oppBalance))}
+            >
+              MAX
+            </Button>
+          </div>
+          <div className="flex-1">
+            <div className="h-full flex flex-col justify-between gap-0.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentBid(Math.min(currentBid + 20, playerBalance))
+                }
+              >
+                +20
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentBid(Math.min(currentBid + 10, playerBalance))
+                }
+              >
+                +10
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentBid(prevBid)}
+              >
+                Reset
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentBid(Math.max(currentBid - 10, prevBid))}
+              >
+                -10
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentBid(Math.max(currentBid - 20, prevBid))}
+              >
+                -20
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="bid-fold">
-          <div className="item" onClick={() => makeBid({ amount: currentBid })}>
-            BID
-          </div>
-          <div className="item" onClick={() => makeBid({ fold: true })}>
-            FOLD
-          </div>
-        </div>
-        <div
-          className="item"
-          onClick={() => setCurrentBid(Math.min(playerBalance, oppBalance))}
-        >
-          MAX
-        </div>
-      </div>
-      <div className="right">
-        <div className="increment-stack">
-          <div
-            className="item"
-            onClick={() =>
-              setCurrentBid(Math.min(currentBid + 20, playerBalance))
-            }
-          >
-            +20
-          </div>
-          <div
-            className="item"
-            onClick={() =>
-              setCurrentBid(Math.min(currentBid + 10, playerBalance))
-            }
-          >
-            +10
-          </div>
-          {/* TODO: make reset go to min raise */}
-          <div className="item" onClick={() => setCurrentBid(prevBid)}>
-            Reset
-          </div>
-          <div
-            className="item"
-            onClick={() => setCurrentBid(Math.max(currentBid - 10, prevBid))}
-          >
-            -10
-          </div>
-          <div
-            className="item"
-            onClick={() => setCurrentBid(Math.max(currentBid - 20, prevBid))}
-          >
-            -20
-          </div>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -207,7 +245,7 @@ export default function BidPanel({
   const opponentColor = opposite(playerColor);
 
   // TODO: fix this jank
-  const bidStack: Bid[] = bidHistory[bidHistory.length - 1] ?? [];
+  const bidStack = bidHistory[bidHistory.length - 1] ?? [];
   const lastBid = bidStack.at(-1) ?? { amount: 0 };
   const secondLastBid = bidStack.at(-2) ?? { amount: 0 };
 
@@ -234,7 +272,7 @@ export default function BidPanel({
     opponentColor === "white" ? hostUsername : guestUsername;
 
   return (
-    <div>
+    <div className="w-[300px] min-w-[250px] shrink-0">
       <TimeAndTitle
         time={
           gameState.timeState.time[opponentColor] -
@@ -248,30 +286,33 @@ export default function BidPanel({
         isCurrentTurn={!isPlayerTurn}
       />
 
-      <div
-        className={`bid-panel ${gameState.phase === "move" ? "grayed-out" : ""}`}
-      >
-        <CurrentBalance
-          balance={balance[opponentColor] ?? 0}
-          nextBalance={(balance[opponentColor] ?? 0) - prevOppBidAmount}
-        />
+      <Card className={cn(
+        "border-2 transition-all duration-300",
+        gameState.phase === "move" && "opacity-40 grayscale-50 pointer-events-none"
+      )}>
+        <CardContent className="p-2 space-y-0">
+          <CurrentBalance
+            balance={balance[opponentColor] ?? 0}
+            nextBalance={(balance[opponentColor] ?? 0) - prevOppBidAmount}
+          />
 
-        <BidInfo playerBid={prevPlayerBidAmount} oppBid={prevOppBidAmount} />
+          <BidInfo playerBid={prevPlayerBidAmount} oppBid={prevOppBidAmount} />
 
-        <BidMenu
-          currentBid={currentBid}
-          prevBid={Math.max(prevPlayerBidAmount, prevOppBidAmount)}
-          playerBalance={balance[playerColor] ?? 0}
-          oppBalance={balance[opponentColor] ?? 0}
-          setCurrentBid={setCurrentBid}
-          makeBid={gameState.phase === "move" ? () => {} : onMakeBid}
-        />
+          <BidMenu
+            currentBid={currentBid}
+            prevBid={Math.max(prevPlayerBidAmount, prevOppBidAmount)}
+            playerBalance={balance[playerColor] ?? 0}
+            oppBalance={balance[opponentColor] ?? 0}
+            setCurrentBid={setCurrentBid}
+            makeBid={gameState.phase === "move" ? () => {} : onMakeBid}
+          />
 
-        <CurrentBalance
-          balance={balance[playerColor] ?? 0}
-          nextBalance={(balance[playerColor] ?? 0) - currentBid}
-        />
-      </div>
+          <CurrentBalance
+            balance={balance[playerColor] ?? 0}
+            nextBalance={(balance[playerColor] ?? 0) - currentBid}
+          />
+        </CardContent>
+      </Card>
 
       <TimeAndTitle
         time={

@@ -12,6 +12,32 @@ Auction Chess is a multiplayer chess variant built with:
 - **Shared code**: Common types and database schema (in `shared`)
 - **Deployment**: Git branch-based deployment to Cloudflare (client), Digital Ocean (server), and Supabase (database)
 
+## Code Implementation Philosophy
+
+**Default to MVP and simplicity**: When implementing features:
+
+- **Start minimal**: Implement the simplest version that satisfies the core requirement
+- **Skip optional enhancements**: Don't add error handling, edge cases, loading states, or "nice-to-haves" unless explicitly requested
+- **Avoid premature abstraction**: Write direct, inline code rather than creating helpers, utilities, or abstractions for one-time use
+- **Human intervention over completeness**: Prefer getting basic functionality working first, then iterate based on feedback
+- **Ask before expanding scope**: If you identify potential improvements or edge cases, ask rather than implementing them
+
+**Examples of what NOT to do**:
+- Adding comprehensive error messages and user feedback for every failure case
+- Creating reusable components when a simple inline implementation works
+- Adding loading states, optimistic updates, or retry logic unless requested
+- Implementing full validation when basic validation suffices
+- Adding TypeScript strict typing for every edge case
+
+**Examples of what TO do**:
+- Implement the happy path first
+- Use basic error handling (try/catch with simple messages)
+- Hardcode values initially rather than making everything configurable
+- Write inline code in a single file before splitting into modules
+- Leave TODOs for known limitations rather than implementing them immediately
+
+**When in doubt, ship the 20% solution that provides 80% of the value**, then ask if additional robustness is needed.
+
 ## Monorepo Structure
 
 This is a Bun workspace with three main packages:

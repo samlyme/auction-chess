@@ -3,13 +3,14 @@ import { AuthContext } from "../contexts/Auth";
 import { UserProfileContext } from "../contexts/UserProfile";
 import { createProfile } from "../services/profiles";
 import type { ProfileCreate } from "shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function CreateUserProfile() {
-  // assume session is good
   const { session } = useContext(AuthContext);
-  // man, this "direct to db" is so dumb. also serverless is dumb. i'm dumb. i hate this.
-  // in all seriousness, this is so fragile, and should be controlled in the backend.
-  // i dont want users to just change usernames again and again.
   const { update: invalidate } = useContext(UserProfileContext);
   const [newProfile, setNewProfile] = useState<ProfileCreate>({
     username: "",
@@ -28,26 +29,41 @@ export default function CreateUserProfile() {
   }
 
   return (
-    <>
-      <h1>create profile</h1>
-      <form onSubmit={submitTask}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={newProfile.username}
-          onChange={(e) =>
-            setNewProfile((prev) => ({ ...prev, username: e.target.value }))
-          }
-        />
-        <textarea
-          placeholder="Task Description"
-          value={newProfile.bio || ""}
-          onChange={(e) =>
-            setNewProfile((prev) => ({ ...prev, bio: e.target.value }))
-          }
-        ></textarea>
-        <button type="submit">Submit</button>
-      </form>
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">Create Profile</CardTitle>
+          <CardDescription>Set up your player profile</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={submitTask} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Username"
+                value={newProfile.username}
+                onChange={(e) =>
+                  setNewProfile((prev) => ({ ...prev, username: e.target.value }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                placeholder="Tell us about yourself"
+                value={newProfile.bio || ""}
+                onChange={(e) =>
+                  setNewProfile((prev) => ({ ...prev, bio: e.target.value }))
+                }
+              />
+            </div>
+            <Button type="submit" size="lg">Create Profile</Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

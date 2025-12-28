@@ -24,7 +24,7 @@ import {
 } from "./BoardStyle";
 import type { AuctionChessState, Bid } from "shared";
 import BidPanel from "./BidPanel";
-import "./Board.css";
+import { cn } from "@/lib/utils";
 
 interface BoardProps {
   gameState: AuctionChessState;
@@ -206,9 +206,9 @@ export function AuctionChessBoard({
   }
 
   return (
-    <div className="board-container">
+    <div className="flex flex-row gap-8 items-center justify-center p-4 flex-wrap lg:flex-nowrap lg:flex-row">
       {gameState.outcome && (
-        <h1>{gameState.outcome ? (gameState.outcome.winner === playerColor ? "You win!" : "You lose.") : "Draw."}</h1>
+        <h1 className="text-2xl font-bold">{gameState.outcome ? (gameState.outcome.winner === playerColor ? "You win!" : "You lose.") : "Draw."}</h1>
       )}
       {promotionMove && (
         <PromotionMenu
@@ -218,7 +218,12 @@ export function AuctionChessBoard({
           select={playPromotion}
         />
       )}
-      <div className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}>
+      <div className={cn(
+        "max-w-[600px] max-h-[600px] w-full aspect-square transition-all duration-300",
+        "lg:max-w-[600px] lg:max-h-[600px]",
+        "max-lg:max-w-[90vw] max-lg:max-h-[90vw]",
+        gameState.phase === "bid" && "opacity-40 grayscale-50 pointer-events-none"
+      )}>
         <Chessboard
           options={{
             position: gameState.chessState.fen,
