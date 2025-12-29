@@ -152,7 +152,7 @@ Uses Hono RPC client for type-safe API calls:
 ```typescript
 // src/services/api.ts
 import { hc } from "hono/client";
-import type { AppType } from "../../../../server/app"; // Shared types
+import type { AppType } from "server/app"; // Shared types
 
 const client = hc<AppType>(BACKEND_URL);
 
@@ -340,25 +340,6 @@ Uses Vite's dual-config pattern:
 - Unused variables are errors
 - Unused parameters are errors
 - All strict type checks enabled
-
-## Styling
-
-This project uses CSS Modules (or your chosen styling solution).
-
-Example:
-```typescript
-// Component.module.css
-.container {
-  padding: 20px;
-}
-
-// Component.tsx
-import styles from "./Component.module.css";
-
-export function Component() {
-  return <div className={styles.container}>Hello</div>;
-}
-```
 
 ## Testing
 

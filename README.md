@@ -21,25 +21,24 @@ A multiplayer chess variant where players bid on their moves using in-game curre
 │                     Auction Chess Monorepo                  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  clients/web (React + Vite)                                │
-│  ├─ Cloudflare Workers/Pages                               │
-│  ├─ TypeScript + React Router                              │
-│  └─ Connects to: Backend API + Supabase Auth/Realtime      │
+│  clients/web (React + Vite)                                 │
+│  ├─ Cloudflare Workers/Pages                                │
+│  ├─ TypeScript + React Router                               │
+│  └─ Connects to: Backend API + Supabase Auth/Realtime       │
 │                                                             │
 │  server (Bun + Hono)                                        │
-│  ├─ Digital Ocean App Platform                             │
-│  ├─ REST API with type-safe RPC                            │
-│  └─ Connects to: Supabase Database                         │
+│  ├─ Self-Hosted. Currently using Digital Ocean App Platform │
+│  ├─ REST API with type-safe RPC                             │
+│  └─ Connects to: Supabase Database                          │
 │                                                             │
 │  shared (Common Types)                                      │
-│  ├─ Zod schemas for validation                             │
-│  ├─ Database types (auto-generated)                        │
-│  └─ Shared between client and server                       │
+│  ├─ Zod schemas for validation                              │
+│  └─ Game Logic is shared between server and client          │
 │                                                             │
-│  supabase (Database & Config)                              │
-│  ├─ PostgreSQL migrations                                  │
-│  ├─ Supabase configuration                                 │
-│  └─ Row Level Security (RLS) policies                      │
+│  supabase (Database & Config)                               │
+│  ├─ PostgreSQL migrations                                   │
+│  ├─ Supabase configuration                                  │
+│  └─ NOT USING RLS!! The DB is accessed by the API only      │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -58,7 +57,7 @@ auction-chess/
 │   └── routes/           # API route handlers
 ├── shared/               # Shared types and schemas
 │   ├── index.ts          # Zod schemas
-│   └── database.types.ts # Generated from Supabase schema
+│   └── game/             # Game Logic
 ├── supabase/             # Database and configuration
 │   ├── migrations/       # SQL migration files
 │   └── config.toml       # Supabase configuration
@@ -74,7 +73,7 @@ auction-chess/
 
 - [Bun](https://bun.sh) v1.2.16 or later
 - [Supabase CLI](https://supabase.com/docs/guides/cli) (for database)
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (optional, for manual client deployment)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) (for client deployment)
 
 ### Installation
 
@@ -151,7 +150,7 @@ bun run deploy:preview    # Preview database deployment (dry-run)
 ```bash
 bun run deploy:client     # Deploy frontend to Cloudflare
 bun run deploy:server     # Deploy backend to Digital Ocean
-bun run deploy:sb         # Deploy database to Supabase
+bun run deploy:sb         # Deploy database to Supabase (THIS IS DESTRUCTIVE)
 ```
 
 > **For detailed deployment instructions**, see [DEPLOYMENT.md](./DEPLOYMENT.md)
@@ -168,8 +167,7 @@ bun run deploy:sb         # Deploy database to Supabase
 
 This project has evolved through several architectural iterations:
 
-- **v1**: Docker-based deployment → **v2**: Native Bun (no Docker)
-- Performance improvement: ~40% faster cold starts on Digital Ocean
+- **v1**: Edge functions based API → **v2**: Fully self-hosted
 
 ## Key Features
 
@@ -181,10 +179,14 @@ This project has evolved through several architectural iterations:
 
 ## Development Workflow
 
-1. Make changes on `main` branch or feature branches
-2. Test locally with `bun run client:dev` and `bun run server:dev`
-3. Merge to `main` when ready
-4. Deploy using deployment scripts (see [DEPLOYMENT.md](./DEPLOYMENT.md))
+**NOTE:** `main` branch actuall acts like a staging area in this repo! You merge
+changes into `main`, then run the deployment scripts. The deployment scripts just
+merge the changes into a `prod/*` branch. 
+
+1. Make a `feat/*` branch. Make changes!
+2. Merge into `main`.
+3. Test with existing changes, fix merge conflicts, etc.
+4. Use deployment scripts! (`bun run deploy:*`)
 
 ## TypeScript Configuration
 
@@ -194,14 +196,6 @@ Uses hierarchical TypeScript configuration:
 - **Client**: Extends root + DOM libs + JSX support
 
 All packages enforce strict mode with unused variable/parameter checks.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
