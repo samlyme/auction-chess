@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useSearch, useNavigate } from "@tanstack/react-router";
 import supabase from "../supabase";
 import LobbyInfo from "../components/lobby/Info";
 import LobbySearch from "../components/lobby/Search";
@@ -13,10 +13,13 @@ import { AuctionChessBoard } from "../components/game/Board";
 import useRealtime from "../hooks/useRealtime";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { joinLobby } from "../services/lobbies";
 
 export default function Lobbies() {
   const { user, loading: authLoading } = useContext(AuthContext);
   const { profile, loading: profileLoading } = useContext(UserProfileContext);
+  const navigate = useNavigate({ from: "/lobbies" });
+  const search = useSearch({ from: "/_complete/lobbies" });
 
   const { lobby, gameState, loading: realtimeLoading, setLobby } = useRealtime();
 
@@ -24,6 +27,33 @@ export default function Lobbies() {
   const [guest, setGuest] = useState<Profile | null>(null);
   const [role, setRole] = useState<"host" | "guest">("host");
   const [playerColor, setPlayerColor] = useState<Color>("white");
+
+  // Try to join lobby from URL param if present
+  useEffect(() => {
+    if (realtimeLoading) return;
+    if (lobby) return; // Already in a lobby
+    if (!search.code) return; // No code in URL
+
+    // Try to join the lobby from the URL
+    joinLobby(search.code)
+      .then(setLobby)
+      .catch((error) => {
+        console.error("Failed to join lobby from URL:", error);
+        // Clear invalid code from URL
+        navigate({ search: { code: undefined } });
+      });
+  }, [search.code, lobby, realtimeLoading]);
+
+  // Sync lobby code with URL
+  useEffect(() => {
+    if (lobby && lobby.code !== search.code) {
+      // Update URL with current lobby code
+      navigate({ search: { code: lobby.code }, replace: true });
+    } else if (!lobby && search.code) {
+      // Clear URL if no lobby
+      navigate({ search: { code: undefined }, replace: true });
+    }
+  }, [lobby?.code, search.code]);
 
   useEffect(() => {
     if (!lobby || !user || !profile) return;

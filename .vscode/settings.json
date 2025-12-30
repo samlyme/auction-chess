@@ -13,24 +13,8 @@
     "**/routeTree.gen.ts": true
   },
   "json.validate.enable": false,
-  "deno.enablePaths": [
-    "supabase"
-  ],
-  "deno.enable": false,
-  "deno.lint": false,
-  "deno.unstable": [
-    "bare-node-builtins",
-    "byonm",
-    "sloppy-imports",
-    "unsafe-proto",
-    "webgpu",
-    "broadcast-channel",
-    "worker-options",
-    "cron",
-    "kv",
-    "ffi",
-    "fs",
-    "http",
-    "net"
-  ],
+
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
 }

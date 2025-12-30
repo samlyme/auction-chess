@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router";
+import { Link } from "@tanstack/react-router";
 
 export default function UserProfile() {
   const { profile, update: invalidate } = useContext(UserProfileContext);

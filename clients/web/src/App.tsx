@@ -1,66 +1,48 @@
 import "./index.css";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 import AuthContextProvider from "./components/providers/AuthContextProvider";
-import Auth from "./pages/Auth";
-import { BrowserRouter, Route, Routes } from "react-router";
-import Splash from "./pages/Splash";
-import Lobbies from "./pages/Lobbies";
-import OnboardingGuard from "./components/OnboardingGuard";
-import UserProfile from "./pages/UserProfile";
 import UserProfileContextProvider from "./components/providers/UserProfileContextProvider";
-import CreateUserProfile from "./pages/CreateUserProfile";
+import { useContext } from "react";
+import { AuthContext } from "./contexts/Auth";
+import { UserProfileContext } from "./contexts/UserProfile";
+import type { RouterContext } from "./routes/__root";
+
+// Create router with context type
+const router = createRouter({
+  routeTree,
+  context: {
+    auth: undefined!,
+    profile: undefined!,
+  } as RouterContext,
+});
+
+// Type registration
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+function InnerApp() {
+  const auth = useContext(AuthContext);
+  const profile = useContext(UserProfileContext);
+
+  // Wait for contexts to load before rendering router
+  if (auth.loading || profile.loading) {
+    return <h1>Loading...</h1>;
+  }
+
+  return <RouterProvider router={router} context={{ auth, profile }} />;
+}
 
 function App() {
   return (
-    <>
-      <AuthContextProvider>
-        <UserProfileContextProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <OnboardingGuard allow={"unauthed"}>
-                    <Splash />
-                  </OnboardingGuard>
-                }
-              />
-              <Route
-                path="/auth"
-                element={
-                  <OnboardingGuard allow={"unauthed"}>
-                    <Auth />
-                  </OnboardingGuard>
-                }
-              />
-              <Route
-                path="/auth/create-profile"
-                element={
-                  <OnboardingGuard allow={"createProfile"}>
-                    <CreateUserProfile />
-                  </OnboardingGuard>
-                }
-              />
-              <Route
-                path="/lobbies"
-                element={
-                  <OnboardingGuard allow={"complete"}>
-                    <Lobbies />
-                  </OnboardingGuard>
-                }
-              />
-              <Route
-                path="/profile/me"
-                element={
-                  <OnboardingGuard allow={"complete"}>
-                    <UserProfile />
-                  </OnboardingGuard>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-        </UserProfileContextProvider>
-      </AuthContextProvider>
-    </>
+    <AuthContextProvider>
+      <UserProfileContextProvider>
+        <InnerApp />
+      </UserProfileContextProvider>
+    </AuthContextProvider>
   );
 }
 
