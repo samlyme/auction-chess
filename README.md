@@ -23,7 +23,7 @@ A multiplayer chess variant where players bid on their moves using in-game curre
 │                                                             │
 │  clients/web (React + Vite)                                 │
 │  ├─ Cloudflare Workers/Pages                                │
-│  ├─ TypeScript + React Router                               │
+│  ├─ TypeScript + TanStack Router (file-based routing)       │
 │  └─ Connects to: Backend API + Supabase Auth/Realtime       │
 │                                                             │
 │  server (Bun + Hono)                                        │
@@ -174,6 +174,7 @@ This project has evolved through several architectural iterations:
 - **Real-time multiplayer**: Lobby system with WebSocket-based game updates
 - **Google OAuth**: Secure authentication via Supabase Auth
 - **Type-safe API**: Hono RPC client with end-to-end TypeScript types
+- **File-based routing**: TanStack Router with automatic route generation
 - **Git-based deployment**: Branch-based deployment strategy (no manual CI/CD)
 - **Monorepo**: Shared types and schemas between client and server
 

@@ -9,206 +9,270 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UnauthedRouteRouteImport } from './routes/_unauthed/route'
-import { Route as CreateProfileRouteRouteImport } from './routes/_createProfile/route'
-import { Route as CompleteRouteRouteImport } from './routes/_complete/route'
-import { Route as UnauthedIndexRouteImport } from './routes/_unauthed/index'
-import { Route as UnauthedAuthRouteImport } from './routes/_unauthed/auth'
-import { Route as CompleteLobbiesRouteImport } from './routes/_complete/lobbies'
-import { Route as CreateProfileAuthCreateProfileRouteImport } from './routes/_createProfile/auth.create-profile'
-import { Route as CompleteProfileMeRouteImport } from './routes/_complete/profile.me'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as AuthCreateProfileRouteImport } from './routes/auth/create-profile'
+import { Route as AuthProfileRouteRouteImport } from './routes/_auth/_profile/route'
+import { Route as AuthProfileLobbyRouteRouteImport } from './routes/_auth/_profile/_lobby/route'
+import { Route as AuthProfileProfileMeRouteImport } from './routes/_auth/_profile/profile.me'
+import { Route as AuthProfileLobbyLobbyRouteImport } from './routes/_auth/_profile/_lobby/lobby'
+import { Route as AuthProfileLobbyHomeRouteImport } from './routes/_auth/_profile/_lobby/home'
+import { Route as AuthProfileLobbyLobbyLeaveOldRouteImport } from './routes/_auth/_profile/_lobby/lobby.leave-old'
 
-const UnauthedRouteRoute = UnauthedRouteRouteImport.update({
-  id: '/_unauthed',
+const AuthRouteRoute = AuthRouteRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreateProfileRouteRoute = CreateProfileRouteRouteImport.update({
-  id: '/_createProfile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompleteRouteRoute = CompleteRouteRouteImport.update({
-  id: '/_complete',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UnauthedIndexRoute = UnauthedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => UnauthedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const UnauthedAuthRoute = UnauthedAuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => UnauthedRouteRoute,
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const CompleteLobbiesRoute = CompleteLobbiesRouteImport.update({
-  id: '/lobbies',
-  path: '/lobbies',
-  getParentRoute: () => CompleteRouteRoute,
+const AuthCreateProfileRoute = AuthCreateProfileRouteImport.update({
+  id: '/auth/create-profile',
+  path: '/auth/create-profile',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const CreateProfileAuthCreateProfileRoute =
-  CreateProfileAuthCreateProfileRouteImport.update({
-    id: '/auth/create-profile',
-    path: '/auth/create-profile',
-    getParentRoute: () => CreateProfileRouteRoute,
-  } as any)
-const CompleteProfileMeRoute = CompleteProfileMeRouteImport.update({
+const AuthProfileRouteRoute = AuthProfileRouteRouteImport.update({
+  id: '/_profile',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthProfileLobbyRouteRoute = AuthProfileLobbyRouteRouteImport.update({
+  id: '/_lobby',
+  getParentRoute: () => AuthProfileRouteRoute,
+} as any)
+const AuthProfileProfileMeRoute = AuthProfileProfileMeRouteImport.update({
   id: '/profile/me',
   path: '/profile/me',
-  getParentRoute: () => CompleteRouteRoute,
+  getParentRoute: () => AuthProfileRouteRoute,
 } as any)
+const AuthProfileLobbyLobbyRoute = AuthProfileLobbyLobbyRouteImport.update({
+  id: '/lobby',
+  path: '/lobby',
+  getParentRoute: () => AuthProfileLobbyRouteRoute,
+} as any)
+const AuthProfileLobbyHomeRoute = AuthProfileLobbyHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthProfileLobbyRouteRoute,
+} as any)
+const AuthProfileLobbyLobbyLeaveOldRoute =
+  AuthProfileLobbyLobbyLeaveOldRouteImport.update({
+    id: '/leave-old',
+    path: '/leave-old',
+    getParentRoute: () => AuthProfileLobbyLobbyRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/lobbies': typeof CompleteLobbiesRoute
-  '/auth': typeof UnauthedAuthRoute
-  '/': typeof UnauthedIndexRoute
-  '/profile/me': typeof CompleteProfileMeRoute
-  '/auth/create-profile': typeof CreateProfileAuthCreateProfileRoute
+  '/': typeof IndexRoute
+  '/auth/create-profile': typeof AuthCreateProfileRoute
+  '/auth': typeof AuthIndexRoute
+  '/home': typeof AuthProfileLobbyHomeRoute
+  '/lobby': typeof AuthProfileLobbyLobbyRouteWithChildren
+  '/profile/me': typeof AuthProfileProfileMeRoute
+  '/lobby/leave-old': typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 export interface FileRoutesByTo {
-  '/lobbies': typeof CompleteLobbiesRoute
-  '/auth': typeof UnauthedAuthRoute
-  '/': typeof UnauthedIndexRoute
-  '/profile/me': typeof CompleteProfileMeRoute
-  '/auth/create-profile': typeof CreateProfileAuthCreateProfileRoute
+  '/': typeof IndexRoute
+  '/auth/create-profile': typeof AuthCreateProfileRoute
+  '/auth': typeof AuthIndexRoute
+  '/home': typeof AuthProfileLobbyHomeRoute
+  '/lobby': typeof AuthProfileLobbyLobbyRouteWithChildren
+  '/profile/me': typeof AuthProfileProfileMeRoute
+  '/lobby/leave-old': typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_complete': typeof CompleteRouteRouteWithChildren
-  '/_createProfile': typeof CreateProfileRouteRouteWithChildren
-  '/_unauthed': typeof UnauthedRouteRouteWithChildren
-  '/_complete/lobbies': typeof CompleteLobbiesRoute
-  '/_unauthed/auth': typeof UnauthedAuthRoute
-  '/_unauthed/': typeof UnauthedIndexRoute
-  '/_complete/profile/me': typeof CompleteProfileMeRoute
-  '/_createProfile/auth/create-profile': typeof CreateProfileAuthCreateProfileRoute
+  '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteRouteWithChildren
+  '/_auth/_profile': typeof AuthProfileRouteRouteWithChildren
+  '/auth/create-profile': typeof AuthCreateProfileRoute
+  '/auth/': typeof AuthIndexRoute
+  '/_auth/_profile/_lobby': typeof AuthProfileLobbyRouteRouteWithChildren
+  '/_auth/_profile/_lobby/home': typeof AuthProfileLobbyHomeRoute
+  '/_auth/_profile/_lobby/lobby': typeof AuthProfileLobbyLobbyRouteWithChildren
+  '/_auth/_profile/profile/me': typeof AuthProfileProfileMeRoute
+  '/_auth/_profile/_lobby/lobby/leave-old': typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/lobbies' | '/auth' | '/' | '/profile/me' | '/auth/create-profile'
+  fullPaths:
+    | '/'
+    | '/auth/create-profile'
+    | '/auth'
+    | '/home'
+    | '/lobby'
+    | '/profile/me'
+    | '/lobby/leave-old'
   fileRoutesByTo: FileRoutesByTo
-  to: '/lobbies' | '/auth' | '/' | '/profile/me' | '/auth/create-profile'
+  to:
+    | '/'
+    | '/auth/create-profile'
+    | '/auth'
+    | '/home'
+    | '/lobby'
+    | '/profile/me'
+    | '/lobby/leave-old'
   id:
     | '__root__'
-    | '/_complete'
-    | '/_createProfile'
-    | '/_unauthed'
-    | '/_complete/lobbies'
-    | '/_unauthed/auth'
-    | '/_unauthed/'
-    | '/_complete/profile/me'
-    | '/_createProfile/auth/create-profile'
+    | '/'
+    | '/_auth'
+    | '/_auth/_profile'
+    | '/auth/create-profile'
+    | '/auth/'
+    | '/_auth/_profile/_lobby'
+    | '/_auth/_profile/_lobby/home'
+    | '/_auth/_profile/_lobby/lobby'
+    | '/_auth/_profile/profile/me'
+    | '/_auth/_profile/_lobby/lobby/leave-old'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  CompleteRouteRoute: typeof CompleteRouteRouteWithChildren
-  CreateProfileRouteRoute: typeof CreateProfileRouteRouteWithChildren
-  UnauthedRouteRoute: typeof UnauthedRouteRouteWithChildren
+  IndexRoute: typeof IndexRoute
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  AuthCreateProfileRoute: typeof AuthCreateProfileRoute
+  AuthIndexRoute: typeof AuthIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_unauthed': {
-      id: '/_unauthed'
+    '/_auth': {
+      id: '/_auth'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof UnauthedRouteRouteImport
+      preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_createProfile': {
-      id: '/_createProfile'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof CreateProfileRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_complete': {
-      id: '/_complete'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof CompleteRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_unauthed/': {
-      id: '/_unauthed/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof UnauthedIndexRouteImport
-      parentRoute: typeof UnauthedRouteRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_unauthed/auth': {
-      id: '/_unauthed/auth'
+    '/auth/': {
+      id: '/auth/'
       path: '/auth'
       fullPath: '/auth'
-      preLoaderRoute: typeof UnauthedAuthRouteImport
-      parentRoute: typeof UnauthedRouteRoute
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_complete/lobbies': {
-      id: '/_complete/lobbies'
-      path: '/lobbies'
-      fullPath: '/lobbies'
-      preLoaderRoute: typeof CompleteLobbiesRouteImport
-      parentRoute: typeof CompleteRouteRoute
-    }
-    '/_createProfile/auth/create-profile': {
-      id: '/_createProfile/auth/create-profile'
+    '/auth/create-profile': {
+      id: '/auth/create-profile'
       path: '/auth/create-profile'
       fullPath: '/auth/create-profile'
-      preLoaderRoute: typeof CreateProfileAuthCreateProfileRouteImport
-      parentRoute: typeof CreateProfileRouteRoute
+      preLoaderRoute: typeof AuthCreateProfileRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_complete/profile/me': {
-      id: '/_complete/profile/me'
+    '/_auth/_profile': {
+      id: '/_auth/_profile'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthProfileRouteRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/_profile/_lobby': {
+      id: '/_auth/_profile/_lobby'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthProfileLobbyRouteRouteImport
+      parentRoute: typeof AuthProfileRouteRoute
+    }
+    '/_auth/_profile/profile/me': {
+      id: '/_auth/_profile/profile/me'
       path: '/profile/me'
       fullPath: '/profile/me'
-      preLoaderRoute: typeof CompleteProfileMeRouteImport
-      parentRoute: typeof CompleteRouteRoute
+      preLoaderRoute: typeof AuthProfileProfileMeRouteImport
+      parentRoute: typeof AuthProfileRouteRoute
+    }
+    '/_auth/_profile/_lobby/lobby': {
+      id: '/_auth/_profile/_lobby/lobby'
+      path: '/lobby'
+      fullPath: '/lobby'
+      preLoaderRoute: typeof AuthProfileLobbyLobbyRouteImport
+      parentRoute: typeof AuthProfileLobbyRouteRoute
+    }
+    '/_auth/_profile/_lobby/home': {
+      id: '/_auth/_profile/_lobby/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthProfileLobbyHomeRouteImport
+      parentRoute: typeof AuthProfileLobbyRouteRoute
+    }
+    '/_auth/_profile/_lobby/lobby/leave-old': {
+      id: '/_auth/_profile/_lobby/lobby/leave-old'
+      path: '/leave-old'
+      fullPath: '/lobby/leave-old'
+      preLoaderRoute: typeof AuthProfileLobbyLobbyLeaveOldRouteImport
+      parentRoute: typeof AuthProfileLobbyLobbyRoute
     }
   }
 }
 
-interface CompleteRouteRouteChildren {
-  CompleteLobbiesRoute: typeof CompleteLobbiesRoute
-  CompleteProfileMeRoute: typeof CompleteProfileMeRoute
+interface AuthProfileLobbyLobbyRouteChildren {
+  AuthProfileLobbyLobbyLeaveOldRoute: typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 
-const CompleteRouteRouteChildren: CompleteRouteRouteChildren = {
-  CompleteLobbiesRoute: CompleteLobbiesRoute,
-  CompleteProfileMeRoute: CompleteProfileMeRoute,
+const AuthProfileLobbyLobbyRouteChildren: AuthProfileLobbyLobbyRouteChildren = {
+  AuthProfileLobbyLobbyLeaveOldRoute: AuthProfileLobbyLobbyLeaveOldRoute,
 }
 
-const CompleteRouteRouteWithChildren = CompleteRouteRoute._addFileChildren(
-  CompleteRouteRouteChildren,
-)
+const AuthProfileLobbyLobbyRouteWithChildren =
+  AuthProfileLobbyLobbyRoute._addFileChildren(
+    AuthProfileLobbyLobbyRouteChildren,
+  )
 
-interface CreateProfileRouteRouteChildren {
-  CreateProfileAuthCreateProfileRoute: typeof CreateProfileAuthCreateProfileRoute
+interface AuthProfileLobbyRouteRouteChildren {
+  AuthProfileLobbyHomeRoute: typeof AuthProfileLobbyHomeRoute
+  AuthProfileLobbyLobbyRoute: typeof AuthProfileLobbyLobbyRouteWithChildren
 }
 
-const CreateProfileRouteRouteChildren: CreateProfileRouteRouteChildren = {
-  CreateProfileAuthCreateProfileRoute: CreateProfileAuthCreateProfileRoute,
+const AuthProfileLobbyRouteRouteChildren: AuthProfileLobbyRouteRouteChildren = {
+  AuthProfileLobbyHomeRoute: AuthProfileLobbyHomeRoute,
+  AuthProfileLobbyLobbyRoute: AuthProfileLobbyLobbyRouteWithChildren,
 }
 
-const CreateProfileRouteRouteWithChildren =
-  CreateProfileRouteRoute._addFileChildren(CreateProfileRouteRouteChildren)
+const AuthProfileLobbyRouteRouteWithChildren =
+  AuthProfileLobbyRouteRoute._addFileChildren(
+    AuthProfileLobbyRouteRouteChildren,
+  )
 
-interface UnauthedRouteRouteChildren {
-  UnauthedAuthRoute: typeof UnauthedAuthRoute
-  UnauthedIndexRoute: typeof UnauthedIndexRoute
+interface AuthProfileRouteRouteChildren {
+  AuthProfileLobbyRouteRoute: typeof AuthProfileLobbyRouteRouteWithChildren
+  AuthProfileProfileMeRoute: typeof AuthProfileProfileMeRoute
 }
 
-const UnauthedRouteRouteChildren: UnauthedRouteRouteChildren = {
-  UnauthedAuthRoute: UnauthedAuthRoute,
-  UnauthedIndexRoute: UnauthedIndexRoute,
+const AuthProfileRouteRouteChildren: AuthProfileRouteRouteChildren = {
+  AuthProfileLobbyRouteRoute: AuthProfileLobbyRouteRouteWithChildren,
+  AuthProfileProfileMeRoute: AuthProfileProfileMeRoute,
 }
 
-const UnauthedRouteRouteWithChildren = UnauthedRouteRoute._addFileChildren(
-  UnauthedRouteRouteChildren,
+const AuthProfileRouteRouteWithChildren =
+  AuthProfileRouteRoute._addFileChildren(AuthProfileRouteRouteChildren)
+
+interface AuthRouteRouteChildren {
+  AuthProfileRouteRoute: typeof AuthProfileRouteRouteWithChildren
+}
+
+const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthProfileRouteRoute: AuthProfileRouteRouteWithChildren,
+}
+
+const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
+  AuthRouteRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  CompleteRouteRoute: CompleteRouteRouteWithChildren,
-  CreateProfileRouteRoute: CreateProfileRouteRouteWithChildren,
-  UnauthedRouteRoute: UnauthedRouteRouteWithChildren,
+  IndexRoute: IndexRoute,
+  AuthRouteRoute: AuthRouteRouteWithChildren,
+  AuthCreateProfileRoute: AuthCreateProfileRoute,
+  AuthIndexRoute: AuthIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

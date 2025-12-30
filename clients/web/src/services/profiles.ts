@@ -1,24 +1,25 @@
-import type { Profile, ProfileCreate, ProfileUpdate } from "shared";
+import type { Profile, ProfileCreate, ProfileUpdate, Result } from "shared";
 import { api } from "./api";
+import { handleApiCall } from "./utils";
 
-export async function createProfile(profile: ProfileCreate): Promise<Profile> {
-  const res = await api.api.profiles.$post({ json: profile });
-  return res.json();
+export async function createProfile(
+  profile: ProfileCreate,
+): Promise<Result<Profile>> {
+  return handleApiCall(() => api.api.profiles.$post({ json: profile }));
 }
 
 export async function getProfile(
   query: { username: string } | { id: string } | null = null,
-): Promise<Profile | null> {
+): Promise<Result<Profile | null>> {
   if (query) {
-    const res = await api.api.profiles.$get({ query });
-    return res.json();
+    return handleApiCall(() => api.api.profiles.$get({ query }));
   } else {
-    const res = await api.api.profiles.me.$get();
-    return res.json();
+    return handleApiCall(() => api.api.profiles.me.$get());
   }
 }
 
-export async function updateProfile(profile: ProfileUpdate): Promise<Profile> {
-  const res = await api.api.profiles.$put({ json: profile });
-  return res.json();
+export async function updateProfile(
+  profile: ProfileUpdate,
+): Promise<Result<Profile>> {
+  return handleApiCall(() => api.api.profiles.$put({ json: profile }));
 }

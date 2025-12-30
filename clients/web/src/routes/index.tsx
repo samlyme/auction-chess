@@ -1,8 +1,17 @@
-import { Link } from "@tanstack/react-router";
+import { Link, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createFileRoute } from '@tanstack/react-router'
 
-export default function Splash() {
+export const Route = createFileRoute('/')({
+  beforeLoad: ({ context }) => {
+    // if the user is logged in, send them to the lobbies page
+    if (context.auth.session) throw redirect({ to: "/lobbies" });
+  },
+  component: Splash,
+})
+
+function Splash() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">

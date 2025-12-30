@@ -6,9 +6,9 @@ React + TypeScript + Vite frontend for Auction Chess, deployed to Cloudflare Wor
 
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
-- **Routing**: React Router v6
-- **Styling**: CSS Modules / Styled Components
-- **State Management**: React Context API
+- **Routing**: TanStack Router (file-based routing)
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Context API + TanStack Router Context
 - **API Client**: Hono RPC Client (type-safe)
 - **Authentication**: Supabase Auth
 - **Real-time**: Supabase Realtime (WebSockets)
@@ -103,18 +103,27 @@ clients/web/
 ├── src/
 │   ├── components/         # React components
 │   │   ├── providers/      # Context providers
-│   │   └── ...             # UI components
-│   ├── pages/              # Page components (routes)
-│   │   ├── Splash.tsx      # Landing page
-│   │   ├── Auth.tsx        # Authentication
-│   │   ├── CreateProfile.tsx
-│   │   ├── Lobbies.tsx     # Lobby list
-│   │   └── Lobby.tsx       # Game lobby
+│   │   ├── ui/             # shadcn/ui components
+│   │   └── ...             # Custom UI components
+│   ├── routes/             # TanStack Router file-based routes
+│   │   ├── __root.tsx      # Root layout with RouterContext
+│   │   ├── index.tsx       # Home/splash page (/)
+│   │   ├── _auth/          # Protected routes (require auth + profile)
+│   │   │   ├── route.tsx   # Layout route with auth guard
+│   │   │   ├── lobbies.tsx # Lobbies page (/lobbies)
+│   │   │   └── profile.*.tsx # Profile pages
+│   │   ├── auth/           # Authentication routes
+│   │   │   ├── index.tsx   # Sign in/up page (/auth)
+│   │   │   └── create-profile.tsx # Profile creation
+│   │   ├── -types.ts       # Shared route types
+│   │   └── routeTree.gen.ts # Auto-generated route tree
+│   ├── pages/              # Reusable page components
 │   ├── services/           # API services
 │   │   ├── api.ts          # Hono RPC client
 │   │   └── utils.ts        # API utilities
+│   ├── contexts/           # React contexts
 │   ├── supabase.ts         # Supabase client setup
-│   ├── App.tsx             # Root component
+│   ├── App.tsx             # Root component with router
 │   └── main.tsx            # Entry point
 ├── public/                 # Static assets
 ├── .env.development        # Local environment variables
@@ -128,22 +137,27 @@ clients/web/
 
 ### Authentication Flow
 
-1. **Splash Page** (`/`) - Landing page with login button
-2. **Auth Page** (`/auth`) - Google OAuth via Supabase
-3. **Create Profile** (`/create-profile`) - First-time user onboarding
+1. **Splash Page** (`/`) - Landing page with "Get Started" button
+2. **Auth Page** (`/auth`) - Sign in/up with email/password or Google OAuth
+3. **Create Profile** (`/auth/create-profile`) - First-time user onboarding
 4. **Lobbies** (`/lobbies`) - Game lobby list (main app)
 
-**Route Protection**: `OnboardingGuard` component enforces authentication state:
-- `unauthed` - Only accessible when not logged in
-- `createProfile` - Only accessible when authenticated but no profile
-- `complete` - Only accessible when authenticated with profile
+**Route Protection**: Uses TanStack Router's `beforeLoad` hooks for route guards:
+- `/` - Unauthenticated users only (redirects to `/lobbies` if authenticated)
+- `/auth` - Unauthenticated routes (sign in/up)
+- `/auth/create-profile` - Authenticated users without a profile
+- `/_auth/*` - Protected routes requiring both authentication and profile
+- Route guards check `RouterContext` (auth session + user profile) and throw `redirect()` when requirements aren't met
 
 ### State Management
 
-Uses React Context API for global state:
+Uses **TanStack Router Context** combined with React Context API:
 
-- **AuthContext** (`components/providers/AuthContext.tsx`) - Supabase auth state
-- **UserProfileContext** (`components/providers/UserProfileContext.tsx`) - User profile data
+- **RouterContext** (`routes/__root.tsx`) - Auth and profile state passed to all routes
+- **AuthContext** (`components/providers/AuthContextProvider.tsx`) - Supabase auth session management
+- **UserProfileContext** (`components/providers/UserProfileContextProvider.tsx`) - User profile data
+
+The router context provides type-safe access to auth and profile state in route components via `beforeLoad` hooks and component props.
 
 ### API Integration
 
@@ -197,7 +211,7 @@ pattern = "<your-domain>.com"
 custom_domain = true
 ```
 
-**SPA Mode**: `not_found_handling = "single-page-application"` ensures React Router handles all routes.
+**SPA Mode**: `not_found_handling = "single-page-application"` ensures TanStack Router handles all routes client-side.
 
 ### Deploying
 
@@ -240,25 +254,53 @@ additional_redirect_urls = ["http://localhost:3000", "http://localhost:4173"]
 
 ## Common Tasks
 
-### Adding a New Page
+### Adding a New Route
 
-1. Create component in `src/pages/`:
+TanStack Router uses **file-based routing**. Routes are automatically generated from files in `src/routes/`.
+
+**Example: Add a public route**
+
+1. Create route file `src/routes/about.tsx`:
 ```typescript
-// src/pages/NewPage.tsx
-export function NewPage() {
-  return <div>New Page</div>;
+import { createFileRoute } from '@tanstack/router-router'
+
+export const Route = createFileRoute('/about')({
+  component: AboutComponent,
+})
+
+function AboutComponent() {
+  return <div>About Page</div>
 }
 ```
 
-2. Add route in `src/App.tsx`:
+**Example: Add a protected route**
+
+2. Create route file `src/routes/_auth/game.tsx`:
 ```typescript
-<Route path="/new-page" element={<NewPage />} />
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/_auth/game')({
+  component: GameComponent,
+})
+
+function GameComponent() {
+  // This route is automatically protected by the _auth layout route
+  return <div>Game Page</div>
+}
 ```
 
 3. Add navigation link:
 ```typescript
-<Link to="/new-page">Go to New Page</Link>
+import { Link } from '@tanstack/react-router'
+
+<Link to="/game">Go to Game</Link>
 ```
+
+**Notes:**
+- Routes in `_auth/` are automatically protected (require auth + profile)
+- `routeTree.gen.ts` is auto-generated - don't edit it manually
+- Use `beforeLoad` hooks for custom route guards
+- File structure mirrors URL structure (e.g., `_auth/game.tsx` → `/game`)
 
 ### Calling a Backend API
 
@@ -436,4 +478,4 @@ bun run dev
 - **Database README**: `/supabase/README.md`
 - **Cloudflare Docs**: https://developers.cloudflare.com/workers/
 - **Vite Docs**: https://vitejs.dev/
-- **React Router Docs**: https://reactrouter.com/
+- **TanStack Router Docs**: https://tanstack.com/router/

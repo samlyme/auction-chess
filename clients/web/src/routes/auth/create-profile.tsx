@@ -1,7 +1,8 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useState, type FormEvent } from "react";
-import { AuthContext } from "../contexts/Auth";
-import { UserProfileContext } from "../contexts/UserProfile";
-import { createProfile } from "../services/profiles";
+import { AuthContext } from "../../contexts/Auth";
+import { UserProfileContext } from "../../contexts/UserProfile";
+import { createProfile } from "../../services/profiles";
 import type { ProfileCreate } from "shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-export default function CreateUserProfile() {
+export const Route = createFileRoute('/auth/create-profile')({
+  component: CreateUserProfile,
+})
+
+function CreateUserProfile() {
   const { session } = useContext(AuthContext);
   const { update: invalidate } = useContext(UserProfileContext);
   const [newProfile, setNewProfile] = useState<ProfileCreate>({
