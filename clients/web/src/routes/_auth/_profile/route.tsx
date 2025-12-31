@@ -9,6 +9,11 @@ export const Route = createFileRoute("/_auth/_profile")({
         to: "/auth/create-profile",
         search: { redirect: location.href },
       });
+    if (res.value === null)
+      throw redirect({
+        to: "/auth/create-profile",
+        search: { redirect: location.href },
+      });
     return { profile: res.value };
   },
   component: () => <Outlet />,

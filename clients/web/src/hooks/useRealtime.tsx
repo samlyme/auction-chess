@@ -1,53 +1,42 @@
-import { useContext, useEffect, useState } from "react";
-import {
-  AuctionChessState,
-  LobbyEventType,
-  LobbyPayload,
-} from "shared";
-import { getLobby } from "../services/lobbies";
+import { useEffect, useState } from "react";
+import { AuctionChessState, LobbyEventType, LobbyPayload } from "shared";
 import { getGame } from "../services/game";
 import supabase from "../supabase";
-import { AuthContext } from "../contexts/Auth";
+import type { User } from "@supabase/supabase-js";
 
-export interface RealtimeType {
-  lobby: LobbyPayload;
-  gameState: AuctionChessState;
-  loading: boolean;
-}
+// export interface RealtimeType {
+//   lobby: LobbyPayload;
+//   gameState: AuctionChessState;
+//   loading: boolean;
+// }
 
-export default function useRealtime() {
-  const [lobby, setLobby] = useState<LobbyPayload | null>(null);
-  const [gameState, setGameState] = useState<AuctionChessState | null>(null);
+// provide all initial values. Thus, this hook's only responsibility is to
+// list for updates. However, that means it still does the logic for fetching
+// initial gameState.
+// This route sets lobby to null when a DELETE message is received.
+export default function useRealtime(
+  user: User,
+  initLobby: LobbyPayload,
+  initGameState: AuctionChessState | null,
+) {
+  const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
+  const [gameState, setGameState] = useState<AuctionChessState | null>(initGameState);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<any>(null);
 
-  const { user } = useContext(AuthContext);
-
-  useEffect(() => {
-    getLobby()
-      .then((lobby) => {
-        setLobby(lobby);
-      })
-      .catch((err) => {
-        setError(err);
-        console.log("getLobby Error", err);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
+  // One redunant getGame call to start.
   useEffect(() => {
     if (!lobby) return;
+
     if (!lobby.gameStarted) {
       setGameState(null);
     } else {
       getGame()
-        .then((state) => {
-          setGameState(state);
+        .then((res) => {
+          if (!res.ok) setError(res.error);
+          else setGameState(res.value);
         })
-        .catch((err) => {
-          setError(err);
-          console.log("getGame Error", err);
-        });
+        .finally(() => setLoading(false));
     }
   }, [lobby?.gameStarted]);
 
@@ -71,8 +60,7 @@ export default function useRealtime() {
               (user.id === newLobby.hostUid || user.id === newLobby.guestUid)
             ) {
               setLobby(newLobby);
-            }
-            else {
+            } else {
               console.log("left lobby");
               setLobby(null);
             }
@@ -98,5 +86,5 @@ export default function useRealtime() {
     };
   }, [lobby?.code, loading, error]);
 
-  return { lobby, gameState, loading, setLobby };
+  return { lobby, gameState, loading, setLobby, setGameState };
 }
