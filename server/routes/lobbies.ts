@@ -93,7 +93,7 @@ const route = new Hono<MaybeLobbyEnv>()
         message: `user is not guest in lobby ${lobby.code}`,
       });
 
-    leaveLobby(lobby.code);
+    leaveLobby(user.id);
 
     const channel = c.get("channel");
     const payload = broadcastLobbyUpdate(channel, lobby);
