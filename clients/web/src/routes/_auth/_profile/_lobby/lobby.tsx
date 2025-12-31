@@ -8,14 +8,21 @@ import { makeBid, makeMove } from "@/services/game";
 import { Button } from "@/components/ui/button";
 import { getProfile } from "@/services/profiles";
 import { LobbyCodeSearchParam } from "@/routes/-types";
+import { joinLobby } from "@/services/lobbies";
 
 export const Route = createFileRoute("/_auth/_profile/_lobby/lobby")({
   validateSearch: LobbyCodeSearchParam,
-  beforeLoad: ({ context: { lobby }, search: { code } }) => {
+  beforeLoad: async ({ context: { lobby }, search: { code } }) => {
     // a bit of code repetition to make typechecker happy.
-    // if (!lobby) throw redirect({ to: "/home" });
-    if (lobby?.code !== code)
+    if (lobby && lobby.code !== code) {
       throw redirect({ to: "/leave-old-lobby", search: { code } });
+    }
+
+    if (!lobby) {
+      const res = await joinLobby(code)
+      if (!res.ok) throw new Error(res.error.message);
+      return { lobby: res.value };
+    }
   },
   loader: async ({ context }) => {
     const playerId = context.auth.session?.user.id;

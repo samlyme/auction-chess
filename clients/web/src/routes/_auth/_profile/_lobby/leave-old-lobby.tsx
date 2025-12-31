@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { LobbyCodeSearchParam } from "@/routes/-types";
 import { leaveLobby } from "@/services/lobbies";
 import { createFileRoute, redirect } from "@tanstack/react-router";
@@ -17,20 +18,20 @@ function RouteComponent() {
   const search = Route.useSearch();
   return (
     <div>
-      <button
+      <Button
         onClick={() => {
           leaveLobby().then(() => navigate({ to: "/lobby", search }));
         }}
       >
         leave
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => {
           navigate({ to: "/home" }); // Cheap way to go back to the old lobby.
         }}
       >
         stay
-      </button>
+      </Button>
     </div>
   );
 }

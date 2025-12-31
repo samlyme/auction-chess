@@ -7,6 +7,7 @@ export const Route = createFileRoute('/_auth')({
     if (!context.auth.session) {
       throw redirect({ to: "/auth", search });
     }
+    return { auth: { session: context.auth.session } }
   },
   component: () => <Outlet/>,
 })
