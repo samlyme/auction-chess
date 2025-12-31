@@ -15,7 +15,7 @@ function UserProfile() {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Profile</h1>
           <Button variant="outline" asChild>
-            <Link to="/lobby">Back to Lobbies</Link>
+            <Link to="/home">Back to Lobbies</Link>
           </Button>
         </div>
         {profile && (

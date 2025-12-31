@@ -7,6 +7,6 @@ export type DesiredRouteSearchParam = z.infer<typeof DesiredRouteSearchParam>;
 
 // TODO: make this type not optional
 export const LobbyCodeSearchParam = z.object({
-  code: z.string().optional().catch("")
+  code: z.string()
 })
 export type LobbyCodeSearchParam = z.infer<typeof LobbyCodeSearchParam>;

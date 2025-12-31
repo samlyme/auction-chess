@@ -17,8 +17,8 @@ import { Route as AuthProfileRouteRouteImport } from './routes/_auth/_profile/ro
 import { Route as AuthProfileLobbyRouteRouteImport } from './routes/_auth/_profile/_lobby/route'
 import { Route as AuthProfileProfileMeRouteImport } from './routes/_auth/_profile/profile.me'
 import { Route as AuthProfileLobbyLobbyRouteImport } from './routes/_auth/_profile/_lobby/lobby'
+import { Route as AuthProfileLobbyLeaveOldLobbyRouteImport } from './routes/_auth/_profile/_lobby/leave-old-lobby'
 import { Route as AuthProfileLobbyHomeRouteImport } from './routes/_auth/_profile/_lobby/home'
-import { Route as AuthProfileLobbyLobbyLeaveOldRouteImport } from './routes/_auth/_profile/_lobby/lobby.leave-old'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -57,35 +57,35 @@ const AuthProfileLobbyLobbyRoute = AuthProfileLobbyLobbyRouteImport.update({
   path: '/lobby',
   getParentRoute: () => AuthProfileLobbyRouteRoute,
 } as any)
+const AuthProfileLobbyLeaveOldLobbyRoute =
+  AuthProfileLobbyLeaveOldLobbyRouteImport.update({
+    id: '/leave-old-lobby',
+    path: '/leave-old-lobby',
+    getParentRoute: () => AuthProfileLobbyRouteRoute,
+  } as any)
 const AuthProfileLobbyHomeRoute = AuthProfileLobbyHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => AuthProfileLobbyRouteRoute,
 } as any)
-const AuthProfileLobbyLobbyLeaveOldRoute =
-  AuthProfileLobbyLobbyLeaveOldRouteImport.update({
-    id: '/leave-old',
-    path: '/leave-old',
-    getParentRoute: () => AuthProfileLobbyLobbyRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof AuthProfileLobbyHomeRoute
-  '/lobby': typeof AuthProfileLobbyLobbyRouteWithChildren
+  '/leave-old-lobby': typeof AuthProfileLobbyLeaveOldLobbyRoute
+  '/lobby': typeof AuthProfileLobbyLobbyRoute
   '/profile/me': typeof AuthProfileProfileMeRoute
-  '/lobby/leave-old': typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof AuthProfileLobbyHomeRoute
-  '/lobby': typeof AuthProfileLobbyLobbyRouteWithChildren
+  '/leave-old-lobby': typeof AuthProfileLobbyLeaveOldLobbyRoute
+  '/lobby': typeof AuthProfileLobbyLobbyRoute
   '/profile/me': typeof AuthProfileProfileMeRoute
-  '/lobby/leave-old': typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -96,9 +96,9 @@ export interface FileRoutesById {
   '/auth/': typeof AuthIndexRoute
   '/_auth/_profile/_lobby': typeof AuthProfileLobbyRouteRouteWithChildren
   '/_auth/_profile/_lobby/home': typeof AuthProfileLobbyHomeRoute
-  '/_auth/_profile/_lobby/lobby': typeof AuthProfileLobbyLobbyRouteWithChildren
+  '/_auth/_profile/_lobby/leave-old-lobby': typeof AuthProfileLobbyLeaveOldLobbyRoute
+  '/_auth/_profile/_lobby/lobby': typeof AuthProfileLobbyLobbyRoute
   '/_auth/_profile/profile/me': typeof AuthProfileProfileMeRoute
-  '/_auth/_profile/_lobby/lobby/leave-old': typeof AuthProfileLobbyLobbyLeaveOldRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,18 +107,18 @@ export interface FileRouteTypes {
     | '/auth/create-profile'
     | '/auth'
     | '/home'
+    | '/leave-old-lobby'
     | '/lobby'
     | '/profile/me'
-    | '/lobby/leave-old'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth/create-profile'
     | '/auth'
     | '/home'
+    | '/leave-old-lobby'
     | '/lobby'
     | '/profile/me'
-    | '/lobby/leave-old'
   id:
     | '__root__'
     | '/'
@@ -128,9 +128,9 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/_auth/_profile/_lobby'
     | '/_auth/_profile/_lobby/home'
+    | '/_auth/_profile/_lobby/leave-old-lobby'
     | '/_auth/_profile/_lobby/lobby'
     | '/_auth/_profile/profile/me'
-    | '/_auth/_profile/_lobby/lobby/leave-old'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthProfileLobbyLobbyRouteImport
       parentRoute: typeof AuthProfileLobbyRouteRoute
     }
+    '/_auth/_profile/_lobby/leave-old-lobby': {
+      id: '/_auth/_profile/_lobby/leave-old-lobby'
+      path: '/leave-old-lobby'
+      fullPath: '/leave-old-lobby'
+      preLoaderRoute: typeof AuthProfileLobbyLeaveOldLobbyRouteImport
+      parentRoute: typeof AuthProfileLobbyRouteRoute
+    }
     '/_auth/_profile/_lobby/home': {
       id: '/_auth/_profile/_lobby/home'
       path: '/home'
@@ -205,37 +212,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthProfileLobbyHomeRouteImport
       parentRoute: typeof AuthProfileLobbyRouteRoute
     }
-    '/_auth/_profile/_lobby/lobby/leave-old': {
-      id: '/_auth/_profile/_lobby/lobby/leave-old'
-      path: '/leave-old'
-      fullPath: '/lobby/leave-old'
-      preLoaderRoute: typeof AuthProfileLobbyLobbyLeaveOldRouteImport
-      parentRoute: typeof AuthProfileLobbyLobbyRoute
-    }
   }
 }
 
-interface AuthProfileLobbyLobbyRouteChildren {
-  AuthProfileLobbyLobbyLeaveOldRoute: typeof AuthProfileLobbyLobbyLeaveOldRoute
-}
-
-const AuthProfileLobbyLobbyRouteChildren: AuthProfileLobbyLobbyRouteChildren = {
-  AuthProfileLobbyLobbyLeaveOldRoute: AuthProfileLobbyLobbyLeaveOldRoute,
-}
-
-const AuthProfileLobbyLobbyRouteWithChildren =
-  AuthProfileLobbyLobbyRoute._addFileChildren(
-    AuthProfileLobbyLobbyRouteChildren,
-  )
-
 interface AuthProfileLobbyRouteRouteChildren {
   AuthProfileLobbyHomeRoute: typeof AuthProfileLobbyHomeRoute
-  AuthProfileLobbyLobbyRoute: typeof AuthProfileLobbyLobbyRouteWithChildren
+  AuthProfileLobbyLeaveOldLobbyRoute: typeof AuthProfileLobbyLeaveOldLobbyRoute
+  AuthProfileLobbyLobbyRoute: typeof AuthProfileLobbyLobbyRoute
 }
 
 const AuthProfileLobbyRouteRouteChildren: AuthProfileLobbyRouteRouteChildren = {
   AuthProfileLobbyHomeRoute: AuthProfileLobbyHomeRoute,
-  AuthProfileLobbyLobbyRoute: AuthProfileLobbyLobbyRouteWithChildren,
+  AuthProfileLobbyLeaveOldLobbyRoute: AuthProfileLobbyLeaveOldLobbyRoute,
+  AuthProfileLobbyLobbyRoute: AuthProfileLobbyLobbyRoute,
 }
 
 const AuthProfileLobbyRouteRouteWithChildren =

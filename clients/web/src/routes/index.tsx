@@ -6,7 +6,7 @@ import { createFileRoute } from '@tanstack/react-router'
 export const Route = createFileRoute('/')({
   beforeLoad: ({ context }) => {
     // if the user is logged in, send them to the lobbies page
-    if (context.auth.session) throw redirect({ to: "/lobbies" });
+    if (context.auth.session) throw redirect({ to: "/home" });
   },
   component: Splash,
 })

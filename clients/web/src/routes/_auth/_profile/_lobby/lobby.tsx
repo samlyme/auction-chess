@@ -2,18 +2,25 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import supabase from "@/supabase";
 import LobbyInfo from "@/components/lobby/Info";
-import LobbySearch from "@/components/lobby/Search";
 import LobbyMenu from "@/components/lobby/Menu";
 import type { Bid, NormalMove } from "shared";
 import { makeBid, makeMove } from "@/services/game";
 import { Button } from "@/components/ui/button";
 import { getProfile } from "@/services/profiles";
+import { LobbyCodeSearchParam } from "@/routes/-types";
 
 export const Route = createFileRoute("/_auth/_profile/_lobby/lobby")({
+  validateSearch: LobbyCodeSearchParam,
+  beforeLoad: ({ context: { lobby }, search: { code } }) => {
+    // a bit of code repetition to make typechecker happy.
+    // if (!lobby) throw redirect({ to: "/home" });
+    if (lobby?.code !== code)
+      throw redirect({ to: "/leave-old-lobby", search: { code } });
+  },
   loader: async ({ context }) => {
     const playerId = context.auth.session?.user.id;
     const lobby = context.lobby;
-    if (!lobby) throw redirect({ to: "/home" })
+    if (!lobby) throw redirect({ to: "/home" });
 
     const userRole: "host" | "guest" =
       playerId === lobby?.hostUid ? "host" : "guest";
@@ -116,7 +123,7 @@ function Lobbies() {
             <LobbyMenu lobby={lobby} setLobby={() => {}} />
           </div>
         ) : (
-          <LobbySearch setLobby={() => {}} />
+          <></>
         )}
       </div>
     </div>
