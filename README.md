@@ -104,6 +104,7 @@ bun run client:dev
 Each package requires environment variables for local development:
 
 **Client** (`clients/web/.env.development`):
+
 ```env
 VITE_SUPABASE_PUB_KEY=<your-local-supabase-anon-key>
 VITE_SUPABASE_URL=http://127.0.0.1:54321
@@ -111,12 +112,14 @@ VITE_BACKEND_URL=http://localhost:8000
 ```
 
 **Server** (`server/.env.development`):
+
 ```env
 SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=<your-local-service-role-key>
 ```
 
 **Supabase** (`supabase/.env.local`):
+
 ```env
 SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 ```
@@ -126,6 +129,7 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 ## Common Commands
 
 ### Development
+
 ```bash
 bun run client:dev        # Start frontend dev server
 bun run server:dev        # Start backend dev server with hot reload
@@ -133,12 +137,14 @@ bun run format            # Format all code with Prettier
 ```
 
 ### Building
+
 ```bash
 bun run client:build      # Build frontend for production
 bun run server:build      # Build backend for production
 ```
 
 ### Database
+
 ```bash
 bun run db:diff           # Generate migration diff
 bun run db:save <name>    # Save migration to file
@@ -147,6 +153,7 @@ bun run deploy:preview    # Preview database deployment (dry-run)
 ```
 
 ### Deployment
+
 ```bash
 bun run deploy:client     # Deploy frontend to Cloudflare
 bun run deploy:server     # Deploy backend to Digital Ocean
@@ -182,7 +189,7 @@ This project has evolved through several architectural iterations:
 
 **NOTE:** `main` branch actuall acts like a staging area in this repo! You merge
 changes into `main`, then run the deployment scripts. The deployment scripts just
-merge the changes into a `prod/*` branch. 
+merge the changes into a `prod/*` branch.
 
 1. Make a `feat/*` branch. Make changes!
 2. Merge into `main`.
@@ -192,6 +199,7 @@ merge the changes into a `prod/*` branch.
 ## TypeScript Configuration
 
 Uses hierarchical TypeScript configuration:
+
 - **Root**: Base strict settings for all packages
 - **Server/Shared**: Extends root + ESNext libs
 - **Client**: Extends root + DOM libs + JSX support
@@ -205,6 +213,7 @@ This project is private and not licensed for public use.
 ## Support
 
 For questions or issues:
+
 - Check the documentation in this repository
 - Review existing issues in the project tracker
 - Contact the development team

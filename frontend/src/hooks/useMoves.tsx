@@ -1,8 +1,8 @@
 // src/hooks/useChessMoves.ts
-import { useState, useCallback } from 'react';
-import type { BoardPosition, Move, PieceSymbol } from '../schemas/types'; // Import your types
-import useGame from './useGame';
-import { boardPositionToIndex, pieceSymbolColor } from '../utils/chess';
+import { useState, useCallback } from "react";
+import type { BoardPosition, Move, PieceSymbol } from "../schemas/types"; // Import your types
+import useGame from "./useGame";
+import { boardPositionToIndex, pieceSymbolColor } from "../utils/chess";
 
 interface UseMovesReturn {
   selectedPosition: BoardPosition | null;
@@ -17,7 +17,7 @@ function useMoves(): UseMovesReturn {
 
   const handleSquareClick = useCallback(
     (pos: BoardPosition) => {
-      console.log('Clicked sqaure: ', pos);
+      console.log("Clicked sqaure: ", pos);
 
       if (!board || !moves) return;
 
@@ -59,7 +59,7 @@ function useMoves(): UseMovesReturn {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [board, selectedPosition, makeMove]
+    [board, selectedPosition, makeMove],
   );
 
   return { selectedPosition, handleSquareClick };

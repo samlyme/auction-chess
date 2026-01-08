@@ -18,7 +18,7 @@ export const getProfile: MiddlewareHandler<MaybeProfileEnv> = async (
     .eq("id", user.id)
     .maybeSingle();
 
-  endTime(c, "getProfile")
+  endTime(c, "getProfile");
 
   c.set("profile", data);
   await next();

@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router';
-import type { LobbyId, LobbyProfile } from '../schemas/types';
-import * as LobbyServices from '../services/lobbies';
-import { useEffect } from 'react';
-import useAuth from './useAuth';
+import { useNavigate } from "react-router";
+import type { LobbyId, LobbyProfile } from "../schemas/types";
+import * as LobbyServices from "../services/lobbies";
+import { useEffect } from "react";
+import useAuth from "./useAuth";
 
 interface UseLobbyReturn {
   userLobby: () => Promise<LobbyProfile | null>;
@@ -20,7 +20,7 @@ function useLobbies(): UseLobbyReturn {
 
   useEffect(() => {
     if (!token) {
-      navigate('/auth');
+      navigate("/auth");
     }
   }, [token, navigate]);
 
@@ -29,14 +29,14 @@ function useLobbies(): UseLobbyReturn {
     return {
       userLobby: async () => null,
       getLobby: async () => {
-        throw new Error('no auth');
+        throw new Error("no auth");
       },
       createLobby: async () => null,
       startLobby: async () => {},
       deleteLobby: async () => {},
       leaveLobby: async () => {},
       joinLobby: async () => {
-        throw new Error('no auth');
+        throw new Error("no auth");
       },
     };
   }

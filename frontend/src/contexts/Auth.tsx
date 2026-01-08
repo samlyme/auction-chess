@@ -1,9 +1,9 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 import type {
   UserCreate,
   UserCredentials,
   UserProfile,
-} from '../schemas/types';
+} from "../schemas/types";
 
 export interface AuthContextType {
   token: string | null;

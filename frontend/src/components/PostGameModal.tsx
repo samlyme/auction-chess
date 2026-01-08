@@ -1,14 +1,14 @@
-import { useNavigate, useParams } from 'react-router';
-import useGame from '../hooks/useGame';
-import useLobbies from '../hooks/useLobbies';
-import useAuth from '../hooks/useAuth';
-import useServerUpdates from '../hooks/useServerUpdates';
+import { useNavigate, useParams } from "react-router";
+import useGame from "../hooks/useGame";
+import useLobbies from "../hooks/useLobbies";
+import useAuth from "../hooks/useAuth";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function PostGameModal() {
   const { game, userColor } = useGame();
 
   if (!game || !game.outcome)
-    throw new Error('PostGameModal only to be used after outcome.');
+    throw new Error("PostGameModal only to be used after outcome.");
 
   const { user } = useAuth();
   const { startLobby, deleteLobby, leaveLobby } = useLobbies();
@@ -17,10 +17,10 @@ function PostGameModal() {
 
   const navigate = useNavigate();
 
-  let title: string = '';
-  if (game.outcome == 'draw') title = 'Draw.';
-  else if (game.outcome == userColor) title = 'You win.';
-  else title = 'You lose.';
+  let title: string = "";
+  if (game.outcome == "draw") title = "Draw.";
+  else if (game.outcome == userColor) title = "You win.";
+  else title = "You lose.";
 
   return (
     <div className="modal">
@@ -31,7 +31,7 @@ function PostGameModal() {
           <button onClick={() => startLobby(lobbyId!)}>New Game</button>
           <button
             onClick={() =>
-              deleteLobby(lobbyId!).then(() => navigate('/lobbies'))
+              deleteLobby(lobbyId!).then(() => navigate("/lobbies"))
             }
           >
             delete lobby
@@ -42,7 +42,7 @@ function PostGameModal() {
         <div>
           <button
             onClick={() =>
-              leaveLobby(lobbyId!).then(() => navigate('/lobbies'))
+              leaveLobby(lobbyId!).then(() => navigate("/lobbies"))
             }
           >
             leave lobby

@@ -6,14 +6,14 @@
 }
 
 @font-face {
-    font-family: 'MisterPixel';
-    src: url('./assets/fonts/vtf-misterpixel.regular.otf')
+  font-family: 'MisterPixel';
+  src: url('./assets/fonts/vtf-misterpixel.regular.otf');
 }
 
 @theme {
   --default-font-family: 'MisterPixel';
 
-  --spacing: 0.20cqw;
+  --spacing: 0.2cqw;
   /* ========================================
      TYPOGRAPHY SCALE (cqw)
      ======================================== */
@@ -29,7 +29,7 @@
   --text-6xl: calc(var(--text-base) * 3.75);
   --text-7xl: calc(var(--text-base) * 4.5);
   --text-8xl: calc(var(--text-base) * 6);
-  --text-9xl: calc(var(--text-base) * 8); 
+  --text-9xl: calc(var(--text-base) * 8);
 
   /* ========================================
      DEOM COLOR SYSTEM
@@ -74,7 +74,6 @@
   --color-text-secondary: #525252;
   --color-text-tertiary: #a3a3a3;
   --color-text-inverse: #ffffff;
-
 }
 
 :root {

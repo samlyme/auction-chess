@@ -1,5 +1,5 @@
-import { createContext } from "react";
-import type { Profile } from "shared";
+import { createContext } from 'react';
+import type { Profile } from 'shared';
 
 export interface UserProfileContextType {
   profile: Profile | null;

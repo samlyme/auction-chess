@@ -1,13 +1,13 @@
-import useGame from '../hooks/useGame';
-import type { Move, PieceSymbol } from '../schemas/types';
+import useGame from "../hooks/useGame";
+import type { Move, PieceSymbol } from "../schemas/types";
 import {
   boardPositionToIndex,
   indexToBoardPosition,
   pieceSVGMap,
   pieceSymbolColor,
-} from '../utils/chess';
-import './Board.css';
-import useMoves from '../hooks/useMoves';
+} from "../utils/chess";
+import "./Board.css";
+import useMoves from "../hooks/useMoves";
 
 function Board() {
   const { game, userColor } = useGame();
@@ -19,7 +19,7 @@ function Board() {
   const squares = [];
   for (let row = 7; row >= 0; row--) {
     for (let col = 0; col <= 7; col++) {
-      const colorClass = (row + col) % 2 == 0 ? 'light-square' : 'dark-square';
+      const colorClass = (row + col) % 2 == 0 ? "light-square" : "dark-square";
 
       const piece = board[row][col];
 
@@ -46,12 +46,12 @@ function Board() {
           isSelected={isSelected}
           isLegal={isLegal}
           onClick={() => handleSquareClick(indexToBoardPosition(row, col))}
-        />
+        />,
       );
     }
   }
 
-  if (userColor == 'b') squares.reverse();
+  if (userColor == "b") squares.reverse();
 
   // TODO: Fix game board component
   return <div className="board">{squares}</div>;
@@ -75,7 +75,7 @@ function Square({
   return (
     <div
       key={key}
-      className={`square ${colorClass} ${isSelected ? 'selected-square' : ''} ${isLegal ? 'legal-square' : ''}`}
+      className={`square ${colorClass} ${isSelected ? "selected-square" : ""} ${isLegal ? "legal-square" : ""}`}
       onClick={onClick}
     >
       {piece && (

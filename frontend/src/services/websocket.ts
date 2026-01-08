@@ -1,16 +1,16 @@
-import type { LobbyId, Packet } from '../schemas/types';
+import type { LobbyId, Packet } from "../schemas/types";
 
 export function websocketFactory(
   access_token: string,
   lobbyId: LobbyId,
   onopen: (event: Event) => void,
   onmessage: (event: MessageEvent) => void,
-  onclose: (event: CloseEvent) => void
+  onclose: (event: CloseEvent) => void,
 ): WebSocket {
-  console.log('connecting to ws');
+  console.log("connecting to ws");
   console.trace();
 
-  const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+  const scheme = location.protocol === "https:" ? "wss" : "ws";
   const origin = `${scheme}://${location.host}`;
   const path = `/api/ws/lobbies/${lobbyId}`;
   const qs = new URLSearchParams({ access_token }).toString();

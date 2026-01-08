@@ -44,5 +44,5 @@ export type GameEnv = {
     gameState: AuctionChessState;
     playerColor: Color;
     receivedTime: number;
-  }
-}
+  };
+};

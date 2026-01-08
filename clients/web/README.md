@@ -44,6 +44,7 @@ VITE_BACKEND_URL=http://localhost:8000
 ```
 
 **Where to get values:**
+
 - `VITE_SUPABASE_PUB_KEY`: Run `supabase start` and copy the `anon key` from output
 - `VITE_SUPABASE_URL`: Local Supabase API URL (default: http://127.0.0.1:54321)
 - `VITE_BACKEND_URL`: Local backend server URL (default: http://localhost:8000)
@@ -83,6 +84,7 @@ bun run build
 Build output goes to `dist/`
 
 **Build process:**
+
 1. TypeScript type checking (`tsc -b`)
 2. Vite production build
 3. Assets optimized and bundled
@@ -143,6 +145,7 @@ clients/web/
 4. **Lobbies** (`/lobbies`) - Game lobby list (main app)
 
 **Route Protection**: Uses TanStack Router's `beforeLoad` hooks for route guards:
+
 - `/` - Unauthenticated users only (redirects to `/lobbies` if authenticated)
 - `/auth` - Unauthenticated routes (sign in/up)
 - `/auth/create-profile` - Authenticated users without a profile
@@ -176,6 +179,7 @@ const data = await response.json();
 ```
 
 **Benefits**:
+
 - End-to-end type safety
 - Autocomplete for API endpoints
 - Compile-time error checking
@@ -226,6 +230,7 @@ wrangler deploy
 ```
 
 **Deployment process:**
+
 1. Git-based: Squash merges `main` → `prod/client` branch
 2. Cloudflare Pages watches `prod/client` and auto-deploys
 3. Build happens on Cloudflare's infrastructure
@@ -261,6 +266,7 @@ TanStack Router uses **file-based routing**. Routes are automatically generated 
 **Example: Add a public route**
 
 1. Create route file `src/routes/about.tsx`:
+
 ```typescript
 import { createFileRoute } from '@tanstack/router-router'
 
@@ -276,6 +282,7 @@ function AboutComponent() {
 **Example: Add a protected route**
 
 2. Create route file `src/routes/_auth/game.tsx`:
+
 ```typescript
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -290,6 +297,7 @@ function GameComponent() {
 ```
 
 3. Add navigation link:
+
 ```typescript
 import { Link } from '@tanstack/react-router'
 
@@ -297,6 +305,7 @@ import { Link } from '@tanstack/react-router'
 ```
 
 **Notes:**
+
 - Routes in `_auth/` are automatically protected (require auth + profile)
 - `routeTree.gen.ts` is auto-generated - don't edit it manually
 - Use `beforeLoad` hooks for custom route guards
@@ -307,6 +316,7 @@ import { Link } from '@tanstack/react-router'
 1. Ensure endpoint exists in backend (see `/server/README.md`)
 
 2. Use Hono RPC client:
+
 ```typescript
 import { useBackend } from "../services/api";
 
@@ -379,15 +389,17 @@ Uses Vite's dual-config pattern:
   - Adds Node libs
 
 **Strict mode enabled:**
+
 - Unused variables are errors
 - Unused parameters are errors
 - All strict type checks enabled
 
 ## Testing
 
-*Note: Testing infrastructure not yet set up*
+_Note: Testing infrastructure not yet set up_
 
 Planned:
+
 - Vitest for unit tests
 - React Testing Library for component tests
 - Playwright for E2E tests
@@ -400,6 +412,7 @@ bun run lint:fix   # Auto-fix issues
 ```
 
 ESLint configured with:
+
 - TypeScript support
 - React hooks rules
 - Import sorting
@@ -407,12 +420,14 @@ ESLint configured with:
 ## Build Optimization
 
 Vite automatically:
+
 - Code splits by route
 - Minifies JavaScript
 - Optimizes assets
 - Generates source maps
 
 **Bundle analysis:**
+
 ```bash
 bun run build -- --mode analyze
 ```

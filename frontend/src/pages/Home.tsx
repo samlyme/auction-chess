@@ -1,5 +1,5 @@
-import { Navigate, useNavigate } from 'react-router';
-import useAuth from '../hooks/useAuth';
+import { Navigate, useNavigate } from "react-router";
+import useAuth from "../hooks/useAuth";
 
 function Home() {
   const { token } = useAuth();
@@ -20,7 +20,7 @@ function Home() {
       <div className="flex items-center space-x-2">
         <button
           className="rounded bg-green-500 px-4 py-2 text-white"
-          onClick={() => navigate('/auth')}
+          onClick={() => navigate("/auth")}
         >
           Play now!
         </button>

@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
-import useLobbies from '../../hooks/useLobbies';
-import type { GameData, LobbyProfile, Packet } from '../../schemas/types';
-import useAuth from '../../hooks/useAuth';
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router";
+import useLobbies from "../../hooks/useLobbies";
+import type { GameData, LobbyProfile, Packet } from "../../schemas/types";
+import useAuth from "../../hooks/useAuth";
 import {
   ServerUpdatesContext,
   type ServerUpdatesContextType,
-} from '../../contexts/ServerUpdates';
-import { parsePacket, websocketFactory } from '../../services/websocket';
+} from "../../contexts/ServerUpdates";
+import { parsePacket, websocketFactory } from "../../services/websocket";
 
 export function ServerUpdatesProvider({
   lobbyId,
@@ -30,33 +30,33 @@ export function ServerUpdatesProvider({
         setLobby(val);
 
         const onopen = (event: Event) => {
-          console.log('🟢 WS connected', event);
+          console.log("🟢 WS connected", event);
         };
 
         const onmessage = (event: MessageEvent) => {
           const data: Packet = parsePacket(event.data);
-          console.log('Packet', event.data);
+          console.log("Packet", event.data);
 
-          if (data.type == 'lobby_packet') {
+          if (data.type == "lobby_packet") {
             setLobby(data.content);
-          } else if (data.type == 'game_packet') {
+          } else if (data.type == "game_packet") {
             setGame(data.content);
           }
         };
 
         const onclose = (event: CloseEvent) => {
-          console.log('🔴 WS Closed', event);
-          navigate('/lobbies');
+          console.log("🔴 WS Closed", event);
+          navigate("/lobbies");
         };
         wsRef.current = websocketFactory(
           token!,
           lobbyId,
           onopen,
           onmessage,
-          onclose
+          onclose,
         );
       })
-      .catch(() => navigate('/lobbies'));
+      .catch(() => navigate("/lobbies"));
     // This UE should only run once and is practically "global".
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

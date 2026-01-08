@@ -1,9 +1,9 @@
-import type { LobbyConfig, LobbyPayload, Result } from "shared";
-import { api } from "./api";
-import { handleApiCall } from "./utils";
+import type { LobbyConfig, LobbyPayload, Result } from 'shared';
+import { api } from './api';
+import { handleApiCall } from './utils';
 
 export async function createLobby(
-  lobbyConfig: LobbyConfig,
+  lobbyConfig: LobbyConfig
 ): Promise<Result<LobbyPayload>> {
   return handleApiCall(() => api.api.lobbies.$post({ json: lobbyConfig }));
 }

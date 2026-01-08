@@ -10,33 +10,73 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as LobbiesIndexRouteImport } from './routes/lobbies/index'
+import { Route as HomeIndexRouteImport } from './routes/home/index'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
 
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LobbiesIndexRoute = LobbiesIndexRouteImport.update({
+  id: '/lobbies/',
+  path: '/lobbies/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeIndexRoute = HomeIndexRouteImport.update({
+  id: '/home/',
+  path: '/home/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth': typeof AuthIndexRoute
+  '/home': typeof HomeIndexRoute
+  '/lobbies': typeof LobbiesIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth': typeof AuthIndexRoute
+  '/home': typeof HomeIndexRoute
+  '/lobbies': typeof LobbiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth/': typeof AuthIndexRoute
+  '/home/': typeof HomeIndexRoute
+  '/lobbies/': typeof LobbiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/demo'
+  fullPaths: '/' | '/demo' | '/auth' | '/home' | '/lobbies'
   fileRoutesByTo: FileRoutesByTo
-  to: '/demo'
-  id: '__root__' | '/demo'
+  to: '/' | '/demo' | '/auth' | '/home' | '/lobbies'
+  id: '__root__' | '/' | '/demo' | '/auth/' | '/home/' | '/lobbies/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   DemoRoute: typeof DemoRoute
+  AuthIndexRoute: typeof AuthIndexRoute
+  HomeIndexRoute: typeof HomeIndexRoute
+  LobbiesIndexRoute: typeof LobbiesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +88,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lobbies/': {
+      id: '/lobbies/'
+      path: '/lobbies'
+      fullPath: '/lobbies'
+      preLoaderRoute: typeof LobbiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home/': {
+      id: '/home/'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   DemoRoute: DemoRoute,
+  AuthIndexRoute: AuthIndexRoute,
+  HomeIndexRoute: HomeIndexRoute,
+  LobbiesIndexRoute: LobbiesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

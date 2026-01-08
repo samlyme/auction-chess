@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react';
-import useGame from '../hooks/useGame';
-import type { Bid, Color, UserProfile } from '../schemas/types';
-import useServerUpdates from '../hooks/useServerUpdates';
+import { useState, type FormEvent } from "react";
+import useGame from "../hooks/useGame";
+import type { Bid, Color, UserProfile } from "../schemas/types";
+import useServerUpdates from "../hooks/useServerUpdates";
 
 function Menu() {
   const { lobby } = useServerUpdates();
@@ -9,21 +9,21 @@ function Menu() {
 
   if (!game || !userColor || !lobby) return <div>Loading</div>;
 
-  const opponentColor = userColor == 'w' ? 'b' : 'w';
-  const turn = game.phase == 'bid' ? game.bid_turn : game.turn;
+  const opponentColor = userColor == "w" ? "b" : "w";
+  const turn = game.phase == "bid" ? game.bid_turn : game.turn;
 
   const userProfile: UserProfile =
-    userColor == 'w' ? game.players.w : game.players.b;
+    userColor == "w" ? game.players.w : game.players.b;
   const opponentProfile: UserProfile =
-    userColor == 'w' ? game.players.b : game.players.w;
+    userColor == "w" ? game.players.b : game.players.w;
 
   const userBalance: number =
-    userColor == 'w' ? game.balances.w : game.balances.b;
+    userColor == "w" ? game.balances.w : game.balances.b;
   const opponentBalance: number =
-    userColor == 'w' ? game.balances.b : game.balances.w;
+    userColor == "w" ? game.balances.b : game.balances.w;
   return (
     <div className="menu">
-      <div className={turn === opponentColor ? 'highlight' : ''}>
+      <div className={turn === opponentColor ? "highlight" : ""}>
         {opponentProfile ? (
           <PlayerProfile
             username={opponentProfile.username}
@@ -37,7 +37,7 @@ function Menu() {
 
       <BiddingMenu />
 
-      <div className={turn === userColor ? 'highlight' : ''}>
+      <div className={turn === userColor ? "highlight" : ""}>
         <PlayerProfile
           username={userProfile.username}
           color={userColor}
@@ -60,7 +60,7 @@ function PlayerProfile({
   return (
     <div className="player-profile">
       <h2>
-        {username} <i>({color == 'w' ? 'white' : 'black'})</i>
+        {username} <i>({color == "w" ? "white" : "black"})</i>
       </h2>
 
       <h1>${balance}</h1>
@@ -74,8 +74,8 @@ function BiddingMenu() {
 
   if (!game) return <div>Loading</div>;
 
-  const userBalance = userColor == 'w' ? game.balances.w : game.balances.b;
-  const opponentBalance = userColor == 'w' ? game.balances.b : game.balances.w;
+  const userBalance = userColor == "w" ? game.balances.w : game.balances.b;
+  const opponentBalance = userColor == "w" ? game.balances.b : game.balances.w;
   const bidStack =
     game.auction_data.bid_history[game.auction_data.bid_history.length - 1];
 
@@ -131,7 +131,7 @@ function BiddingMenu() {
 
   return (
     <form
-      className={`bidding-menu ${game.phase === 'move' ? 'lowlight' : ''}`}
+      className={`bidding-menu ${game.phase === "move" ? "lowlight" : ""}`}
       onSubmit={handleSubmit}
     >
       <h3>Opponent bid: ${opponentLastBidAmount}</h3>

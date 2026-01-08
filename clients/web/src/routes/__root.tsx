@@ -1,5 +1,5 @@
-import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import type { Session } from "@supabase/supabase-js";
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
+import type { Session } from '@supabase/supabase-js';
 
 export interface RouterContext {
   auth: {
@@ -13,7 +13,5 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
-  return (
-      <Outlet />
-  );
+  return <Outlet />;
 }

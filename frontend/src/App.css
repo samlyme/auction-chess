@@ -17,12 +17,12 @@ body {
   padding: 5rem;
   background-color: #f2f0ef;
   color: #1e1e1e;
-  font-family: 'Balatro';
+  font-family: "Balatro";
 }
 
 button {
   padding: 0.5rem;
-  font-family: 'Balatro';
+  font-family: "Balatro";
 }
 
 /* make the container a flex row */

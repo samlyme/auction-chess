@@ -24,12 +24,14 @@ supabase start
 ```
 
 **Services started:**
+
 - API: `http://127.0.0.1:54321`
 - Database: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 - Studio (UI): `http://localhost:54323`
 - Inbucket (Email): `http://localhost:54324`
 
 **Important keys displayed:**
+
 - `anon key` - Public key for client-side use
 - `service_role key` - Admin key for server-side use
 
@@ -100,12 +102,14 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 ### Tables
 
 **profiles**:
+
 - `id` (uuid, pk) - Links to `auth.users.id`
 - `username` (text, unique)
 - `bio` (text, nullable)
 - `created_at` (timestamp)
 
 **lobbies**:
+
 - `id` (uuid, pk)
 - `code` (text, unique) - 6-character lobby code
 - `config` (jsonb) - Game configuration
@@ -119,11 +123,13 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 RLS is enabled on all tables with policies:
 
 **profiles**:
+
 - Users can read all profiles
 - Users can only update their own profile
 - Users can insert their own profile
 
 **lobbies**:
+
 - Users can read all lobbies
 - Users can insert lobbies (becomes host)
 - Only host can update/delete lobby
@@ -165,6 +171,7 @@ bun run db:test
 ### Applying Migrations
 
 **Local:**
+
 ```bash
 # Reset database and apply all migrations
 supabase db reset
@@ -174,6 +181,7 @@ supabase db push --local
 ```
 
 **Production:**
+
 ```bash
 # Preview changes (dry-run)
 bun run deploy:preview
@@ -257,6 +265,7 @@ jwt_expiry = 3600  # 1 hour
 ```
 
 JWTs are signed with:
+
 - **Local**: ES256 (Elliptic Curve) via `signing_keys.json`
 - **Production**: HS256 (HMAC) via Supabase-managed secret
 
@@ -270,15 +279,17 @@ Used for lobby updates without database polling:
 // Subscribe to lobby channel
 const channel = supabase.channel(`lobby:${code}`);
 
-channel.on("broadcast", { event: "lobby-update" }, (payload) => {
-  console.log("Lobby updated:", payload);
-}).subscribe();
+channel
+  .on("broadcast", { event: "lobby-update" }, (payload) => {
+    console.log("Lobby updated:", payload);
+  })
+  .subscribe();
 
 // Broadcast update
 await channel.send({
   type: "broadcast",
   event: "lobby-update",
-  payload: { state: newState }
+  payload: { state: newState },
 });
 
 // Cleanup
@@ -286,6 +297,7 @@ supabase.removeChannel(channel);
 ```
 
 **Benefits:**
+
 - Real-time without polling
 - No database writes for temporary state
 - Automatic connection management
@@ -314,6 +326,7 @@ bun run deploy:sb
 ```
 
 **Process:**
+
 1. Squash merges `main` → `prod/supabase`
 2. Pushes to GitHub
 3. Runs `supabase db push` (migrations)
@@ -324,12 +337,14 @@ See `/DEPLOYMENT.md` for details.
 ### What Gets Deployed
 
 **Database:**
+
 - All migration files
 - Schema changes
 - RLS policies
 - Functions and triggers
 
 **Configuration:**
+
 - Auth settings (JWT, OAuth)
 - Realtime settings
 - API settings

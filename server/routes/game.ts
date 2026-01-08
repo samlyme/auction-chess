@@ -75,12 +75,7 @@ const gameplay = new Hono<GameEnv>()
   });
 
 const timecheckRoute = new Hono()
-  .use(
-    recordReceivedTime,
-    getLobby,
-    validateLobby,
-    validateGame,
-  )
+  .use(recordReceivedTime, getLobby, validateLobby, validateGame)
   .post("/", async (c) => {
     const gameState = c.get("gameState");
     const receivedTime = c.get("receivedTime");
@@ -88,7 +83,7 @@ const timecheckRoute = new Hono()
     const result = timecheck(gameState, receivedTime);
 
     if (!result.ok) {
-      throw new HTTPException(500, { message: "timecheck failed." })
+      throw new HTTPException(500, { message: "timecheck failed." });
     }
     const channel = c.get("channel");
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));

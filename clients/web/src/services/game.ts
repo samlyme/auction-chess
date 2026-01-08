@@ -1,6 +1,6 @@
-import type { Bid, NormalMove, AuctionChessState, Result } from "shared";
-import { api } from "./api";
-import { handleApiCall } from "./utils";
+import type { Bid, NormalMove, AuctionChessState, Result } from 'shared';
+import { api } from './api';
+import { handleApiCall } from './utils';
 
 export async function makeBid(bid: Bid): Promise<Result<null>> {
   return handleApiCall(() => api.api.game.play.bid.$post({ json: bid }));

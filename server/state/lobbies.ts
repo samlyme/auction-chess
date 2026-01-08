@@ -14,10 +14,7 @@ export function getLobbyByUserId(userId: string): Lobby | undefined {
   return lobbyCode ? lobbies[lobbyCode] : undefined;
 }
 
-export function createLobby(
-  userId: string,
-  config: LobbyConfig,
-): Lobby {
+export function createLobby(userId: string, config: LobbyConfig): Lobby {
   const code = generateUniqueCode();
   const newLobby: Lobby = {
     code,

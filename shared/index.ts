@@ -42,8 +42,8 @@ export const Bid = z.union([
     amount: z.number(),
   }),
   z.object({
-    fold: z.boolean()
-  })
+    fold: z.boolean(),
+  }),
 ]);
 export type Bid = z.infer<typeof Bid>;
 
@@ -64,13 +64,19 @@ export const TimeState = z.object({
 });
 export type TimeState = z.infer<typeof TimeState>;
 
-export const OutcomeMessage = z.enum(["mate", "ff", "stalemate", "draw", "timeout"]);
+export const OutcomeMessage = z.enum([
+  "mate",
+  "ff",
+  "stalemate",
+  "draw",
+  "timeout",
+]);
 export type OutcomeMessage = z.infer<typeof OutcomeMessage>;
 
 export const Outcome = z.object({
   winner: Color.nullable(),
   message: OutcomeMessage,
-})
+});
 export type Outcome = z.infer<typeof Outcome>;
 
 export const AuctionChessState = z.object({
@@ -87,7 +93,7 @@ export type AuctionChessState = Immutable<z.infer<typeof AuctionChessState>>;
 export const GameConfig = z.object({
   hostColor: Color,
   initTime: z.record(Color, z.number()),
-})
+});
 export type GameConfig = z.infer<typeof GameConfig>;
 
 // ============================================================================
@@ -112,19 +118,23 @@ export const Lobby = z.object({
 });
 // Override inferred type to use immutable AuctionChessState
 // Type magic to express that Lobby is mutable, but AuctionChessState is not.
-export type Lobby = Omit<z.infer<typeof Lobby>, 'gameState'> & {
+export type Lobby = Omit<z.infer<typeof Lobby>, "gameState"> & {
   gameState: AuctionChessState | null;
 };
 
-export const LobbyPayload = Lobby.omit({ id: true, gameState: true }).extend({ gameStarted: z.boolean() });
+export const LobbyPayload = Lobby.omit({ id: true, gameState: true }).extend({
+  gameStarted: z.boolean(),
+});
 export type LobbyPayload = z.infer<typeof LobbyPayload>;
 
-export const LobbyToPayload = Lobby.transform(({id, gameState, ...rest}: Lobby) => {
-  return {
-    gameStarted: !!gameState,
-    ...rest
-  };
-}).pipe(LobbyPayload)
+export const LobbyToPayload = Lobby.transform(
+  ({ id, gameState, ...rest }: Lobby) => {
+    return {
+      gameStarted: !!gameState,
+      ...rest,
+    };
+  },
+).pipe(LobbyPayload);
 
 export const LobbyJoinQuery = z.object({
   code: z.string(),
@@ -167,10 +177,11 @@ export type ProfileUpdate = z.infer<typeof ProfileUpdate>;
 export const LobbyEventType = {
   LobbyUpdate: "lobby-update",
   LobbyDelete: "lobby-delete",
-  GameUpdate: "game-update"
+  GameUpdate: "game-update",
 } as const;
 
-export type LobbyEventType = typeof LobbyEventType[keyof typeof LobbyEventType];
+export type LobbyEventType =
+  (typeof LobbyEventType)[keyof typeof LobbyEventType];
 
 export const HTTPException = z.object({
   message: z.string().optional(),

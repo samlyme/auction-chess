@@ -1,13 +1,13 @@
-import type { LobbyId, LobbyProfile } from '../schemas/types';
+import type { LobbyId, LobbyProfile } from "../schemas/types";
 
-const URL = '/api/lobbies';
+const URL = "/api/lobbies";
 
 export function userLobby(access_token: string): Promise<LobbyProfile | null> {
   console.trace();
   return fetch(`${URL}`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      accept: 'application/json',
+      accept: "application/json",
       Authorization: `Bearer ${access_token}`,
     },
   }).then((res: Response) => res.json());
@@ -15,18 +15,18 @@ export function userLobby(access_token: string): Promise<LobbyProfile | null> {
 
 export function getLobby(
   access_token: string,
-  lobbyId: LobbyId
+  lobbyId: LobbyId,
 ): Promise<LobbyProfile> {
   console.trace();
   return fetch(`${URL}/${lobbyId}`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      accept: 'application/json',
+      accept: "application/json",
       Authorization: `Bearer ${access_token}`,
     },
   })
     .then((res: Response) => {
-      if (!res.ok) throw Error('Not found');
+      if (!res.ok) throw Error("Not found");
       return res;
     })
     .then((res: Response) => res.json());
@@ -34,32 +34,32 @@ export function getLobby(
 
 // TODO: Add error handling
 export function createLobby(
-  access_token: string
+  access_token: string,
 ): Promise<LobbyProfile | null> {
   console.trace();
-  console.log('Creating lobby with token:', access_token);
+  console.log("Creating lobby with token:", access_token);
 
   return fetch(`${URL}`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      accept: 'application/json',
+      accept: "application/json",
       Authorization: `Bearer ${access_token}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: '',
+    body: "",
   }).then((res: Response) => res.json());
 }
 
 export function startLobby(
   access_token: string,
-  lobbyId: string
+  lobbyId: string,
 ): Promise<void> {
   console.trace();
   return fetch(`${URL}/${lobbyId}/start`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       authorization: `Bearer ${access_token}`,
-      accept: 'application/json',
+      accept: "application/json",
     },
   }).then((res: Response) => {
     if (res.ok) return;
@@ -69,11 +69,11 @@ export function startLobby(
 
 export function deleteLobby(
   access_token: string,
-  lobbyId: string
+  lobbyId: string,
 ): Promise<void> {
   console.trace();
   return fetch(`${URL}/${lobbyId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
       authorization: `Bearer ${access_token}`,
     },
@@ -85,25 +85,25 @@ export function deleteLobby(
 
 export function joinLobby(
   access_token: string,
-  lobbyId: string
+  lobbyId: string,
 ): Promise<LobbyProfile> {
   console.trace();
   return fetch(`${URL}/${lobbyId}/join`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       authorization: `Bearer ${access_token}`,
-      accept: 'application/json',
+      accept: "application/json",
     },
   }).then((res: Response) => res.json());
 }
 
 export function leaveLobby(
   access_token: string,
-  lobbyId: string
+  lobbyId: string,
 ): Promise<void> {
   console.trace();
   return fetch(`${URL}/${lobbyId}/leave`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       authorization: `Bearer ${access_token}`,
     },

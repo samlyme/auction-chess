@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import type { LobbyProfile } from '../schemas/types';
-import { useNavigate } from 'react-router';
-import useLobbies from '../hooks/useLobbies';
-import { Tabs } from 'radix-ui';
+import { useEffect } from "react";
+import type { LobbyProfile } from "../schemas/types";
+import { useNavigate } from "react-router";
+import useLobbies from "../hooks/useLobbies";
+import { Tabs } from "radix-ui";
 
 function Lobbies() {
   const navigate = useNavigate();
@@ -12,15 +12,15 @@ function Lobbies() {
   useEffect(() => {
     userLobby().then((lobby: LobbyProfile | null) => {
       if (lobby) {
-        console.log('user lobby', lobby);
+        console.log("user lobby", lobby);
         navigate(`/lobbies/${lobby.id}`);
       }
     });
   }, [navigate, userLobby]);
 
- const handleCreate = () => {
+  const handleCreate = () => {
     createLobby().then((res: LobbyProfile | null) => {
-      console.log('Created lobby:', res);
+      console.log("Created lobby:", res);
       if (res) {
         navigate(`/lobbies/${res.id}`);
       }
@@ -64,7 +64,7 @@ function JoinLobbyMenu() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     // event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const lobbyCode = formData.get('lobbyId');
+    const lobbyCode = formData.get("lobbyId");
     joinLobby(String(lobbyCode!));
   };
 
@@ -72,7 +72,12 @@ function JoinLobbyMenu() {
     <div className="flex flex-col items-center justify-center space-y-7 p-7">
       <form onSubmit={handleSubmit}>
         <input className="m-2 rounded border-2 bg-gray-300" type="text" />
-        <button type="submit" className='rounded bg-green-500 px-4 py-2 text-white'>Join</button>
+        <button
+          type="submit"
+          className="rounded bg-green-500 px-4 py-2 text-white"
+        >
+          Join
+        </button>
       </form>
     </div>
   );
