@@ -23,7 +23,7 @@ declare module '@tanstack/react-router' {
 function AspectRatioWrapper({ children }: { children: ReactElement }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
-      <div className="@container h-full w-full border">{children}</div>
+      <div className="@container h-full w-full border flex justify-center items-center">{children}</div>
     </div>
   );
 }

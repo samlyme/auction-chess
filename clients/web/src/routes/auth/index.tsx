@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/auth/')({
-  component: RouteComponent,
+  component: RouteComponent
 });
 
 function RouteComponent() {
