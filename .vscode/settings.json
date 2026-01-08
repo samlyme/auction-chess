@@ -1,8 +1,4 @@
 {
-<<<<<<< HEAD
-  "python.analysis.autoImportCompletions": true
-}
-=======
   "[typescript]": {
     // "editor.defaultFormatter": "denoland.vscode-deno"
   },
@@ -22,4 +18,3 @@
     "*.css": "tailwindcss"
   },
 }
->>>>>>> main
