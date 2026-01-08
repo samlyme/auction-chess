@@ -13,7 +13,7 @@ function RouteComponent() {
   return (
     <div className="aspect-video border flex w-full justify-center overflow-auto bg-(--color-background) p-8 ">
 
-      <div className="p-6 grid grid-cols-12 gap-4 opacity-50">
+      <div className="p-16 grid grid-cols-12 gap-4">
         <div className="col-span-3">
           <BidPanel/>
         </div>
