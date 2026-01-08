@@ -1,47 +1,85 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/* Preserve Balatro font */
 @font-face {
-    font-family: 'Balatro';
-    src: url('./assets/balatro.otf');
+  font-family: 'BoldPixels';
+  src: url('./assets/fonts/BoldPixels.otf');
 }
 
-/* Theme variables matching existing dark theme */
-@theme inline {
-  --font-sans: 'Balatro', ui-sans-serif, system-ui;
-
-  --radius-lg: 0.5rem;
-  --radius-md: 0.375rem;
-  --radius-sm: 0.25rem;
-
-  /* Color palette - Semantic design tokens */
-
-  /* Surface colors */
-  --color-background: #333333;                   /* Main app background */
-  --color-card: #414141;                         /* Card/panel surfaces */
-  --color-muted: #414141;                        /* Subtle backgrounds */
-
-  /* Text colors */
-  --color-foreground: #ffffff;                   /* Primary text */
-  --color-card-foreground: #ffffff;              /* Text on cards */
-  --color-muted-foreground: #b3b3b3;             /* Secondary/dimmed text */
-
-  /* Action/Brand colors */
-  --color-primary: #4a90e2;                      /* Main brand color */
-  --color-primary-foreground: #ffffff;           /* Text on primary */
-  --color-secondary: #6d6d6d;                    /* Secondary actions */
-  --color-secondary-foreground: #ffffff;         /* Text on secondary */
-  --color-accent: #4a90e2;                       /* Highlights/emphasis */
-  --color-accent-foreground: #ffffff;            /* Text on accent */
-  --color-destructive: #d9534f;                  /* Dangerous actions */
-  --color-destructive-foreground: #ffffff;       /* Text on destructive */
-
-  /* Interactive element colors */
-  --color-border: #6d6d6d;                       /* Default borders */
-  --color-input: #6d6d6d;                        /* Input borders */
-  --color-ring: #4a90e2;                         /* Focus ring */
+@font-face {
+    font-family: 'MisterPixel';
+    src: url('./assets/fonts/vtf-misterpixel.regular.otf')
 }
 
-* {
-  font-family: var(--font-sans);
+@theme {
+  --default-font-family: 'MisterPixel';
+
+
+  --spacing: 0.20cqw;
+  /* ========================================
+     TYPOGRAPHY SCALE (cqw)
+     ======================================== */
+  --text-xs: 0.63cqw;
+  --text-sm: 0.73cqw; 
+  --text-base: 0.83cqw; 
+  --text-lg: 0.94cqw; 
+  --text-xl: 1.04cqw; 
+  --text-2xl: 1.25cqw; 
+  --text-3xl: 1.56cqw; 
+  --text-4xl: 1.88cqw; 
+  --text-5xl: 2.50cqw; 
+  --text-6xl: 3.13cqw; 
+  --text-7xl: 3.75cqw; 
+  --text-8xl: 5.00cqw; 
+  --text-9xl: 6.67cqw; 
+
+  /* ========================================
+     DEOM COLOR SYSTEM
+     ======================================== */
+  /* Primary Colors */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+
+  /* Neutral Colors */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Background & Surface */
+  --color-background: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-border: #e5e5e5;
+
+  /* Text Colors */
+  --color-text-primary: #171717;
+  --color-text-secondary: #525252;
+  --color-text-tertiary: #a3a3a3;
+  --color-text-inverse: #ffffff;
+
+}
+
+:root {
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  font-size: var(--text-base);
 }

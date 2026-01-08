@@ -22,13 +22,14 @@ export default function useRealtime(
   const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
   const [gameState, setGameState] = useState<AuctionChessState | null>(initGameState);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
 
   // One redunant getGame call to start.
   useEffect(() => {
     if (!lobby) return;
 
     if (!lobby.gameStarted) {
+       
       setGameState(null);
     } else {
       getGame()
@@ -38,6 +39,7 @@ export default function useRealtime(
         })
         .finally(() => setLoading(false));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobby?.gameStarted]);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function useRealtime(
 
         switch (update.event) {
           case LobbyEventType.LobbyUpdate:
-            const newLobby = LobbyPayload.parse(update.payload);
+            { const newLobby = LobbyPayload.parse(update.payload);
             console.log("newLobby", newLobby);
 
             if (
@@ -64,7 +66,7 @@ export default function useRealtime(
               console.log("left lobby");
               setLobby(null);
             }
-            break;
+            break; }
 
           case LobbyEventType.LobbyDelete:
             setLobby(null);
@@ -72,9 +74,9 @@ export default function useRealtime(
             break;
 
           case LobbyEventType.GameUpdate:
-            const newGameState = AuctionChessState.parse(update.payload);
+            { const newGameState = AuctionChessState.parse(update.payload);
             setGameState(newGameState);
-            break;
+            break; }
         }
       })
       .subscribe();
@@ -84,6 +86,7 @@ export default function useRealtime(
 
       channel.unsubscribe();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobby?.code, loading, error]);
 
   return { lobby, gameState, loading, setLobby, setGameState };

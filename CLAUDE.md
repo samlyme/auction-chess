@@ -23,6 +23,7 @@ Auction Chess is a multiplayer chess variant built with:
 - **Ask before expanding scope**: If you identify potential improvements or edge cases, ask rather than implementing them
 
 **Examples of what NOT to do**:
+
 - Adding comprehensive error messages and user feedback for every failure case
 - Creating reusable components when a simple inline implementation works
 - Adding loading states, optimistic updates, or retry logic unless requested
@@ -30,6 +31,7 @@ Auction Chess is a multiplayer chess variant built with:
 - Adding TypeScript strict typing for every edge case
 
 **Examples of what TO do**:
+
 - Implement the happy path first
 - Use basic error handling (try/catch with simple messages)
 - Hardcode values initially rather than making everything configurable
@@ -102,11 +104,13 @@ The backend API is built with **Hono** running on **Bun**:
 - **Type-safe RPC**: Hono RPC client provides end-to-end type safety between frontend and backend
 
 **Why Bun over Docker?**
+
 - ~40% faster cold starts on Digital Ocean
 - Simpler deployment (no Dockerfile needed)
 - Native TypeScript execution without transpilation
 
 **When making changes to API logic**:
+
 - Edit files in `server/` (routes, middleware, etc.)
 - The Bun server automatically reloads during development
 - For production deployment, use `bun run deploy:server` (see `DEPLOYMENT.md`)
@@ -246,12 +250,13 @@ For detailed deployment instructions, troubleshooting, and the complete list of 
 5. Update frontend service in `clients/web/src/services/` using Hono RPC client
 
 **Example**:
+
 ```typescript
 // shared/index.ts - Define schema
 export const GameMoveSchema = z.object({
   from: z.string(),
   to: z.string(),
-  promotion: z.string().optional()
+  promotion: z.string().optional(),
 });
 
 // server/routes/game.ts - Add route
@@ -268,7 +273,7 @@ gameRoutes.post("/move", zValidator("json", GameMoveSchema), async (c) => {
 
 // clients/web/src/services/api.ts - Call from frontend
 const result = await client.game.move.$post({
-  json: { from: "e2", to: "e4" }
+  json: { from: "e2", to: "e4" },
 });
 ```
 
@@ -294,6 +299,7 @@ The frontend uses **TanStack Router's file-based routing**:
 3. **Protected routes**: Use `beforeLoad` hooks to enforce authentication/authorization
 4. **Route generation**: TanStack Router auto-generates `routeTree.gen.ts` - don't edit this file manually
 5. **Example - Add a new protected route**:
+
    ```typescript
    // clients/web/src/routes/_auth/game.tsx
    import { createFileRoute } from '@tanstack/react-router'
@@ -306,6 +312,7 @@ The frontend uses **TanStack Router's file-based routing**:
      return <div>Game Page</div>
    }
    ```
+
 6. **Navigation**: Use TanStack Router's `Link` component or `useNavigate` hook
 
 ### Working with the frontend

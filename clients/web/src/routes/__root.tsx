@@ -14,8 +14,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
       <Outlet />
-    </div>
   );
 }
