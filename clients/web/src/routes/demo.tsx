@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/demo')({
   component: Splash,
 });
 
@@ -83,16 +83,86 @@ function Splash() {
         <div className="mb-6">
           <h3 className="text-xl mb-2">Primary Colors</h3>
           <div className="grid grid-cols-10 gap-2">
-            {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => (
-              <div key={shade} className="text-center">
-                <div
-                  className="aspect-square rounded-md mb-1"
-                  style={{ backgroundColor: `var(--color-primary-${shade})` }}
-                  title={`primary-${shade}`}
-                />
-                <div className="text-xs">{shade}</div>
-              </div>
-            ))}
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-50)' }}
+                title="primary-50"
+              />
+              <div className="text-xs">50</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-100)' }}
+                title="primary-100"
+              />
+              <div className="text-xs">100</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-200)' }}
+                title="primary-200"
+              />
+              <div className="text-xs">200</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-300)' }}
+                title="primary-300"
+              />
+              <div className="text-xs">300</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-400)' }}
+                title="primary-400"
+              />
+              <div className="text-xs">400</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-500)' }}
+                title="primary-500"
+              />
+              <div className="text-xs">500</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-600)' }}
+                title="primary-600"
+              />
+              <div className="text-xs">600</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-700)' }}
+                title="primary-700"
+              />
+              <div className="text-xs">700</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-800)' }}
+                title="primary-800"
+              />
+              <div className="text-xs">800</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-primary-900)' }}
+                title="primary-900"
+              />
+              <div className="text-xs">900</div>
+            </div>
           </div>
         </div>
 
@@ -100,16 +170,86 @@ function Splash() {
         <div className="mb-6">
           <h3 className="text-xl mb-2">Neutral Colors</h3>
           <div className="grid grid-cols-10 gap-2">
-            {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => (
-              <div key={shade} className="text-center">
-                <div
-                  className="aspect-square rounded-md mb-1"
-                  style={{ backgroundColor: `var(--color-neutral-${shade})` }}
-                  title={`neutral-${shade}`}
-                />
-                <div className="text-xs">{shade}</div>
-              </div>
-            ))}
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-50)' }}
+                title="neutral-50"
+              />
+              <div className="text-xs">50</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-100)' }}
+                title="neutral-100"
+              />
+              <div className="text-xs">100</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-200)' }}
+                title="neutral-200"
+              />
+              <div className="text-xs">200</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-300)' }}
+                title="neutral-300"
+              />
+              <div className="text-xs">300</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-400)' }}
+                title="neutral-400"
+              />
+              <div className="text-xs">400</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-500)' }}
+                title="neutral-500"
+              />
+              <div className="text-xs">500</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-600)' }}
+                title="neutral-600"
+              />
+              <div className="text-xs">600</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-700)' }}
+                title="neutral-700"
+              />
+              <div className="text-xs">700</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-800)' }}
+                title="neutral-800"
+              />
+              <div className="text-xs">800</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="aspect-square rounded-md mb-1"
+                style={{ backgroundColor: 'var(--color-neutral-900)' }}
+                title="neutral-900"
+              />
+              <div className="text-xs">900</div>
+            </div>
           </div>
         </div>
 
