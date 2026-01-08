@@ -13,24 +13,23 @@
 @theme {
   --default-font-family: 'MisterPixel';
 
-
   --spacing: 0.20cqw;
   /* ========================================
      TYPOGRAPHY SCALE (cqw)
      ======================================== */
-  --text-xs: 0.63cqw;
-  --text-sm: 0.73cqw; 
-  --text-base: 0.83cqw; 
-  --text-lg: 0.94cqw; 
-  --text-xl: 1.04cqw; 
-  --text-2xl: 1.25cqw; 
-  --text-3xl: 1.56cqw; 
-  --text-4xl: 1.88cqw; 
-  --text-5xl: 2.50cqw; 
-  --text-6xl: 3.13cqw; 
-  --text-7xl: 3.75cqw; 
-  --text-8xl: 5.00cqw; 
-  --text-9xl: 6.67cqw; 
+  --text-base: 1cqw;
+  --text-xs: calc(var(--text-base) * 0.75);
+  --text-sm: calc(var(--text-base) * 0.875);
+  --text-lg: calc(var(--text-base) * 1.125);
+  --text-xl: calc(var(--text-base) * 1.25);
+  --text-2xl: calc(var(--text-base) * 1.5);
+  --text-3xl: calc(var(--text-base) * 1.875);
+  --text-4xl: calc(var(--text-base) * 2.25);
+  --text-5xl: calc(var(--text-base) * 3);
+  --text-6xl: calc(var(--text-base) * 3.75);
+  --text-7xl: calc(var(--text-base) * 4.5);
+  --text-8xl: calc(var(--text-base) * 6);
+  --text-9xl: calc(var(--text-base) * 8); 
 
   /* ========================================
      DEOM COLOR SYSTEM
@@ -79,7 +78,7 @@
 }
 
 :root {
-  font-smooth: never;
-  -webkit-font-smoothing: none;
+  /* font-smooth: never; */
+  /* -webkit-font-smoothing: none; */
   font-size: var(--text-base);
 }

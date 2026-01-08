@@ -6,7 +6,7 @@ export const Route = createFileRoute('/')({
 
 function Splash() {
   return (
-    <div className="w-full h-full overflow-auto bg-(--color-background)">
+    <div className="w-full h-full p-8 overflow-auto bg-(--color-background)">
       {/* Header */}
       <header className='mb-12'>
         <h1 className="text-6xl">
@@ -19,19 +19,23 @@ function Splash() {
 
       {/* Typography Scale */}
       <section className='mb-12'>
-        <h2 className="text-3xl">
+        <h2 className="text-3xl mb-4">
           Typography Scale
         </h2>
-        <div className="flex flex-col">
-          <div className="text-xs">Extra Small (0.63cqw / ~12px)</div>
-          <div className="text-sm">Small (0.73cqw / ~14px)</div>
-          <div className="text-base">Base (0.83cqw / ~16px)</div>
-          <div className="text-lg">Large (0.94cqw / ~18px)</div>
-          <div className="text-xl">Extra Large (1.04cqw / ~20px)</div>
-          <div className="text-2xl">2XL (1.25cqw / ~24px)</div>
-          <div className="text-3xl">3XL (1.56cqw / ~30px)</div>
-          <div className="text-4xl">4XL (1.88cqw / ~36px)</div>
-          <div className="text-5xl">5XL (2.50cqw / ~48px)</div>
+        <div className="flex flex-col gap-2">
+          <div className="text-xs">text-xs: 0.75 × base</div>
+          <div className="text-sm">text-sm: 0.875 × base</div>
+          <div className="text-base">text-base: 1cqw (baseline)</div>
+          <div className="text-lg">text-lg: 1.125 × base</div>
+          <div className="text-xl">text-xl: 1.25 × base</div>
+          <div className="text-2xl">text-2xl: 1.5 × base</div>
+          <div className="text-3xl">text-3xl: 1.875 × base</div>
+          <div className="text-4xl">text-4xl: 2.25 × base</div>
+          <div className="text-5xl">text-5xl: 3 × base</div>
+          <div className="text-6xl">text-6xl: 3.75 × base</div>
+          <div className="text-7xl">text-7xl: 4.5 × base</div>
+          <div className="text-8xl">text-8xl: 6 × base</div>
+          <div className="text-9xl">text-9xl: 8 × base</div>
         </div>
       </section>
 
@@ -71,127 +75,252 @@ function Splash() {
 
       {/* Color System */}
       <section className='mb-12'>
-        <h2 className="text-3xl">
+        <h2 className="text-3xl mb-4">
           Color System
         </h2>
-        <div className="grid grid-cols-10">
-          {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => (
-            <div
-              key={shade}
-              className="aspect-square rounded-md"
-              title={`primary-${shade}`}
-            />
-          ))}
+
+        {/* Primary Colors */}
+        <div className="mb-6">
+          <h3 className="text-xl mb-2">Primary Colors</h3>
+          <div className="grid grid-cols-10 gap-2">
+            {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => (
+              <div key={shade} className="text-center">
+                <div
+                  className="aspect-square rounded-md mb-1"
+                  style={{ backgroundColor: `var(--color-primary-${shade})` }}
+                  title={`primary-${shade}`}
+                />
+                <div className="text-xs">{shade}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex">
-          <div className="rounded-lg">
-            Success
+
+        {/* Neutral Colors */}
+        <div className="mb-6">
+          <h3 className="text-xl mb-2">Neutral Colors</h3>
+          <div className="grid grid-cols-10 gap-2">
+            {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => (
+              <div key={shade} className="text-center">
+                <div
+                  className="aspect-square rounded-md mb-1"
+                  style={{ backgroundColor: `var(--color-neutral-${shade})` }}
+                  title={`neutral-${shade}`}
+                />
+                <div className="text-xs">{shade}</div>
+              </div>
+            ))}
           </div>
-          <div className="rounded-lg">
-            Warning
+        </div>
+
+        {/* Semantic Colors */}
+        <div className="mb-6">
+          <h3 className="text-xl mb-2">Semantic Colors</h3>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="text-center">
+              <div
+                className="h-20 rounded-lg mb-2"
+                style={{ backgroundColor: 'var(--color-success)' }}
+              />
+              <div className="text-sm">Success</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="h-20 rounded-lg mb-2"
+                style={{ backgroundColor: 'var(--color-warning)' }}
+              />
+              <div className="text-sm">Warning</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="h-20 rounded-lg mb-2"
+                style={{ backgroundColor: 'var(--color-error)' }}
+              />
+              <div className="text-sm">Error</div>
+            </div>
+            <div className="text-center">
+              <div
+                className="h-20 rounded-lg mb-2"
+                style={{ backgroundColor: 'var(--color-info)' }}
+              />
+              <div className="text-sm">Info</div>
+            </div>
           </div>
-          <div className="rounded-lg">
-            Error
-          </div>
-          <div className="rounded-lg">
-            Info
+        </div>
+
+        {/* Text Colors */}
+        <div className="mb-6">
+          <h3 className="text-xl mb-2">Text Colors</h3>
+          <div className="space-y-2">
+            <div style={{ color: 'var(--color-text-primary)' }} className="text-lg">
+              Primary Text (--color-text-primary)
+            </div>
+            <div style={{ color: 'var(--color-text-secondary)' }} className="text-lg">
+              Secondary Text (--color-text-secondary)
+            </div>
+            <div style={{ color: 'var(--color-text-tertiary)' }} className="text-lg">
+              Tertiary Text (--color-text-tertiary)
+            </div>
+            <div
+              style={{
+                color: 'var(--color-text-inverse)',
+                backgroundColor: 'var(--color-neutral-900)'
+              }}
+              className="text-lg p-2 inline-block rounded"
+            >
+              Inverse Text (--color-text-inverse)
+            </div>
           </div>
         </div>
       </section>
 
       {/* Border Radius */}
       <section className='mb-12'>
-        <h2 className="text-3xl">
+        <h2 className="text-3xl mb-4">
           Border Radius
         </h2>
-        <div className="flex items-center">
-          <div className="rounded-sm">
-            Small
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="p-6 bg-primary-200 rounded-none border-2 border-primary-500">
+            <div className="text-sm">rounded-none</div>
           </div>
-          <div className="rounded">
-            Base
+          <div className="p-6 bg-primary-200 rounded-sm border-2 border-primary-500">
+            <div className="text-sm">rounded-sm</div>
           </div>
-          <div className="rounded-md">
-            Medium
+          <div className="p-6 bg-primary-200 rounded border-2 border-primary-500">
+            <div className="text-sm">rounded</div>
           </div>
-          <div className="rounded-lg">
-            Large
+          <div className="p-6 bg-primary-200 rounded-md border-2 border-primary-500">
+            <div className="text-sm">rounded-md</div>
           </div>
-          <div className="rounded-xl">
-            XL
+          <div className="p-6 bg-primary-200 rounded-lg border-2 border-primary-500">
+            <div className="text-sm">rounded-lg</div>
           </div>
-          <div className="rounded-2xl">
-            2XL
+          <div className="p-6 bg-primary-200 rounded-xl border-2 border-primary-500">
+            <div className="text-sm">rounded-xl</div>
           </div>
-          <div className="rounded-full">
-            Full
+          <div className="p-6 bg-primary-200 rounded-2xl border-2 border-primary-500">
+            <div className="text-sm">rounded-2xl</div>
+          </div>
+          <div className="p-6 bg-primary-200 rounded-3xl border-2 border-primary-500">
+            <div className="text-sm">rounded-3xl</div>
+          </div>
+          <div className="p-6 bg-primary-200 rounded-full border-2 border-primary-500">
+            <div className="text-sm">rounded-full</div>
           </div>
         </div>
       </section>
 
       {/* Shadows */}
       <section className='mb-12'>
-        <h2 className="text-3xl">
+        <h2 className="text-3xl mb-4">
           Shadows
         </h2>
-        <div className="grid grid-cols-3">
-          <div className="rounded-lg shadow-sm">
-            shadow-sm
+        <div className="grid grid-cols-3 gap-6">
+          <div className="p-6 bg-white rounded-lg shadow-sm border border-neutral-200">
+            <div className="text-base">shadow-sm</div>
           </div>
-          <div className="rounded-lg shadow">
-            shadow
+          <div className="p-6 bg-white rounded-lg shadow border border-neutral-200">
+            <div className="text-base">shadow</div>
           </div>
-          <div className="rounded-lg shadow-md">
-            shadow-md
+          <div className="p-6 bg-white rounded-lg shadow-md border border-neutral-200">
+            <div className="text-base">shadow-md</div>
           </div>
-          <div className="rounded-lg shadow-lg">
-            shadow-lg
+          <div className="p-6 bg-white rounded-lg shadow-lg border border-neutral-200">
+            <div className="text-base">shadow-lg</div>
           </div>
-          <div className="rounded-lg shadow-xl">
-            shadow-xl
+          <div className="p-6 bg-white rounded-lg shadow-xl border border-neutral-200">
+            <div className="text-base">shadow-xl</div>
           </div>
-          <div className="rounded-lg shadow-2xl">
-            shadow-2xl
+          <div className="p-6 bg-white rounded-lg shadow-2xl border border-neutral-200">
+            <div className="text-base">shadow-2xl</div>
           </div>
         </div>
       </section>
 
       {/* Component Examples */}
       <section className='mb-12'>
-        <h2 className="text-3xl">
+        <h2 className="text-3xl mb-4">
           Component Examples
         </h2>
 
-        {/* Card */}
-        <div className="p-6 rounded-xl shadow-lg">
-          <h3 className="text-2xl">
-            Card Component
-          </h3>
-          <p className="text-base">
-            This is an example card using the design system tokens. All spacing, typography, and colors scale responsively with the container.
-          </p>
-          <button
-            className="p-3 rounded-lg text-base"
-          >
-            Primary Button
-          </button>
+        {/* Buttons */}
+        <div className="mb-8">
+          <h3 className="text-xl mb-4">Buttons</h3>
+          <div className="flex gap-4 flex-wrap">
+            <button
+              className="px-6 py-3 rounded-lg text-base bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+            >
+              Primary Button
+            </button>
+            <button
+              className="px-6 py-3 rounded-lg text-base bg-neutral-200 text-neutral-900 hover:bg-neutral-300 transition-colors"
+            >
+              Secondary Button
+            </button>
+            <button
+              className="px-6 py-3 rounded-lg text-base border-2 border-primary-500 text-primary-500 hover:bg-primary-50 transition-colors"
+            >
+              Outline Button
+            </button>
+            <button
+              className="px-6 py-3 rounded-lg text-base bg-error text-white hover:bg-red-600 transition-colors"
+            >
+              Danger Button
+            </button>
+          </div>
+        </div>
+
+        {/* Cards */}
+        <div className="mb-8">
+          <h3 className="text-xl mb-4">Cards</h3>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="p-6 rounded-xl shadow-lg bg-white border border-neutral-200">
+              <h4 className="text-2xl mb-3" style={{ color: 'var(--color-text-primary)' }}>
+                Card Component
+              </h4>
+              <p className="text-base mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+                This is an example card using the design system tokens. All spacing, typography, and colors scale responsively with the container.
+              </p>
+              <button
+                className="px-4 py-2 rounded-lg text-sm bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+              >
+                Action
+              </button>
+            </div>
+            <div className="p-6 rounded-xl shadow-md bg-primary-50 border border-primary-200">
+              <h4 className="text-2xl mb-3" style={{ color: 'var(--color-primary-700)' }}>
+                Colored Card
+              </h4>
+              <p className="text-base mb-4" style={{ color: 'var(--color-primary-900)' }}>
+                Cards can use different color schemes from the design system palette.
+              </p>
+              <button
+                className="px-4 py-2 rounded-lg text-sm bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+              >
+                Learn More
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((num) => (
-            <div
-              key={num}
-              className="p-6 rounded-lg shadow text-center"
-            >
-              <div className="text-4xl">
-                {num}
+        <div className="mb-8">
+          <h3 className="text-xl mb-4">Grid Layout</h3>
+          <div className="grid grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
+              <div
+                key={num}
+                className="p-6 rounded-lg shadow bg-white border border-neutral-200 text-center hover:shadow-lg transition-shadow"
+              >
+                <div className="text-4xl mb-2" style={{ color: 'var(--color-primary-500)' }}>
+                  {num}
+                </div>
+                <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Grid Item
+                </div>
               </div>
-              <div className="text-sm">
-                Grid Item
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
     </div>
