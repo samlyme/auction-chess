@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/home/')({
+export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
   component: RouteComponent
 });
 
@@ -16,7 +16,7 @@ function RouteComponent() {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* Casual Match Card */}
-          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-white p-8 opacity-50 shadow-lg">
+          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: 'var(--color-primary-600)' }}
@@ -39,7 +39,7 @@ function RouteComponent() {
           </div>
 
           {/* Ranked Match Card */}
-          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-white p-8 opacity-50 shadow-lg">
+          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: 'var(--color-primary-600)' }}
@@ -62,7 +62,9 @@ function RouteComponent() {
           </div>
 
           {/* Create Lobby Card */}
-          <div className="rounded-xl border border-neutral-200 bg-white p-8 shadow-lg transition-shadow hover:shadow-xl">
+          <div 
+              onClick={() => navigate({ to: '/lobbies' })}
+          className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg transition-shadow hover:shadow-xl">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: 'var(--color-primary-600)' }}
@@ -76,12 +78,6 @@ function RouteComponent() {
               Set up a private game with custom rules. Share the lobby code with
               friends to play together.
             </p>
-            <button
-              className="w-full rounded-lg bg-primary-500 px-6 py-3 text-base text-white transition-colors hover:bg-primary-600"
-              onClick={() => navigate({ to: '/lobbies' })}
-            >
-              Create Lobby
-            </button>
           </div>
         </div>
       </div>

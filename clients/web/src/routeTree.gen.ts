@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as RequireAuthRouteRouteImport } from './routes/_requireAuth/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LobbiesIndexRouteImport } from './routes/lobbies/index'
-import { Route as HomeIndexRouteImport } from './routes/home/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as AuthCreateProfileRouteImport } from './routes/auth/create-profile'
+import { Route as RequireAuthRequireProfileRouteRouteImport } from './routes/_requireAuth/_requireProfile/route'
+import { Route as RequireAuthRequireProfileHomeRouteImport } from './routes/_requireAuth/_requireProfile/home'
 
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequireAuthRouteRoute = RequireAuthRouteRouteImport.update({
+  id: '/_requireAuth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -30,52 +37,84 @@ const LobbiesIndexRoute = LobbiesIndexRouteImport.update({
   path: '/lobbies/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HomeIndexRoute = HomeIndexRouteImport.update({
-  id: '/home/',
-  path: '/home/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/auth/',
   path: '/auth/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCreateProfileRoute = AuthCreateProfileRouteImport.update({
+  id: '/auth/create-profile',
+  path: '/auth/create-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequireAuthRequireProfileRouteRoute =
+  RequireAuthRequireProfileRouteRouteImport.update({
+    id: '/_requireProfile',
+    getParentRoute: () => RequireAuthRouteRoute,
+  } as any)
+const RequireAuthRequireProfileHomeRoute =
+  RequireAuthRequireProfileHomeRouteImport.update({
+    id: '/home',
+    path: '/home',
+    getParentRoute: () => RequireAuthRequireProfileRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
-  '/home': typeof HomeIndexRoute
   '/lobbies': typeof LobbiesIndexRoute
+  '/home': typeof RequireAuthRequireProfileHomeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
-  '/home': typeof HomeIndexRoute
   '/lobbies': typeof LobbiesIndexRoute
+  '/home': typeof RequireAuthRequireProfileHomeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_requireAuth': typeof RequireAuthRouteRouteWithChildren
   '/demo': typeof DemoRoute
+  '/_requireAuth/_requireProfile': typeof RequireAuthRequireProfileRouteRouteWithChildren
+  '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth/': typeof AuthIndexRoute
-  '/home/': typeof HomeIndexRoute
   '/lobbies/': typeof LobbiesIndexRoute
+  '/_requireAuth/_requireProfile/home': typeof RequireAuthRequireProfileHomeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo' | '/auth' | '/home' | '/lobbies'
+  fullPaths:
+    | '/'
+    | '/demo'
+    | '/auth/create-profile'
+    | '/auth'
+    | '/lobbies'
+    | '/home'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/auth' | '/home' | '/lobbies'
-  id: '__root__' | '/' | '/demo' | '/auth/' | '/home/' | '/lobbies/'
+  to: '/' | '/demo' | '/auth/create-profile' | '/auth' | '/lobbies' | '/home'
+  id:
+    | '__root__'
+    | '/'
+    | '/_requireAuth'
+    | '/demo'
+    | '/_requireAuth/_requireProfile'
+    | '/auth/create-profile'
+    | '/auth/'
+    | '/lobbies/'
+    | '/_requireAuth/_requireProfile/home'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RequireAuthRouteRoute: typeof RequireAuthRouteRouteWithChildren
   DemoRoute: typeof DemoRoute
+  AuthCreateProfileRoute: typeof AuthCreateProfileRoute
   AuthIndexRoute: typeof AuthIndexRoute
-  HomeIndexRoute: typeof HomeIndexRoute
   LobbiesIndexRoute: typeof LobbiesIndexRoute
 }
 
@@ -86,6 +125,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_requireAuth': {
+      id: '/_requireAuth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof RequireAuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -102,13 +148,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LobbiesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/home/': {
-      id: '/home/'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth/': {
       id: '/auth/'
       path: '/auth'
@@ -116,14 +155,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/create-profile': {
+      id: '/auth/create-profile'
+      path: '/auth/create-profile'
+      fullPath: '/auth/create-profile'
+      preLoaderRoute: typeof AuthCreateProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_requireAuth/_requireProfile': {
+      id: '/_requireAuth/_requireProfile'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof RequireAuthRequireProfileRouteRouteImport
+      parentRoute: typeof RequireAuthRouteRoute
+    }
+    '/_requireAuth/_requireProfile/home': {
+      id: '/_requireAuth/_requireProfile/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof RequireAuthRequireProfileHomeRouteImport
+      parentRoute: typeof RequireAuthRequireProfileRouteRoute
+    }
   }
 }
 
+interface RequireAuthRequireProfileRouteRouteChildren {
+  RequireAuthRequireProfileHomeRoute: typeof RequireAuthRequireProfileHomeRoute
+}
+
+const RequireAuthRequireProfileRouteRouteChildren: RequireAuthRequireProfileRouteRouteChildren =
+  {
+    RequireAuthRequireProfileHomeRoute: RequireAuthRequireProfileHomeRoute,
+  }
+
+const RequireAuthRequireProfileRouteRouteWithChildren =
+  RequireAuthRequireProfileRouteRoute._addFileChildren(
+    RequireAuthRequireProfileRouteRouteChildren,
+  )
+
+interface RequireAuthRouteRouteChildren {
+  RequireAuthRequireProfileRouteRoute: typeof RequireAuthRequireProfileRouteRouteWithChildren
+}
+
+const RequireAuthRouteRouteChildren: RequireAuthRouteRouteChildren = {
+  RequireAuthRequireProfileRouteRoute:
+    RequireAuthRequireProfileRouteRouteWithChildren,
+}
+
+const RequireAuthRouteRouteWithChildren =
+  RequireAuthRouteRoute._addFileChildren(RequireAuthRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RequireAuthRouteRoute: RequireAuthRouteRouteWithChildren,
   DemoRoute: DemoRoute,
+  AuthCreateProfileRoute: AuthCreateProfileRoute,
   AuthIndexRoute: AuthIndexRoute,
-  HomeIndexRoute: HomeIndexRoute,
   LobbiesIndexRoute: LobbiesIndexRoute,
 }
 export const routeTree = rootRouteImport

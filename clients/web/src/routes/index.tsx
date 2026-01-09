@@ -48,7 +48,7 @@ function RouteComponent() {
 
         <button
           onClick={() => navigate({ to: '/auth' })}
-          className="rounded-lg bg-primary-500 px-6 py-3 text-base text-white transition-colors hover:bg-primary-600"
+          className="rounded-lg px-6 py-3 text-base transition-colors bg-blue-600 hover:bg-blue-400"
         >
           Play
         </button>

@@ -1,7 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
+import supabase from '@/supabase';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/auth/')({
+  beforeLoad: ({ context }) => {
+    if (context.auth.session) throw redirect({ to: "/home" })
+  },
   component: RouteComponent
 });
 
@@ -12,15 +16,34 @@ function RouteComponent() {
 
   const navigate = Route.useNavigate();
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSignUp) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      console.log({ data, error });
+      if (!error) navigate({to: "/home"})
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      console.log({ data, error });
+      if (!error) navigate({to: "/home"})
+    }
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center bg-(--color-background)">
-      <div className="w-full max-w-md rounded-lg border border-gray-300 p-8">
+      <div className="w-full max-w-md rounded-lg border bg-neutral-800 p-8">
         <h1 className="mb-6 text-center text-3xl font-bold">
           {isSignUp ? 'Sign Up' : 'Sign In'}
         </h1>
 
         {/* Email/Password Form */}
-        <form className="space-y-4" onSubmit={() => navigate({ to: '/home' })}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium">
               Email
@@ -30,7 +53,7 @@ function RouteComponent() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border  px-3 py-2"
               placeholder="you@example.com"
             />
           </div>
@@ -47,7 +70,7 @@ function RouteComponent() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2"
+              className="w-full rounded border  px-3 py-2"
               placeholder="••••••••"
             />
           </div>
@@ -62,13 +85,13 @@ function RouteComponent() {
 
         {/* Divider */}
         <div className="my-6 flex items-center">
-          <div className="flex-1 border-t border-gray-300"></div>
+          <div className="flex-1 border-t "></div>
           <span className="px-4 text-sm text-gray-500">or</span>
-          <div className="flex-1 border-t border-gray-300"></div>
+          <div className="flex-1 border-t "></div>
         </div>
 
         {/* Google Sign In */}
-        <button className="w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors hover:bg-gray-50">
+        <button className="w-full rounded-lg border  px-4 py-2 transition-colors hover:bg-gray-50">
           Sign in with Google
         </button>
 
