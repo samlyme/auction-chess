@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PlayerInfoCardProps {
   username: string;
@@ -43,38 +43,81 @@ function BidComparison({ opponentBid, yourBid }: BidComparisonProps) {
 }
 
 interface BidControlsProps {
-  currentBid: number;
-  onBid: () => void;
-  onFold: () => void;
-  onMax: () => void;
+  bid: number;
+  setBid: React.Dispatch<React.SetStateAction<number>>;
+  minBid: number;
+  maxBid: number;
 }
 
-function BidControls({ currentBid, onBid, onFold, onMax }: BidControlsProps) {
+function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
+  const canBid = bid >= minBid && bid <= maxBid;
+
+
+  const [inputValue, setInputValue] = useState<string>(bid.toString());
+  useEffect(() => {
+    setInputValue(bid.toString());
+  }, [bid])
+  const [isValidInput, setIsValidInput] = useState<boolean>(true);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    
+    const i = parseInt(e.target.value, 10);
+    if (isNaN(i)) {
+      setIsValidInput(false);
+    }
+    else {
+      if (i <= maxBid && i >= minBid) {
+        console.log("valid bid input", i);
+        
+        setIsValidInput(true);
+        setBid(i);
+      }
+      else {
+        setIsValidInput(false);
+      }
+    }
+  }
+
   return (
     <div className="flex flex-2 flex-col gap-2">
       <div className="flex flex-col rounded-sm bg-neutral-600 p-2">
         <h3 className="text-center">Current Bid</h3>
         <div className="flex-1 bg-neutral-500">
-          <h1 className="p-2 text-center text-5xl">${currentBid}</h1>
+          <input
+            type="text"
+            placeholder={minBid.toString()}
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={(e) => e.target.select()}
+            onBlur={() => {
+              if (!isValidInput) {
+                setInputValue(bid.toString());
+                setIsValidInput(true);
+              }
+            }}
+            className={`w-full bg-transparent p-2 text-center text-5xl outline-none placeholder:text-color-tertiary ${!isValidInput ? 'text-red-500' : 'text-white'}`}
+          />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-2 gap-2">
           <button
-            onClick={onBid}
-            className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300"
+            onClick={() => {console.log("bid", bid)}}
+            disabled={!canBid}
+            className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             BID
           </button>
           <button
-            onClick={onFold}
+            onClick={() => {console.log("fold")}}
             className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300"
           >
             FOLD
           </button>
         </div>
         <button
-          onClick={onMax}
+          onClick={() => setBid(maxBid)}
           className="w-full flex-1 cursor-pointer rounded bg-yellow-400 px-4 py-2 text-xl hover:bg-yellow-300"
         >
           Max
@@ -89,12 +132,7 @@ function BidAdjustmentControls({
   setBid,
   minBid,
   maxBid,
-}: {
-  bid: number;
-  setBid: React.Dispatch<React.SetStateAction<number>>;
-  minBid: number;
-  maxBid: number;
-}) {
+}: BidControlsProps) {
   const stepSmall = 1;
   const stepLarge = 5;
   
@@ -190,10 +228,6 @@ function BidAdjustmentControls({
 export default function BidPanel() {
   const [bid, setBid] = useState<number>(55);
 
-  const handleBid = () => {};
-  const handleFold = () => {};
-  const handleMax = () => {};
-
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
@@ -205,10 +239,10 @@ export default function BidPanel() {
             <div className="flex-1 rounded-md bg-neutral-700 p-4">
               <div className="flex h-full gap-2">
                 <BidControls
-                  currentBid={bid || 55}
-                  onBid={handleBid}
-                  onFold={handleFold}
-                  onMax={handleMax}
+                  bid={bid || 55}
+                  setBid={setBid}
+                  minBid={55}
+                  maxBid={100}
                 />
                 <BidAdjustmentControls bid={bid} setBid={setBid} minBid={55} maxBid={100}/>
               </div>
