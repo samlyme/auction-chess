@@ -1,4 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
+import { createLobby } from '@/services/lobbies';
+import type { Color } from 'shared';
 
 export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
   component: RouteComponent
@@ -6,6 +9,29 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
 
 function RouteComponent() {
   const navigate = Route.useNavigate();
+  const [hostColor, setHostColor] = useState<Color>('white');
+  const [timeMinutes, setTimeMinutes] = useState(5);
+  const [loading, setLoading] = useState(false);
+
+  const handleCreateLobby = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const result = await createLobby({
+      gameConfig: {
+        hostColor,
+        initTime: {
+          white: timeMinutes * 60 * 1000,
+          black: timeMinutes * 60 * 1000,
+        },
+      },
+    });
+
+    if (result.ok) {
+      navigate({ to: '/lobbies' });
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="h-full w-full overflow-auto bg-(--color-background)">
@@ -62,9 +88,7 @@ function RouteComponent() {
           </div>
 
           {/* Create Lobby Card */}
-          <div 
-              onClick={() => navigate({ to: '/lobbies' })}
-          className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg transition-shadow hover:shadow-xl">
+          <div className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: 'var(--color-primary-600)' }}
@@ -78,6 +102,43 @@ function RouteComponent() {
               Set up a private game with custom rules. Share the lobby code with
               friends to play together.
             </p>
+            <form onSubmit={handleCreateLobby} className="flex flex-col gap-4">
+              <div>
+                <label htmlFor="hostColor" className="mb-2 block text-sm">
+                  Your Color
+                </label>
+                <select
+                  id="hostColor"
+                  value={hostColor}
+                  onChange={(e) => setHostColor(e.target.value as Color)}
+                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
+                >
+                  <option value="white">White</option>
+                  <option value="black">Black</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="timeMinutes" className="mb-2 block text-sm">
+                  Time (minutes)
+                </label>
+                <input
+                  id="timeMinutes"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={timeMinutes}
+                  onChange={(e) => setTimeMinutes(Number(e.target.value))}
+                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
+              >
+                {loading ? 'Creating...' : 'Create Lobby'}
+              </button>
+            </form>
           </div>
         </div>
       </div>
