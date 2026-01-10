@@ -1,4 +1,6 @@
+import { makeBid } from '@/services/game';
 import { useState, useEffect } from 'react';
+import type { AuctionChessState, Color } from 'shared';
 
 interface PlayerInfoCardProps {
   username: string;
@@ -100,8 +102,9 @@ function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-2 gap-2">
           <button
-            onClick={() => {
-              console.log('bid', bid);
+            onClick={async () => {
+              const res = await makeBid({ amount: bid })
+              console.log('bid', res);
             }}
             disabled={!canBid}
             className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
@@ -109,8 +112,9 @@ function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
             BID
           </button>
           <button
-            onClick={() => {
-              console.log('fold');
+            onClick={async () => {
+              const res = await makeBid({ fold: true });
+              console.log("fold", res);
             }}
             className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300"
           >
@@ -140,7 +144,6 @@ function BidAdjustmentControls({
   const r = maxBid - minBid;
   const n = 15; // no. of large steps to cover.
   const idealScale = r / (stepLarge * n);
-  console.log({ idealScale });
 
   const defaultScale = Math.pow(10, Math.floor(Math.log10(idealScale)));
   const [scale, setScale] = useState<number>(Math.max(defaultScale, 1));
@@ -234,40 +237,77 @@ function BidAdjustmentControls({
 export default function BidPanel({
   username,
   oppUsername,
+  userColor,
+  gameState,
 }: {
   username: string;
   oppUsername: string | undefined;
+  userColor: Color;
+  gameState: AuctionChessState;
 }) {
-  const [bid, setBid] = useState<number>(55);
+  const [bid, setBid] = useState<number>(0);
+  const oppColor = userColor === "white" ? "black" : "white";
+
+  let opponentBid = 0;
+  let userBid = 0;
+  const bidStack = gameState.auctionState.bidHistory.at(-1)!;
+  const turn = gameState.turn;
+  if (bidStack.length === 1) {
+    const mostRecentBid = bidStack[0];
+    if (mostRecentBid && "amount" in mostRecentBid) {
+      if (turn !== userColor) userBid = mostRecentBid.amount;
+      else opponentBid = mostRecentBid.amount;
+    }
+  }
+  else if (bidStack.length >= 2) {
+
+    let mostRecentBid = bidStack.at(-1)!;
+    let secondRecentBid = bidStack.at(-2)!;
+    if ("fold" in mostRecentBid) {
+      mostRecentBid = secondRecentBid;
+      secondRecentBid = bidStack.at(-3) || { amount: 0 };
+    }
+
+    if (!("amount" in mostRecentBid) || !("amount" in secondRecentBid)) throw Error("folds in bid stack where they shouldn't be");
+    if (turn === userColor) {
+      opponentBid = mostRecentBid.amount;
+      userBid = secondRecentBid.amount;
+    }
+    else {
+      userBid = mostRecentBid.amount;
+      opponentBid = secondRecentBid.amount;
+    }
+  }
+
 
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
-        <PlayerInfoCard username={oppUsername || "waiting..."} balance={100} />
+        <PlayerInfoCard username={oppUsername || "waiting..."} balance={gameState.auctionState.balance[oppColor]} />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
-            <BidComparison opponentBid={50} yourBid={45} />
+            <BidComparison opponentBid={opponentBid} yourBid={userBid} />
             <div className="flex-1 rounded-md bg-neutral-700 p-4">
               <div className="flex h-full gap-2">
                 <BidControls
-                  bid={bid || 55}
+                  bid={bid}
                   setBid={setBid}
-                  minBid={55}
-                  maxBid={100}
+                  minBid={0} // fix this
+                  maxBid={gameState.auctionState.balance[userColor]}
                 />
                 <BidAdjustmentControls
                   bid={bid}
                   setBid={setBid}
-                  minBid={55}
-                  maxBid={100}
+                  minBid={0}
+                  maxBid={gameState.auctionState.balance[userColor]}
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <PlayerInfoCard username={username} balance={100} />
+        <PlayerInfoCard username={username} balance={gameState.auctionState.balance[userColor]} />
       </div>
     </div>
   );

@@ -26,6 +26,11 @@ export async function handleApiCall<T>(
       });
     }
 
+    // Handle 204 No Content - no response body
+    if (response.status === 204) {
+      return Ok(null as T);
+    }
+
     const data = await response.json();
     return Ok(data as T);
   } catch (error) {

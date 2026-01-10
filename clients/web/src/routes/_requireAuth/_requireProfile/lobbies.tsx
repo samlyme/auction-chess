@@ -38,6 +38,9 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
     const lobby = resLobby.value;
     if (!lobby) throw redirect({ to: "/home" });
 
+    console.log({lobby});
+    
+
     const oppId = userId === lobby.hostUid ? lobby.guestUid : lobby.hostUid;
 
     let opp: Profile | null = null;
@@ -50,6 +53,8 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
     const resGame = await getGame();
     if (!resGame.ok) throw Error('Failed to fetch game');
     const game = resGame.value;
+    console.log({game});
+    
     
     return { lobby, game, opp };
   },
@@ -71,18 +76,18 @@ function RouteComponent() {
     <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
         <div className="col-span-3">
-          <LobbyPanel isHost={true}/>
+          <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby}/>
         </div>
 
-        <div className="opacity-50 col-span-6 flex items-center justify-center">
+        <div className="col-span-6 flex items-center justify-center">
           <AuctionChessBoard
             gameState={game || defaultGameState}
             playerColor={playerColor}
             onMakeMove={() => {}}
           />
         </div>
-        <div className="opacity-50 col-span-3">
-          <BidPanel username={userProfile.username} oppUsername={opp?.username}/>
+        <div className="col-span-3">
+          <BidPanel username={userProfile.username} oppUsername={opp?.username} userColor={playerColor} gameState={game || defaultGameState} />
         </div>
       </div>
     </div>

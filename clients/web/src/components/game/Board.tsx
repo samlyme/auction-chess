@@ -22,7 +22,7 @@ import {
   availableMove,
   selectedSquare,
 } from "./BoardStyle.ts";
-import type { AuctionChessState, Bid } from "shared";
+import type { AuctionChessState } from "shared";
 
 interface BoardProps {
   gameState: AuctionChessState;
