@@ -72,6 +72,9 @@ function RouteComponent() {
   const opposite = (color: Color) => color === "white" ? "black" : "white";
   const playerColor = userId === lobby.hostUid ? hostColor : opposite(hostColor);
 
+  const gameStarted = lobby.gameStarted;
+  const phase = game?.phase || "bid";
+
   return (
     <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
@@ -79,14 +82,14 @@ function RouteComponent() {
           <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby}/>
         </div>
 
-        <div className="col-span-6 flex items-center justify-center">
+        <div className={`${!gameStarted || phase !== "move" ? "opacity-50" : ""} col-span-6 flex items-center justify-center`}>
           <AuctionChessBoard
             gameState={game || defaultGameState}
             playerColor={playerColor}
             onMakeMove={() => {}}
           />
         </div>
-        <div className="col-span-3">
+        <div className={`${!gameStarted || phase !== "bid" ? "opacity-50" : ""} col-span-3`}>
           <BidPanel username={userProfile.username} oppUsername={opp?.username} userColor={playerColor} gameState={game || defaultGameState} />
         </div>
       </div>
