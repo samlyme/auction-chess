@@ -27,10 +27,7 @@ import type { AuctionChessState, Bid } from "shared";
 interface BoardProps {
   gameState: AuctionChessState;
   playerColor: Color;
-  hostUsername: string;
-  guestUsername: string;
   onMakeMove: (move: NormalMove) => void;
-  onMakeBid: (bid: Bid) => void;
 }
 
 
@@ -107,10 +104,7 @@ function PromotionMenu({
 export function AuctionChessBoard({
   gameState,
   playerColor,
-  hostUsername,
-  guestUsername,
   onMakeMove,
-  onMakeBid,
 }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);

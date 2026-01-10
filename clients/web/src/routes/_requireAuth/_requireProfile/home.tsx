@@ -29,6 +29,8 @@ function RouteComponent() {
 
     if (result.ok) {
       navigate({ to: '/lobbies' });
+    } else {
+      alert(result.error);
     }
     setLoading(false);
   };

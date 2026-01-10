@@ -52,32 +52,29 @@ interface BidControlsProps {
 function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
   const canBid = bid >= minBid && bid <= maxBid;
 
-
   const [inputValue, setInputValue] = useState<string>(bid.toString());
   useEffect(() => {
     setInputValue(bid.toString());
-  }, [bid])
+  }, [bid]);
   const [isValidInput, setIsValidInput] = useState<boolean>(true);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
-    
+
     const i = parseInt(e.target.value, 10);
     if (isNaN(i)) {
       setIsValidInput(false);
-    }
-    else {
+    } else {
       if (i <= maxBid && i >= minBid) {
-        console.log("valid bid input", i);
-        
+        console.log('valid bid input', i);
+
         setIsValidInput(true);
         setBid(i);
-      }
-      else {
+      } else {
         setIsValidInput(false);
       }
     }
-  }
+  };
 
   return (
     <div className="flex flex-2 flex-col gap-2">
@@ -96,21 +93,25 @@ function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
                 setIsValidInput(true);
               }
             }}
-            className={`w-full bg-transparent p-2 text-center text-5xl outline-none placeholder:text-color-tertiary ${!isValidInput ? 'text-red-500' : 'text-white'}`}
+            className={`placeholder:text-color-tertiary w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? 'text-red-500' : 'text-white'}`}
           />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-2 gap-2">
           <button
-            onClick={() => {console.log("bid", bid)}}
+            onClick={() => {
+              console.log('bid', bid);
+            }}
             disabled={!canBid}
             className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             BID
           </button>
           <button
-            onClick={() => {console.log("fold")}}
+            onClick={() => {
+              console.log('fold');
+            }}
             className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300"
           >
             FOLD
@@ -135,30 +136,35 @@ function BidAdjustmentControls({
 }: BidControlsProps) {
   const stepSmall = 1;
   const stepLarge = 5;
-  
+
   const r = maxBid - minBid;
   const n = 15; // no. of large steps to cover.
-  const idealScale = r / (stepLarge*n);
-  console.log({idealScale});
-  
+  const idealScale = r / (stepLarge * n);
+  console.log({ idealScale });
+
   const defaultScale = Math.pow(10, Math.floor(Math.log10(idealScale)));
   const [scale, setScale] = useState<number>(Math.max(defaultScale, 1));
 
-  const incLarge = () => setBid(curr => Math.min(curr + stepLarge * scale, maxBid));
-  const incSmall = () => setBid(curr => Math.min(curr + stepSmall * scale, maxBid))
+  const incLarge = () =>
+    setBid((curr) => Math.min(curr + stepLarge * scale, maxBid));
+  const incSmall = () =>
+    setBid((curr) => Math.min(curr + stepSmall * scale, maxBid));
   const onReset = () => setBid(minBid);
-  const decSmall = () => setBid(curr => Math.max(curr - stepSmall * scale, minBid));
-  const decLarge = () => setBid(curr => Math.max(curr - stepLarge * scale, minBid));
+  const decSmall = () =>
+    setBid((curr) => Math.max(curr - stepSmall * scale, minBid));
+  const decLarge = () =>
+    setBid((curr) => Math.max(curr - stepLarge * scale, minBid));
 
-  const incScale = () => setScale(curr => {
-    const next = curr * 10;
-    if (stepSmall * next > r) return curr;
-    return next;
-  })
-  const decScale = () => setScale(curr => Math.max(curr/10, 1));
+  const incScale = () =>
+    setScale((curr) => {
+      const next = curr * 10;
+      if (stepSmall * next > r) return curr;
+      return next;
+    });
+  const decScale = () => setScale((curr) => Math.max(curr / 10, 1));
 
   const canInc = bid < maxBid;
-  const canDec = bid > minBid
+  const canDec = bid > minBid;
 
   // TODO: implement this properly
   const canIncScale = stepSmall * scale * 10 <= r;
@@ -170,7 +176,7 @@ function BidAdjustmentControls({
         <button
           onClick={incScale}
           disabled={!canIncScale}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 hover:bg-purple-300 text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 text-purple-700 hover:bg-purple-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="rotate-270">»</span>
         </button>
@@ -178,7 +184,7 @@ function BidAdjustmentControls({
         <button
           onClick={incLarge}
           disabled={!canInc}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           +{stepLarge * scale}
         </button>
@@ -186,14 +192,14 @@ function BidAdjustmentControls({
         <button
           onClick={incSmall}
           disabled={!canInc}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           +{stepSmall * scale}
         </button>
 
         <button
           onClick={onReset}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md border border-yellow-500 bg-yellow-300 hover:bg-yellow-200 text-yellow-700"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md border border-yellow-500 bg-yellow-300 text-yellow-700 hover:bg-yellow-200"
         >
           Reset
         </button>
@@ -201,14 +207,14 @@ function BidAdjustmentControls({
         <button
           onClick={decSmall}
           disabled={!canDec}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           -{stepSmall * scale}
         </button>
         <button
           onClick={decLarge}
           disabled={!canDec}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           -{stepLarge * scale}
         </button>
@@ -216,7 +222,7 @@ function BidAdjustmentControls({
         <button
           onClick={decScale}
           disabled={!canDecScale}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 hover:bg-purple-300 text-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 text-purple-700 hover:bg-purple-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="rotate-90">»</span>
         </button>
@@ -225,13 +231,19 @@ function BidAdjustmentControls({
   );
 }
 
-export default function BidPanel() {
+export default function BidPanel({
+  username,
+  oppUsername,
+}: {
+  username: string;
+  oppUsername: string | undefined;
+}) {
   const [bid, setBid] = useState<number>(55);
 
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
-        <PlayerInfoCard username="username" balance={100} />
+        <PlayerInfoCard username={oppUsername || "waiting..."} balance={100} />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
@@ -244,13 +256,18 @@ export default function BidPanel() {
                   minBid={55}
                   maxBid={100}
                 />
-                <BidAdjustmentControls bid={bid} setBid={setBid} minBid={55} maxBid={100}/>
+                <BidAdjustmentControls
+                  bid={bid}
+                  setBid={setBid}
+                  minBid={55}
+                  maxBid={100}
+                />
               </div>
             </div>
           </div>
         </div>
 
-        <PlayerInfoCard username="username" balance={100} />
+        <PlayerInfoCard username={username} balance={100} />
       </div>
     </div>
   );

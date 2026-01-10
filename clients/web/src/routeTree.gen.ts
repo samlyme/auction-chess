@@ -12,10 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as RequireAuthRouteRouteImport } from './routes/_requireAuth/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as LobbiesIndexRouteImport } from './routes/lobbies/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthCreateProfileRouteImport } from './routes/auth/create-profile'
 import { Route as RequireAuthRequireProfileRouteRouteImport } from './routes/_requireAuth/_requireProfile/route'
+import { Route as RequireAuthRequireProfileLobbiesRouteImport } from './routes/_requireAuth/_requireProfile/lobbies'
 import { Route as RequireAuthRequireProfileHomeRouteImport } from './routes/_requireAuth/_requireProfile/home'
 
 const DemoRoute = DemoRouteImport.update({
@@ -30,11 +30,6 @@ const RequireAuthRouteRoute = RequireAuthRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LobbiesIndexRoute = LobbiesIndexRouteImport.update({
-  id: '/lobbies/',
-  path: '/lobbies/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
@@ -52,6 +47,12 @@ const RequireAuthRequireProfileRouteRoute =
     id: '/_requireProfile',
     getParentRoute: () => RequireAuthRouteRoute,
   } as any)
+const RequireAuthRequireProfileLobbiesRoute =
+  RequireAuthRequireProfileLobbiesRouteImport.update({
+    id: '/lobbies',
+    path: '/lobbies',
+    getParentRoute: () => RequireAuthRequireProfileRouteRoute,
+  } as any)
 const RequireAuthRequireProfileHomeRoute =
   RequireAuthRequireProfileHomeRouteImport.update({
     id: '/home',
@@ -64,16 +65,16 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
-  '/lobbies': typeof LobbiesIndexRoute
   '/home': typeof RequireAuthRequireProfileHomeRoute
+  '/lobbies': typeof RequireAuthRequireProfileLobbiesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
-  '/lobbies': typeof LobbiesIndexRoute
   '/home': typeof RequireAuthRequireProfileHomeRoute
+  '/lobbies': typeof RequireAuthRequireProfileLobbiesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -83,8 +84,8 @@ export interface FileRoutesById {
   '/_requireAuth/_requireProfile': typeof RequireAuthRequireProfileRouteRouteWithChildren
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth/': typeof AuthIndexRoute
-  '/lobbies/': typeof LobbiesIndexRoute
   '/_requireAuth/_requireProfile/home': typeof RequireAuthRequireProfileHomeRoute
+  '/_requireAuth/_requireProfile/lobbies': typeof RequireAuthRequireProfileLobbiesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -93,10 +94,10 @@ export interface FileRouteTypes {
     | '/demo'
     | '/auth/create-profile'
     | '/auth'
-    | '/lobbies'
     | '/home'
+    | '/lobbies'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/auth/create-profile' | '/auth' | '/lobbies' | '/home'
+  to: '/' | '/demo' | '/auth/create-profile' | '/auth' | '/home' | '/lobbies'
   id:
     | '__root__'
     | '/'
@@ -105,8 +106,8 @@ export interface FileRouteTypes {
     | '/_requireAuth/_requireProfile'
     | '/auth/create-profile'
     | '/auth/'
-    | '/lobbies/'
     | '/_requireAuth/_requireProfile/home'
+    | '/_requireAuth/_requireProfile/lobbies'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -115,7 +116,6 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   AuthCreateProfileRoute: typeof AuthCreateProfileRoute
   AuthIndexRoute: typeof AuthIndexRoute
-  LobbiesIndexRoute: typeof LobbiesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,13 +141,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lobbies/': {
-      id: '/lobbies/'
-      path: '/lobbies'
-      fullPath: '/lobbies'
-      preLoaderRoute: typeof LobbiesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth/': {
       id: '/auth/'
       path: '/auth'
@@ -169,6 +162,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequireAuthRequireProfileRouteRouteImport
       parentRoute: typeof RequireAuthRouteRoute
     }
+    '/_requireAuth/_requireProfile/lobbies': {
+      id: '/_requireAuth/_requireProfile/lobbies'
+      path: '/lobbies'
+      fullPath: '/lobbies'
+      preLoaderRoute: typeof RequireAuthRequireProfileLobbiesRouteImport
+      parentRoute: typeof RequireAuthRequireProfileRouteRoute
+    }
     '/_requireAuth/_requireProfile/home': {
       id: '/_requireAuth/_requireProfile/home'
       path: '/home'
@@ -181,11 +181,14 @@ declare module '@tanstack/react-router' {
 
 interface RequireAuthRequireProfileRouteRouteChildren {
   RequireAuthRequireProfileHomeRoute: typeof RequireAuthRequireProfileHomeRoute
+  RequireAuthRequireProfileLobbiesRoute: typeof RequireAuthRequireProfileLobbiesRoute
 }
 
 const RequireAuthRequireProfileRouteRouteChildren: RequireAuthRequireProfileRouteRouteChildren =
   {
     RequireAuthRequireProfileHomeRoute: RequireAuthRequireProfileHomeRoute,
+    RequireAuthRequireProfileLobbiesRoute:
+      RequireAuthRequireProfileLobbiesRoute,
   }
 
 const RequireAuthRequireProfileRouteRouteWithChildren =
@@ -211,7 +214,6 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   AuthCreateProfileRoute: AuthCreateProfileRoute,
   AuthIndexRoute: AuthIndexRoute,
-  LobbiesIndexRoute: LobbiesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
