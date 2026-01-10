@@ -1,11 +1,13 @@
 import BidPanel from '@/components/game/BidPanel';
 import { AuctionChessBoard } from '@/components/game/Board';
 import LobbyPanel from '@/components/game/LobbyPanel';
+import useRealtime from '@/hooks/useRealtime';
 import { getGame } from '@/services/game';
 import { getLobby } from '@/services/lobbies';
 import { getProfile } from '@/services/profiles';
-import { createFileRoute, redirect } from '@tanstack/react-router';
-import type { AuctionChessState, Color, Profile } from 'shared';
+import { createFileRoute, Navigate, redirect } from '@tanstack/react-router';
+import { useState } from 'react';
+import { LobbyPayload, type AuctionChessState, type Color, type Profile } from 'shared';
 
 const defaultGameState = {
   chessState: {
@@ -65,7 +67,13 @@ function RouteComponent() {
   const userId = Route.useRouteContext().auth.session.user.id;
   const userProfile = Route.useRouteContext().profile;
 
-  const { lobby, game, opp } = Route.useLoaderData();
+  const { lobby: initLobby, game: initGame, opp } = Route.useLoaderData();
+
+  const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
+  const [game, setGameState] = useState<AuctionChessState | null>(initGame);
+  useRealtime(userId, initLobby.code, setLobby, setGameState)
+
+  if (!lobby) return <Navigate to={'/home'}/>; // only happens when lobby is deleted or user left lobby
 
   const hostColor = lobby.config.gameConfig.hostColor;
 
@@ -73,6 +81,7 @@ function RouteComponent() {
   const playerColor = userId === lobby.hostUid ? hostColor : opposite(hostColor);
 
   const gameStarted = lobby.gameStarted;
+
   const phase = game?.phase || "bid";
 
   return (
