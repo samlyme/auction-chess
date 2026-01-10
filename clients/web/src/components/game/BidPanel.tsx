@@ -237,77 +237,62 @@ function BidAdjustmentControls({
 export default function BidPanel({
   username,
   oppUsername,
-  userColor,
+  playerColor,
   gameState,
 }: {
   username: string;
   oppUsername: string | undefined;
-  userColor: Color;
+  playerColor: Color;
   gameState: AuctionChessState;
 }) {
   const [bid, setBid] = useState<number>(0);
-  const oppColor = userColor === "white" ? "black" : "white";
+  const { bidHistory } = gameState.auctionState;
+  const opponentColor = playerColor === "white" ? "black" : "white";
 
-  let opponentBid = 0;
-  let userBid = 0;
-  const bidStack = gameState.auctionState.bidHistory.at(-1)!;
-  const turn = gameState.turn;
-  if (bidStack.length === 1) {
-    const mostRecentBid = bidStack[0];
-    if (mostRecentBid && "amount" in mostRecentBid) {
-      if (turn !== userColor) userBid = mostRecentBid.amount;
-      else opponentBid = mostRecentBid.amount;
-    }
+  // TODO: fix this jank
+  const bidStack = bidHistory[bidHistory.length - 1] ?? [];
+  const lastBid = bidStack.at(-1) ?? { amount: 0 };
+  const secondLastBid = bidStack.at(-2) ?? { amount: 0 };
+
+  // Extract bid amounts from the last two bids
+  let prevPlayerBidAmount = 0;
+  let prevOppBidAmount = 0;
+  if (gameState.turn !== playerColor) {
+    prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
+    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
+  } else {
+    prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
+    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
   }
-  else if (bidStack.length >= 2) {
-
-    let mostRecentBid = bidStack.at(-1)!;
-    let secondRecentBid = bidStack.at(-2)!;
-    if ("fold" in mostRecentBid) {
-      mostRecentBid = secondRecentBid;
-      secondRecentBid = bidStack.at(-3) || { amount: 0 };
-    }
-
-    if (!("amount" in mostRecentBid) || !("amount" in secondRecentBid)) throw Error("folds in bid stack where they shouldn't be");
-    if (turn === userColor) {
-      opponentBid = mostRecentBid.amount;
-      userBid = secondRecentBid.amount;
-    }
-    else {
-      userBid = mostRecentBid.amount;
-      opponentBid = secondRecentBid.amount;
-    }
-  }
-
 
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
-        <PlayerInfoCard username={oppUsername || "waiting..."} balance={gameState.auctionState.balance[oppColor]} />
+        <PlayerInfoCard username={oppUsername || "waiting..."} balance={gameState.auctionState.balance[opponentColor]} />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
-            <BidComparison opponentBid={opponentBid} yourBid={userBid} />
+            <BidComparison opponentBid={prevOppBidAmount} yourBid={prevPlayerBidAmount} />
             <div className="flex-1 rounded-md bg-neutral-700 p-4">
               <div className="flex h-full gap-2">
                 <BidControls
                   bid={bid}
                   setBid={setBid}
                   minBid={0} // fix this
-                  maxBid={gameState.auctionState.balance[userColor]}
+                  maxBid={gameState.auctionState.balance[playerColor]}
                 />
                 <BidAdjustmentControls
                   bid={bid}
                   setBid={setBid}
                   minBid={0}
-                  maxBid={gameState.auctionState.balance[userColor]}
+                  maxBid={gameState.auctionState.balance[playerColor]}
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <PlayerInfoCard username={username} balance={gameState.auctionState.balance[userColor]} />
+        <PlayerInfoCard username={username} balance={gameState.auctionState.balance[playerColor]} />
       </div>
     </div>
   );

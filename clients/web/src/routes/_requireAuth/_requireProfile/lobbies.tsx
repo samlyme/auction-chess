@@ -90,7 +90,7 @@ function RouteComponent() {
           />
         </div>
         <div className={`${!gameStarted || phase !== "bid" ? "opacity-50" : ""} col-span-3`}>
-          <BidPanel username={userProfile.username} oppUsername={opp?.username} userColor={playerColor} gameState={game || defaultGameState} />
+          <BidPanel username={userProfile.username} oppUsername={opp?.username} playerColor={playerColor} gameState={game || defaultGameState} />
         </div>
       </div>
     </div>
