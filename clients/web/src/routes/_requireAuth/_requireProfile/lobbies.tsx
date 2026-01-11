@@ -110,6 +110,7 @@ function RouteComponent() {
       playerTimer.restart(new Date(Date.now() + game.timeState.time[playerColor]), false)
       oppTimer.restart(new Date(Date.now() + game.timeState.time[opposite(playerColor)]), false)
 
+      // NOTE: This is fragile. This assumes the first move is when there are no bids.
       if (game.auctionState.bidHistory.length > 1 || game.auctionState.bidHistory[0]) {
         if (game.turn === playerColor) playerTimer.start();
         else oppTimer.start();
