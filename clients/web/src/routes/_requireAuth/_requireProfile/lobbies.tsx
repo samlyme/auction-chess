@@ -87,7 +87,9 @@ function RouteComponent() {
 
   const phase = game?.phase || "bid";
 
-  // TODO: add time set to server packet
+  // Placeholder time values. Set to the default of the lobby's config.
+  console.log("set timer to placeholder");
+  
   const playerTimer = useTimer({ 
     autoStart: false,
     expiryTimestamp: new Date(Date.now() + lobby.config.gameConfig.initTime[playerColor]),
@@ -102,16 +104,30 @@ function RouteComponent() {
   useEffect(() => {
     if (!lobby.gameStarted || !game) {
       console.log("set timers to default");
+      // The game isn't started, so use the lobby's config for time.
       playerTimer.restart(new Date(Date.now() + lobby.config.gameConfig.initTime[playerColor]), false)
       oppTimer.restart(new Date(Date.now() + lobby.config.gameConfig.initTime[opposite(playerColor)]), false)
     }
     else {
       console.log("set timers");
-      playerTimer.restart(new Date(Date.now() + game.timeState.time[playerColor]), false)
-      oppTimer.restart(new Date(Date.now() + game.timeState.time[opposite(playerColor)]), false)
 
-      // NOTE: This is fragile. This assumes the first move is when there are no bids.
-      if (game.auctionState.bidHistory.length > 1 || game.auctionState.bidHistory[0]) {
+      console.log({prev: game.timeState.prev});
+
+      const offset = game.timeState.prev || Date.now()
+      
+      console.log("time set with offset", offset);
+      
+      playerTimer.restart(new Date(offset + game.timeState.time[playerColor]), false)
+      oppTimer.restart(new Date(offset + game.timeState.time[opposite(playerColor)]), false)
+
+      console.log("playerColor:", playerColor);
+      console.log("game.timeState.time:", game.timeState.time);
+      console.log("playerExpiry:", offset + game.timeState.time[playerColor]);
+      console.log("oppExpiry:", offset + game.timeState.time[opposite(playerColor)]);
+      console.log("Date.now():", Date.now());
+
+      // NOTE: This is fragile. This assumes that a null prev means the game is started
+      if (game.timeState.prev !== null) {
         if (game.turn === playerColor) playerTimer.start();
         else oppTimer.start();
       }
