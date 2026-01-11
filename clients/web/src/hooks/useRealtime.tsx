@@ -29,6 +29,7 @@ export default function useRealtime(
               console.log("update lobby");
               
               setLobby(newLobby);
+              if (!newLobby.gameStarted) setGameState(null);
             } else {
               console.log('left lobby');
               setLobby(null);
