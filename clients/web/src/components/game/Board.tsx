@@ -25,13 +25,6 @@ import {
 import type { AuctionChessState } from "shared";
 import { makeMove } from "@/services/game.ts";
 
-interface BoardProps {
-  gameState: AuctionChessState;
-  playerColor: Color;
-  onMakeMove: (move: NormalMove) => void;
-}
-
-
 function PromotionMenu({
   color,
   fileIndex,
@@ -101,6 +94,12 @@ function PromotionMenu({
     </div>
   );
 }
+
+interface BoardProps {
+  gameState: AuctionChessState;
+  playerColor: Color;
+}
+
 
 export function AuctionChessBoard({
   gameState,

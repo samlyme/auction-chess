@@ -2,12 +2,15 @@ import BidPanel from '@/components/game/BidPanel';
 import { AuctionChessBoard } from '@/components/game/Board';
 import LobbyPanel from '@/components/game/LobbyPanel';
 import useRealtime from '@/hooks/useRealtime';
-import { getGame } from '@/services/game';
+import { getGame, timecheck } from '@/services/game';
 import { getLobby } from '@/services/lobbies';
 import { getProfile } from '@/services/profiles';
 import { createFileRoute, Navigate, redirect } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LobbyPayload, type AuctionChessState, type Color, type Profile } from 'shared';
+import { useTimer } from 'react-timer-hook';
+import type { useTimerResultType } from 'react-timer-hook/dist/types/src/useTimer';
+
 
 const defaultGameState = {
   chessState: {
@@ -70,7 +73,7 @@ function RouteComponent() {
   const { lobby: initLobby, game: initGame, opp } = Route.useLoaderData();
 
   const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
-  const [game, setGameState] = useState<AuctionChessState | null>(initGame);
+  const [game, setGameState] = useState<AuctionChessState | null>(initGame || defaultGameState);
   useRealtime(userId, initLobby.code, setLobby, setGameState)
 
   if (!lobby) return <Navigate to={'/home'}/>; // only happens when lobby is deleted or user left lobby
@@ -84,6 +87,42 @@ function RouteComponent() {
 
   const phase = game?.phase || "bid";
 
+  // TODO: add time set to server packet
+  const playerTimer = useTimer({ 
+    autoStart: false,
+    expiryTimestamp: new Date(Date.now() + lobby.config.gameConfig.initTime[playerColor]),
+    onExpire: async () => { await timecheck() }
+  });
+  const oppTimer = useTimer({
+    autoStart: false,
+    expiryTimestamp: new Date(Date.now() + lobby.config.gameConfig.initTime[opposite(playerColor)]),
+    onExpire: async () => { await timecheck() }
+  })
+
+  useEffect(() => {
+    if (!lobby.gameStarted || !game) {
+      console.log("set timers to default");
+      playerTimer.restart(new Date(Date.now() + lobby.config.gameConfig.initTime[playerColor]), false)
+      oppTimer.restart(new Date(Date.now() + lobby.config.gameConfig.initTime[opposite(playerColor)]), false)
+    }
+    else {
+      console.log("set timers");
+      playerTimer.restart(new Date(Date.now() + game.timeState.time[playerColor]), false)
+      oppTimer.restart(new Date(Date.now() + game.timeState.time[opposite(playerColor)]), false)
+
+      if (lobby.gameStarted) {
+        if (game.turn === playerColor) playerTimer.start();
+        else oppTimer.start();
+      }
+    }
+  }, [game, lobby])
+
+  const timers: Record<Color, useTimerResultType> = 
+    playerColor === "white"
+    ? { white: playerTimer, black: oppTimer }
+    : { white: oppTimer,    black: playerTimer };
+
+  
   return (
     <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
@@ -95,11 +134,10 @@ function RouteComponent() {
           <AuctionChessBoard
             gameState={game || defaultGameState}
             playerColor={playerColor}
-            onMakeMove={() => {}}
           />
         </div>
         <div className={`${!gameStarted || phase !== "bid" ? "opacity-50" : ""} col-span-3`}>
-          <BidPanel username={userProfile.username} oppUsername={opp?.username} playerColor={playerColor} gameState={game || defaultGameState} />
+          <BidPanel username={userProfile.username} oppUsername={opp?.username} playerColor={playerColor} gameState={game || defaultGameState} timers={timers}/>
         </div>
       </div>
     </div>

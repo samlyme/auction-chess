@@ -1,18 +1,30 @@
 import { makeBid } from '@/services/game';
 import { useState, useEffect } from 'react';
+import type { useTimerResultType } from 'react-timer-hook/dist/types/src/useTimer';
 import type { AuctionChessState, Color } from 'shared';
 
 interface PlayerInfoCardProps {
   username: string;
   balance: number;
+  timer: useTimerResultType;
 }
 
-function PlayerInfoCard({ username, balance }: PlayerInfoCardProps) {
+function PlayerInfoCard({ username, balance, timer }: PlayerInfoCardProps) {
+  const minutes = String(timer.minutes).padStart(2, '0');
+  const seconds = String(timer.seconds).padStart(2, '0');
+
   return (
     <div className="rounded-lg bg-neutral-800 p-4">
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
-          <p className="mt-3 text-center text-xl">{username}</p>
+          <div className=" flex gap-2">
+            <div className={`p-2 m-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"}`}>
+              <p className="text-2xl">{minutes}:{seconds}</p>
+            </div>
+            <div className='p-2 m-2 bg-neutral-600'>
+              <p className="text-2xl">{username}</p>
+            </div>
+          </div>
         </div>
         <div className="flex-1 rounded bg-neutral-700">
           <p className="mt-3 text-center text-7xl">${balance}</p>
@@ -239,11 +251,13 @@ export default function BidPanel({
   oppUsername,
   playerColor,
   gameState,
+  timers,
 }: {
   username: string;
   oppUsername: string | undefined;
   playerColor: Color;
   gameState: AuctionChessState;
+  timers: Record<Color, useTimerResultType>
 }) {
   const [bid, setBid] = useState<number>(0);
   const { bidHistory } = gameState.auctionState;
@@ -268,7 +282,7 @@ export default function BidPanel({
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
-        <PlayerInfoCard username={oppUsername || "waiting..."} balance={gameState.auctionState.balance[opponentColor]} />
+        <PlayerInfoCard username={oppUsername || "waiting..."} balance={gameState.auctionState.balance[opponentColor]} timer={timers[opponentColor]}/>
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
@@ -292,7 +306,7 @@ export default function BidPanel({
           </div>
         </div>
 
-        <PlayerInfoCard username={username} balance={gameState.auctionState.balance[playerColor]} />
+        <PlayerInfoCard username={username} balance={gameState.auctionState.balance[playerColor]} timer={timers[playerColor]} />
       </div>
     </div>
   );
