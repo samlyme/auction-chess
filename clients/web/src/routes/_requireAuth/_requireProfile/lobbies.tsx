@@ -76,32 +76,28 @@ function RouteComponent() {
   const [game, setGameState] = useState<AuctionChessState | null>(initGame || defaultGameState);
   useRealtime(userId, initLobby.code, setLobby, setGameState)
 
-  if (!lobby) return <Navigate to={'/home'}/>; // only happens when lobby is deleted or user left lobby
-
-  const hostColor = lobby.config.gameConfig.hostColor;
-
+  // Calculate these values before hooks, with fallbacks for when lobby is null
+  const hostColor = lobby?.config.gameConfig.hostColor || 'white';
   const opposite = (color: Color) => color === "white" ? "black" : "white";
-  const playerColor = userId === lobby.hostUid ? hostColor : opposite(hostColor);
-
-  const gameStarted = lobby.gameStarted;
-
+  const playerColor = lobby && userId === lobby.hostUid ? hostColor : opposite(hostColor);
+  const gameStarted = lobby?.gameStarted || false;
   const phase = game?.phase || "bid";
 
-  // Placeholder time values. Set to the default of the lobby's config.
-  console.log("set timer to placeholder");
-  
-  const playerTimer = useTimer({ 
+  // All hooks must be called before any early returns
+  const playerTimer = useTimer({
     autoStart: false,
-    expiryTimestamp: new Date(Date.now() + lobby.config.gameConfig.initTime[playerColor]),
+    expiryTimestamp: new Date(Date.now() + (lobby?.config.gameConfig.initTime[playerColor] || 5 * 60 * 1000)),
     onExpire: async () => { await timecheck() }
   });
   const oppTimer = useTimer({
     autoStart: false,
-    expiryTimestamp: new Date(Date.now() + lobby.config.gameConfig.initTime[opposite(playerColor)]),
+    expiryTimestamp: new Date(Date.now() + (lobby?.config.gameConfig.initTime[opposite(playerColor)] || 5 * 60 * 1000)),
     onExpire: async () => { await timecheck() }
   })
 
   useEffect(() => {
+    if (!lobby) return; // Guard inside effect is fine
+
     if (!lobby.gameStarted || !game) {
       console.log("set timers to default");
       // The game isn't started, so use the lobby's config for time.
@@ -114,9 +110,9 @@ function RouteComponent() {
       console.log({prev: game.timeState.prev});
 
       const offset = game.timeState.prev || Date.now()
-      
+
       console.log("time set with offset", offset);
-      
+
       playerTimer.restart(new Date(offset + game.timeState.time[playerColor]), false)
       oppTimer.restart(new Date(offset + game.timeState.time[opposite(playerColor)]), false)
 
@@ -134,10 +130,13 @@ function RouteComponent() {
     }
   }, [game, lobby])
 
-  const timers: Record<Color, useTimerResultType> = 
+  const timers: Record<Color, useTimerResultType> =
     playerColor === "white"
     ? { white: playerTimer, black: oppTimer }
     : { white: oppTimer,    black: playerTimer };
+
+  // NOW we can do the early return, after all hooks have been called
+  if (!lobby) return <Navigate to={'/home'}/>;
 
   
   return (
