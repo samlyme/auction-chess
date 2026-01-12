@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthCreateProfileRouteImport } from './routes/auth/create-profile'
 import { Route as RequireAuthRequireProfileRouteRouteImport } from './routes/_requireAuth/_requireProfile/route'
+import { Route as RequireAuthRequireProfileSettingsRouteImport } from './routes/_requireAuth/_requireProfile/settings'
 import { Route as RequireAuthRequireProfileLobbiesRouteImport } from './routes/_requireAuth/_requireProfile/lobbies'
 import { Route as RequireAuthRequireProfileHomeRouteImport } from './routes/_requireAuth/_requireProfile/home'
 
@@ -47,6 +48,12 @@ const RequireAuthRequireProfileRouteRoute =
     id: '/_requireProfile',
     getParentRoute: () => RequireAuthRouteRoute,
   } as any)
+const RequireAuthRequireProfileSettingsRoute =
+  RequireAuthRequireProfileSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => RequireAuthRequireProfileRouteRoute,
+  } as any)
 const RequireAuthRequireProfileLobbiesRoute =
   RequireAuthRequireProfileLobbiesRouteImport.update({
     id: '/lobbies',
@@ -67,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthIndexRoute
   '/home': typeof RequireAuthRequireProfileHomeRoute
   '/lobbies': typeof RequireAuthRequireProfileLobbiesRoute
+  '/settings': typeof RequireAuthRequireProfileSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,6 +83,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthIndexRoute
   '/home': typeof RequireAuthRequireProfileHomeRoute
   '/lobbies': typeof RequireAuthRequireProfileLobbiesRoute
+  '/settings': typeof RequireAuthRequireProfileSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +95,7 @@ export interface FileRoutesById {
   '/auth/': typeof AuthIndexRoute
   '/_requireAuth/_requireProfile/home': typeof RequireAuthRequireProfileHomeRoute
   '/_requireAuth/_requireProfile/lobbies': typeof RequireAuthRequireProfileLobbiesRoute
+  '/_requireAuth/_requireProfile/settings': typeof RequireAuthRequireProfileSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,8 +106,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/home'
     | '/lobbies'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/auth/create-profile' | '/auth' | '/home' | '/lobbies'
+  to:
+    | '/'
+    | '/demo'
+    | '/auth/create-profile'
+    | '/auth'
+    | '/home'
+    | '/lobbies'
+    | '/settings'
   id:
     | '__root__'
     | '/'
@@ -108,6 +126,7 @@ export interface FileRouteTypes {
     | '/auth/'
     | '/_requireAuth/_requireProfile/home'
     | '/_requireAuth/_requireProfile/lobbies'
+    | '/_requireAuth/_requireProfile/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,6 +181,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RequireAuthRequireProfileRouteRouteImport
       parentRoute: typeof RequireAuthRouteRoute
     }
+    '/_requireAuth/_requireProfile/settings': {
+      id: '/_requireAuth/_requireProfile/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof RequireAuthRequireProfileSettingsRouteImport
+      parentRoute: typeof RequireAuthRequireProfileRouteRoute
+    }
     '/_requireAuth/_requireProfile/lobbies': {
       id: '/_requireAuth/_requireProfile/lobbies'
       path: '/lobbies'
@@ -182,6 +208,7 @@ declare module '@tanstack/react-router' {
 interface RequireAuthRequireProfileRouteRouteChildren {
   RequireAuthRequireProfileHomeRoute: typeof RequireAuthRequireProfileHomeRoute
   RequireAuthRequireProfileLobbiesRoute: typeof RequireAuthRequireProfileLobbiesRoute
+  RequireAuthRequireProfileSettingsRoute: typeof RequireAuthRequireProfileSettingsRoute
 }
 
 const RequireAuthRequireProfileRouteRouteChildren: RequireAuthRequireProfileRouteRouteChildren =
@@ -189,6 +216,8 @@ const RequireAuthRequireProfileRouteRouteChildren: RequireAuthRequireProfileRout
     RequireAuthRequireProfileHomeRoute: RequireAuthRequireProfileHomeRoute,
     RequireAuthRequireProfileLobbiesRoute:
       RequireAuthRequireProfileLobbiesRoute,
+    RequireAuthRequireProfileSettingsRoute:
+      RequireAuthRequireProfileSettingsRoute,
   }
 
 const RequireAuthRequireProfileRouteRouteWithChildren =

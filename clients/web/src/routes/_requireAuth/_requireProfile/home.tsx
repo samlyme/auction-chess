@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
 import { createLobby, getLobby, joinLobby } from '@/services/lobbies';
 import type { Color } from 'shared';
@@ -59,9 +59,17 @@ function RouteComponent() {
   return (
     <div className="h-full w-full overflow-auto bg-(--color-background)">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <h1 className="mb-12 text-center text-5xl font-bold">
-          Choose Your Game Mode
-        </h1>
+        <div className="mb-12 flex items-center justify-center relative">
+          <h1 className="text-center text-5xl font-bold">
+            Choose Your Game Mode
+          </h1>
+          <Link
+            to="/settings"
+            className="absolute right-0 rounded-lg bg-neutral-700 px-4 py-2 text-sm text-white transition-colors hover:bg-neutral-600"
+          >
+            Settings
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
 
