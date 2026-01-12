@@ -1,51 +1,58 @@
 import { type Context, Hono } from "hono";
-import {
-  LobbyJoinQuery,
-  LobbyToPayload,
-} from "shared";
+import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import {
+  broadcastGameUpdate,
   broadcastLobbyDelete,
   broadcastLobbyUpdate,
 } from "../utils/realtime.ts";
-import { runConcurrently } from "../utils/concurrency.ts";
-import { createLobby, deleteLobby, endGame, getLobbyByCode, joinLobby, leaveLobby, startGame } from "../state/lobbies.ts";
+import {
+  createLobby,
+  deleteLobby,
+  endGame,
+  getLobbyByCode,
+  joinLobby,
+  leaveLobby,
+  startGame,
+} from "../state/lobbies.ts";
 
 const route = new Hono<MaybeLobbyEnv>()
   // could be a perf bottleneck since we are getting their profile on each req.
-  .use(runConcurrently(getLobby, getProfile), validateProfile)
+  .use(getLobby, getProfile, validateProfile)
 
-  .post("/", async (c: Context<MaybeLobbyEnv>) => {
-    const supabase = c.get("supabase");
+  .post("/", zValidator("json", LobbyConfig), async (c) => {
     if (c.get("lobby"))
       throw new HTTPException(400, { message: "user already in lobby" });
 
+    const lobbyConfig = c.req.valid("json");
+
     // TODO: implement body parsing for lobby config.
-    const lobby = createLobby(c.get("user").id, {
-      gameConfig: {
-        hostColor: "white",
-        initTime: {
-          white: 5 * 1000, // Thirty seconds for dev.
-          black: 5 * 1000,
-        }
-      }
-    });
+    const lobby = createLobby(c.get("user").id, lobbyConfig);
     if (!lobby)
       throw new HTTPException(500, { message: "failed to create lobby" });
 
+    // Here, need to manually send update for because the middleware for realtime
+    // lobby updates can't be run. Ideally, this should just return back the lobby
+    // data, and not have to send an update.
+    const supabase = c.get("supabase");
     const channel = supabase.channel(`lobby-${lobby.code}`);
-
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
   })
 
-  .get("", (c: Context<MaybeLobbyEnv>) => {
+  .get("/", (c: Context<MaybeLobbyEnv>) => {
     const lobby = c.get("lobby");
     return c.json(lobby ? LobbyToPayload.parse(lobby) : null);
+  })
+
+  .get("/game", validateLobby, (c) => {
+    // NOTE: here, gameState is actually nullable.
+    const { gameState } = c.get("lobby");
+    return c.json(gameState);
   })
 
   .delete("/", validateLobby, async (c: Context<LobbyEnv>) => {
@@ -91,7 +98,7 @@ const route = new Hono<MaybeLobbyEnv>()
         message: `user is not guest in lobby ${lobby.code}`,
       });
 
-    leaveLobby(lobby.code);
+    leaveLobby(user.id);
 
     const channel = c.get("channel");
     const payload = broadcastLobbyUpdate(channel, lobby);
@@ -122,11 +129,14 @@ const route = new Hono<MaybeLobbyEnv>()
     // Initialize default game state for Auction Chess
     startGame(lobby.code);
 
+
     const payload = broadcastLobbyUpdate(channel, lobby);
+
+    const gameState = lobby.gameState;
+    if (gameState) broadcastGameUpdate(channel, gameState);
     return c.json(payload);
   })
 
-  // TODO: somehow ending the lobby doesn't reset timers.
   .post("/end", validateLobby, async (c: Context<LobbyEnv>) => {
     const lobby = c.get("lobby");
     const channel = c.get("channel");

@@ -82,7 +82,7 @@ const route = new Hono<MaybeProfileEnv>()
     return c.json(res);
   })
 
-  .patch("/", validateProfile, zValidator("json", ProfileUpdate), async (c) => {
+  .put("/", validateProfile, zValidator("json", ProfileUpdate), async (c) => {
     const supabase = c.get("supabase");
     const user = c.get("user");
     const body = c.req.valid("json");

@@ -10,29 +10,23 @@
   "private": true,
   "scripts": {
     "format": "prettier --write ./**",
-
     "client:dev": "bun run --filter web dev",
     "client:build": "bun run --filter web build",
     "client:preview": "bun run --filter web preview",
     "client:publish": "bun run --filter web publish",
-
     "server:dev": "bun run --filter server dev",
     "server:build": "bun run --filter server build",
     "server:start:local": "bun run --filter server start:local",
     "server:start:prod": "bun run --filter server start:prod",
     "server:start": "bun run --filter server start",
-
     "db:types": "supabase gen types typescript --local > server/types/database.types.ts",
     "db:diff": "bun run db:types && supabase db diff --use-migra",
     "db:save": "bun run db:types && supabase db diff --use-migra -f",
     "db:test": "supabase db reset",
     "deploy:preview": "supabase db push --dry-run",
-
     "sb:restart": "supabase stop; supabase start",
     "sb:build": "bun run db:diff",
     "sb:push": "supabase db push && supabase config push",
-
-
     "deploy:client": "./scripts/deploy-client.sh",
     "deploy:server": "./scripts/deploy-server.sh",
     "deploy:sb": "./scripts/deploy-supabase.sh"

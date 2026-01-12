@@ -46,8 +46,11 @@ export function createApp(supabase: SupabaseClient<Database>) {
       await next();
     })
     .use(validateAuth)
-    .route("/lobbies/game", game)
+    // NOTE: the get request is routed to the lobbies route for a reason.
+    // It is so that the get request can actually go through the lobby validation,
+    // which is less performant than the regular game functionality.
     .route("/lobbies", lobbies)
+    .route("/game", game)
     .route("/profiles", profiles);
 
   return app;

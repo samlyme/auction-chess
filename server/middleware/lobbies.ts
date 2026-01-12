@@ -4,7 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { endTime, startTime } from "hono/timing";
 
-import * as Lobbies from "../state/lobbies.ts"
+import * as Lobbies from "../state/lobbies.ts";
 
 export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   startTime(c, "getLobby");
