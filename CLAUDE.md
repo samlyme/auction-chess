@@ -12,11 +12,39 @@ Auction Chess is a multiplayer chess variant built with:
 - **Shared code**: Common types and database schema (in `shared`)
 - **Deployment**: Git branch-based deployment to Cloudflare (client), Digital Ocean (server), and Supabase (database)
 
+## Code Implementation Philosophy
+
+**Default to MVP and simplicity**: When implementing features:
+
+- **Start minimal**: Implement the simplest version that satisfies the core requirement
+- **Skip optional enhancements**: Don't add error handling, edge cases, loading states, or "nice-to-haves" unless explicitly requested
+- **Avoid premature abstraction**: Write direct, inline code rather than creating helpers, utilities, or abstractions for one-time use
+- **Human intervention over completeness**: Prefer getting basic functionality working first, then iterate based on feedback
+- **Ask before expanding scope**: If you identify potential improvements or edge cases, ask rather than implementing them
+
+**Examples of what NOT to do**:
+
+- Adding comprehensive error messages and user feedback for every failure case
+- Creating reusable components when a simple inline implementation works
+- Adding loading states, optimistic updates, or retry logic unless requested
+- Implementing full validation when basic validation suffices
+- Adding TypeScript strict typing for every edge case
+
+**Examples of what TO do**:
+
+- Implement the happy path first
+- Use basic error handling (try/catch with simple messages)
+- Hardcode values initially rather than making everything configurable
+- Write inline code in a single file before splitting into modules
+- Leave TODOs for known limitations rather than implementing them immediately
+
+**When in doubt, ship the 20% solution that provides 80% of the value**, then ask if additional robustness is needed.
+
 ## Monorepo Structure
 
 This is a Bun workspace with three main packages:
 
-- `clients/web` - React web client deployed to Cloudflare Workers/Pages
+- `clients/web` - React web client with TanStack Router, deployed to Cloudflare Workers/Pages
 - `server` - Hono API server deployed to Digital Ocean App Platform
 - `shared` - Shared TypeScript types and Zod schemas
 
@@ -76,11 +104,13 @@ The backend API is built with **Hono** running on **Bun**:
 - **Type-safe RPC**: Hono RPC client provides end-to-end type safety between frontend and backend
 
 **Why Bun over Docker?**
+
 - ~40% faster cold starts on Digital Ocean
 - Simpler deployment (no Dockerfile needed)
 - Native TypeScript execution without transpilation
 
 **When making changes to API logic**:
+
 - Edit files in `server/` (routes, middleware, etc.)
 - The Bun server automatically reloads during development
 - For production deployment, use `bun run deploy:server` (see `DEPLOYMENT.md`)
@@ -103,15 +133,21 @@ Import from `shared` package in all workspace packages.
 - JWT tokens passed in `Authorization` header
 - Backend middleware (`validateAuth`) extracts user from JWT
 - Frontend uses `AuthContext` and `UserProfileContext` for state management
-- Onboarding flow: Splash → Auth → Create Profile → Lobbies
+- Onboarding flow: `/` (Splash) → `/auth` (Sign In/Up) → `/auth/create-profile` → `/lobbies`
 
 ### Route Protection
 
-Frontend uses `OnboardingGuard` component with three states:
+Frontend uses **TanStack Router with file-based routing**:
 
-- `unauthed`: Only accessible when not logged in
-- `createProfile`: Only accessible when authenticated but no profile exists
-- `complete`: Only accessible when authenticated with a profile
+- Route definitions are in `clients/web/src/routes/`
+- **Layout routes** (e.g., `_auth/route.tsx`) use `beforeLoad` hooks to protect child routes
+- **RouterContext** provides auth and profile state to all routes
+- Route protection logic:
+  - `/` (index) - Unauthenticated users only, redirects authenticated users to `/lobbies`
+  - `/auth/*` - Unauthenticated routes (sign in/sign up)
+  - `/auth/create-profile` - Authenticated users without a profile
+  - `/_auth/*` - Protected routes requiring both authentication and profile (e.g., `/lobbies`, `/profile`)
+- Protection is enforced via `beforeLoad` hooks that throw `redirect()` when requirements aren't met
 
 ### Database Schema
 
@@ -214,12 +250,13 @@ For detailed deployment instructions, troubleshooting, and the complete list of 
 5. Update frontend service in `clients/web/src/services/` using Hono RPC client
 
 **Example**:
+
 ```typescript
 // shared/index.ts - Define schema
 export const GameMoveSchema = z.object({
   from: z.string(),
   to: z.string(),
-  promotion: z.string().optional()
+  promotion: z.string().optional(),
 });
 
 // server/routes/game.ts - Add route
@@ -236,7 +273,7 @@ gameRoutes.post("/move", zValidator("json", GameMoveSchema), async (c) => {
 
 // clients/web/src/services/api.ts - Call from frontend
 const result = await client.game.move.$post({
-  json: { from: "e2", to: "e4" }
+  json: { from: "e2", to: "e4" },
 });
 ```
 
@@ -248,11 +285,43 @@ const result = await client.game.move.$post({
 4. Regenerate types: `supabase gen types typescript --local > shared/database.types.ts`
 5. Update Zod schemas in `shared/index.ts` if needed
 
+### Adding or modifying routes
+
+The frontend uses **TanStack Router's file-based routing**:
+
+1. **Route files** are in `clients/web/src/routes/`
+2. **File naming conventions**:
+   - `__root.tsx` - Root layout component
+   - `index.tsx` - Index route for the directory (e.g., `/` or `/auth/`)
+   - `route.tsx` - Layout route (wraps child routes)
+   - `about.tsx` - Standard route (e.g., `/about`)
+   - `_auth/` - Layout route prefix (underscore prefix for layout routes)
+3. **Protected routes**: Use `beforeLoad` hooks to enforce authentication/authorization
+4. **Route generation**: TanStack Router auto-generates `routeTree.gen.ts` - don't edit this file manually
+5. **Example - Add a new protected route**:
+
+   ```typescript
+   // clients/web/src/routes/_auth/game.tsx
+   import { createFileRoute } from '@tanstack/react-router'
+
+   export const Route = createFileRoute('/_auth/game')({
+     component: GameComponent,
+   })
+
+   function GameComponent() {
+     return <div>Game Page</div>
+   }
+   ```
+
+6. **Navigation**: Use TanStack Router's `Link` component or `useNavigate` hook
+
 ### Working with the frontend
 
 - Components are in `clients/web/src/components/`
-- Pages are in `clients/web/src/pages/`
+- **Routes** are in `clients/web/src/routes/` (file-based routing with TanStack Router)
+- **Pages** may be defined inline in route files or in `src/pages/` for reusability
 - Context providers in `components/providers/`
 - Services for API calls in `services/`
-- Uses React Router for navigation
+- Uses **TanStack Router** for navigation with file-based routing
 - Supabase client initialized in `src/supabase.ts`
+- Router context defined in `routes/__root.tsx` provides auth and profile state

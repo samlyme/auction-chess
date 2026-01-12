@@ -11,17 +11,19 @@ async function getJwks(): Promise<any[]> {
   const now = Date.now();
 
   // Return cached keys if still valid
-  if (jwksCache && (now - jwksCache.fetchedAt) < JWKS_CACHE_TTL) {
+  if (jwksCache && now - jwksCache.fetchedAt < JWKS_CACHE_TTL) {
     return jwksCache.keys;
   }
 
   // Fetch fresh keys
-  const response = await fetch(`${process.env["SUPABASE_URL"]}/auth/v1/.well-known/jwks.json`);
-  const data = await response.json() as any;
+  const response = await fetch(
+    `${process.env["SUPABASE_URL"]}/auth/v1/.well-known/jwks.json`,
+  );
+  const data = (await response.json()) as any;
 
   jwksCache = {
     keys: data.keys,
-    fetchedAt: now
+    fetchedAt: now,
   };
 
   return data.keys;
@@ -30,14 +32,11 @@ async function getJwks(): Promise<any[]> {
 export const validateAuth = bearerAuth({
   verifyToken: async (token, c) => {
     try {
-      startTime(c, "validateAuth")
+      startTime(c, "validateAuth");
       const keys = await getJwks();
-      const payload = await verifyWithJwks(
-        token,
-        {
-          keys // Use cached keys instead of jwks_uri
-        },
-      ) as any;
+      const payload = (await verifyWithJwks(token, {
+        keys, // Use cached keys instead of jwks_uri
+      })) as any;
 
       // Map JWT payload to User object structure
       const user: User = {
@@ -57,8 +56,7 @@ export const validateAuth = bearerAuth({
       return true;
     } catch (error) {
       return false;
-    }
-    finally {
+    } finally {
       endTime(c, "validateAuth");
     }
   },

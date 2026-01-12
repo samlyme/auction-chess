@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'BoldPixels';
+  src: url('./assets/fonts/BoldPixels.otf');
+}
+
+@font-face {
+  font-family: 'MisterPixel';
+  src: url('./assets/fonts/vtf-misterpixel.regular.otf');
+}
+
+@theme {
+  --default-font-family: 'MisterPixel';
+
+  --spacing: 0.2cqw;
+  /* ========================================
+     TYPOGRAPHY SCALE (cqw)
+     ======================================== */
+  --text-base: 1cqw;
+  --text-xs: calc(var(--text-base) * 0.75);
+  --text-sm: calc(var(--text-base) * 0.875);
+  --text-lg: calc(var(--text-base) * 1.125);
+  --text-xl: calc(var(--text-base) * 1.25);
+  --text-2xl: calc(var(--text-base) * 1.5);
+  --text-3xl: calc(var(--text-base) * 1.875);
+  --text-4xl: calc(var(--text-base) * 2.25);
+  --text-5xl: calc(var(--text-base) * 3);
+  --text-6xl: calc(var(--text-base) * 3.75);
+  --text-7xl: calc(var(--text-base) * 4.5);
+  --text-8xl: calc(var(--text-base) * 6);
+  --text-9xl: calc(var(--text-base) * 8);
+
+
+  --color-red-50: oklch(0.97 0.02 30);
+  --color-red-100: oklch(0.92 0.05 30);
+  --color-red-200: oklch(0.86 0.08 30);
+  --color-red-300: oklch(0.8 0.12 30);
+  --color-red-400: oklch(0.72 0.18 30);
+  --color-red-500: oklch(0.73 0.17 30);
+  --color-red-600: oklch(0.63 0.15 30);
+  --color-red-700: oklch(0.54 0.13 30);
+  --color-red-800: oklch(0.42 0.1 30);
+  --color-red-900: oklch(0.31 0.08 30);
+  --color-yellow-50: oklch(0.96 0.02 70);
+  --color-yellow-100: oklch(0.92 0.05 70);
+  --color-yellow-200: oklch(0.86 0.08 70);
+  --color-yellow-300: oklch(0.79 0.12 70);
+  --color-yellow-400: oklch(0.71 0.18 70);
+  --color-yellow-500: oklch(0.72 0.17 70);
+  --color-yellow-600: oklch(0.62 0.15 70);
+  --color-yellow-700: oklch(0.53 0.13 70);
+  --color-yellow-800: oklch(0.41 0.1 70);
+  --color-yellow-900: oklch(0.3 0.08 70);
+  --color-green-50: oklch(0.96 0.02 153);
+  --color-green-100: oklch(0.91 0.05 153);
+  --color-green-200: oklch(0.84 0.08 153);
+  --color-green-300: oklch(0.77 0.12 153);
+  --color-green-400: oklch(0.68 0.18 153);
+  --color-green-500: oklch(0.69 0.17 153);
+  --color-green-600: oklch(0.59 0.15 153);
+  --color-green-700: oklch(0.51 0.13 153);
+  --color-green-800: oklch(0.4 0.1 153);
+  --color-green-900: oklch(0.29 0.08 153);
+  --color-blue-50: oklch(0.96 0.02 248);
+  --color-blue-100: oklch(0.92 0.05 248);
+  --color-blue-200: oklch(0.85 0.08 248);
+  --color-blue-300: oklch(0.79 0.12 248);
+  --color-blue-400: oklch(0.7 0.18 248);
+  --color-blue-500: oklch(0.71 0.17 248);
+  --color-blue-600: oklch(0.61 0.15 248);
+  --color-blue-700: oklch(0.52 0.13 248);
+  --color-blue-800: oklch(0.41 0.1 248);
+  --color-blue-900: oklch(0.3 0.08 248);
+  --color-purple-50: oklch(0.97 0.02 360);
+  --color-purple-100: oklch(0.92 0.05 360);
+  --color-purple-200: oklch(0.86 0.08 360);
+  --color-purple-300: oklch(0.8 0.12 360);
+  --color-purple-400: oklch(0.72 0.18 360);
+  --color-purple-500: oklch(0.73 0.17 360);
+  --color-purple-600: oklch(0.63 0.15 360);
+  --color-purple-700: oklch(0.54 0.13 360);
+  --color-purple-800: oklch(0.42 0.1 360);
+  --color-purple-900: oklch(0.31 0.08 360);
+  
+  /* Background & Surface */
+  --color-neutral-50: #bcc3d3;
+  --color-neutral-100: #a9b0be;
+  --color-neutral-200: #969ca9;
+  --color-neutral-300: #848994;
+  --color-neutral-400: #71757f;
+  --color-neutral-500: #5e626a;
+  --color-neutral-600: #4b4e54;
+  --color-neutral-700: #383b3f;
+  --color-neutral-800: #26272a;
+  --color-neutral-900: #131415;
+
+  /* Text Colors */
+  --color-text-primary: #f8f9fb;
+  --color-text-secondary: #a9b0be;
+  --color-text-tertiary: #71757f;
+
+  /* Drop shadow stuff */
+}
+
+:root {
+  /* font-smooth: never; */
+  /* -webkit-font-smoothing: none; */
+  font-size: var(--text-base);
+  background-color: var(--color-neutral-900);
+  color: var(--color-text-primary);
+}

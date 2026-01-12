@@ -138,7 +138,6 @@ export class PseudoChess {
     );
   }
 
-  // TODO: check for promotions
   *legalMoves(color: Color): Generator<NormalMove> {
     for (const from of this.setup.board[color]) {
       for (const to of this.legalDests(from)) {
