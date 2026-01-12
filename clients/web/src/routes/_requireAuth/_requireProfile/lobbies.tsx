@@ -24,15 +24,15 @@ const defaultGameState = {
   },
   auctionState: {
     balance: {
-      white: 100,
-      black: 100,
+      white: 0,
+      black: 0,
     },
     bidHistory: [],
   },
   timeState: {
     time: {
-      white: 5 * 60 * 1000,
-      black: 5 * 60 * 1000,
+      white: 0,
+      black: 0,
     },
     prev: null,
   },
