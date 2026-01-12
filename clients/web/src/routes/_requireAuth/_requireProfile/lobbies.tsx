@@ -51,18 +51,18 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
 
     const oppId = userId === lobby.hostUid ? lobby.guestUid : lobby.hostUid;
 
-    let opp: Profile | null = null;
+    let oppProfile: Profile | null = null;
     if (oppId) {
       const resOpp = await getProfile({ id: oppId });
       if (!resOpp.ok) throw Error('Failed to get opponent profile');
-      opp = resOpp.value;
+      oppProfile = resOpp.value;
     }
 
     const resGame = await getGame();
     if (!resGame.ok) throw Error('Failed to fetch game');
     const game = resGame.value;
 
-    return { lobby, game, opp };
+    return { lobby, game, oppProfile };
   },
   component: RouteComponent,
 });
@@ -71,7 +71,7 @@ function RouteComponent() {
   const userId = Route.useRouteContext().auth.session.user.id;
   const userProfile = Route.useRouteContext().profile;
 
-  const { lobby: initLobby, game: initGame, opp } = Route.useLoaderData();
+  const { lobby: initLobby, game: initGame, oppProfile: initOppProfile } = Route.useLoaderData();
 
   const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
   const [game, setGameState] = useState<AuctionChessState | null>(initGame);
@@ -81,6 +81,9 @@ function RouteComponent() {
     setGameState(initGame);
   }, [initLobby, initGame])
 
+  // TODO: realtime updates should notice players joining.
+
+  // Bind the lobby and game to the real time updates.
   useRealtime(userId, initLobby.code, setLobby, setGameState);
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
@@ -106,23 +109,18 @@ function RouteComponent() {
     },
   });
 
+  // set the timers.
   useEffect(() => {
-    if (!lobby) return; // Guard inside effect is fine
+    if (!lobby) return;
 
     if (!lobby.gameStarted || !game) {
-      console.log('set timers to default');
       // The game isn't started, so use the lobby's config for time.
       playerTimer.reset(lobby.config.gameConfig.initTime[playerColor]);
       oppTimer.reset(lobby.config.gameConfig.initTime[opposite(playerColor)]);
     } else {
-      console.log('set timers');
-
       const prev = game.timeState.prev || Date.now();
       const now = Date.now();
       const elapsed = now - prev;
-
-      console.log('time set with offset', prev);
-      console.log({ prev, now });
 
       let playerTimeBalance = game.timeState.time[playerColor];
       let oppTimeBalance = game.timeState.time[opposite(playerColor)];
@@ -169,7 +167,7 @@ function RouteComponent() {
         >
           <BidPanel
             username={userProfile.username}
-            oppUsername={opp?.username}
+            oppUsername={initOppProfile?.username}
             playerColor={playerColor}
             gameState={game || defaultGameState}
             timers={timers}
