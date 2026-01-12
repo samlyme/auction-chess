@@ -6,6 +6,7 @@ import { getLobby, validateLobby } from "../middleware/lobbies.ts";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import {
+  broadcastGameUpdate,
   broadcastLobbyDelete,
   broadcastLobbyUpdate,
 } from "../utils/realtime.ts";
@@ -128,7 +129,11 @@ const route = new Hono<MaybeLobbyEnv>()
     // Initialize default game state for Auction Chess
     startGame(lobby.code);
 
+
     const payload = broadcastLobbyUpdate(channel, lobby);
+
+    const gameState = lobby.gameState;
+    if (gameState) broadcastGameUpdate(channel, gameState);
     return c.json(payload);
   })
 
