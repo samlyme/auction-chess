@@ -1,17 +1,21 @@
+import type { UseCountdownTimerResult } from '@/hooks/useCountdownTimer';
 import { makeBid } from '@/services/game';
 import { useState, useEffect } from 'react';
-import type { useTimerResultType } from 'react-timer-hook/dist/types/src/useTimer';
 import type { AuctionChessState, Color } from 'shared';
 
 interface PlayerInfoCardProps {
   username: string;
   balance: number;
-  timer: useTimerResultType;
+  timer: UseCountdownTimerResult;
 }
 
 function PlayerInfoCard({ username, balance, timer }: PlayerInfoCardProps) {
-  const minutes = String(timer.minutes).padStart(2, '0');
-  const seconds = String(timer.seconds).padStart(2, '0');
+  const { remainingMs } = timer;
+
+  const totalSeconds = remainingMs / 1000;
+
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
 
   return (
     <div className="rounded-lg bg-neutral-800 p-4">
@@ -257,7 +261,7 @@ export default function BidPanel({
   oppUsername: string | undefined;
   playerColor: Color;
   gameState: AuctionChessState;
-  timers: Record<Color, useTimerResultType>
+  timers: Record<Color, UseCountdownTimerResult>
 }) {
   const [bid, setBid] = useState<number>(0);
   const { bidHistory } = gameState.auctionState;
