@@ -34,6 +34,7 @@ main branch (development)
 ```
 
 **How it works:**
+
 1. Development happens on `main` or feature branches
 2. When ready to deploy, run a deployment script
 3. Script squash merges `main` → deployment branch (`prod/*`)
@@ -41,6 +42,7 @@ main branch (development)
 5. Hosting platform watches deployment branch and auto-deploys
 
 **Key characteristics:**
+
 - No GitHub Actions or CI/CD configuration needed
 - Squash merge strategy uses `-X theirs` (always accepts incoming changes)
 - Each deployment creates a single commit on the deployment branch
@@ -48,11 +50,11 @@ main branch (development)
 
 ### Deployment Targets
 
-| Component | Branch | Platform | URL |
-|-----------|--------|----------|-----|
-| Frontend | `prod/client` | Cloudflare Workers/Pages | `https://<your-domain>.com` |
-| Backend | `prod/server` | Digital Ocean App Platform | `https://<your-app>.ondigitalocean.app` |
-| Database | `prod/supabase` | Supabase Cloud | `https://<your-project>.supabase.co` |
+| Component | Branch          | Platform                   | URL                                     |
+| --------- | --------------- | -------------------------- | --------------------------------------- |
+| Frontend  | `prod/client`   | Cloudflare Workers/Pages   | `https://<your-domain>.com`             |
+| Backend   | `prod/server`   | Digital Ocean App Platform | `https://<your-app>.ondigitalocean.app` |
+| Database  | `prod/supabase` | Supabase Cloud             | `https://<your-project>.supabase.co`    |
 
 ---
 
@@ -123,6 +125,7 @@ VITE_BACKEND_URL=https://<your-app>.ondigitalocean.app
 ```
 
 **Where to find values:**
+
 - `VITE_SUPABASE_PUB_KEY`: Supabase Dashboard → Settings → API → `anon` `public` key
 - `VITE_SUPABASE_URL`: Supabase Dashboard → Settings → API → Project URL
 - `VITE_BACKEND_URL`: Digital Ocean App Platform → App → URL
@@ -137,6 +140,7 @@ SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 ```
 
 **Where to find values:**
+
 - `SUPABASE_URL`: Same as client
 - `SUPABASE_SERVICE_ROLE_KEY`: Supabase Dashboard → Settings → API → `service_role` `secret` key
 
@@ -151,17 +155,20 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 ```
 
 **Where to find values:**
+
 - Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client
 
 #### Setting Environment Variables in Hosting Platforms
 
 **Cloudflare Workers:**
+
 - Environment variables are tracked by `git` and **baked into the build** at build time
 - No manual `.env` configurations is needed on Cloudflare to deploy the client
 - Vite embeds `VITE_*` variables during `vite build`
 - To change: update `.env.production` and rebuild
 
 **Digital Ocean App Platform:**
+
 1. Go to your app in DO dashboard
 2. Navigate to Settings → Environment Variables
 3. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
@@ -169,6 +176,7 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 5. **NOTE:** the `server` makes use of privileged keys, and those keys must not be tracked by `git`. Thus, manual configuration is required.
 
 **Supabase:**
+
 - Local development: `supabase/.env.local` (gitignored)
 - For now, only contains Google OAuth secret key.
 - Production: Set in Supabase Dashboard → Settings → Authentication → External OAuth Providers
@@ -177,7 +185,7 @@ SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<your-google-oauth-secret>
 
 ## Client Deployment (Cloudflare)
 
-The configuration should be tracked in `wrangler.toml`. 
+The configuration should be tracked in `wrangler.toml`.
 
 ### Deploy Client
 
@@ -196,6 +204,7 @@ The `deploy:client` script (`scripts/deploy-client.sh`):
 5. Returns to your original branch
 
 **Custom commit message:**
+
 ```bash
 ./scripts/deploy-client.sh "Release v2.1.0"
 ```
@@ -203,6 +212,7 @@ The `deploy:client` script (`scripts/deploy-client.sh`):
 ### Verification
 
 After deployment:
+
 1. Check Cloudflare Dashboard → Workers & Pages → Your app → Deployments
 2. Visit your production URL
 3. Test authentication flow (Google OAuth)
@@ -265,6 +275,7 @@ The `deploy:server` script (`scripts/deploy-server.sh`):
 ### Verification
 
 After deployment:
+
 1. Check Digital Ocean Dashboard → Apps → Your app → Runtime Logs
 2. Test health endpoint: `https://<your-app>.ondigitalocean.app/api`
 3. Check logs for any connection errors to Supabase
@@ -277,6 +288,7 @@ After deployment:
 ### Deployment Process
 
 Database deployment involves two steps:
+
 1. **Database schema** (migrations)
 2. **Supabase configuration** (auth, realtime, etc.)
 
@@ -356,6 +368,7 @@ supabase gen types typescript --local > shared/database.types.ts
 ### Verification
 
 After deployment:
+
 1. Check Supabase Dashboard → Database → Migrations
 2. Verify latest migration is applied
 3. Check Table Editor to confirm schema changes
@@ -368,35 +381,41 @@ After deployment:
 Before deploying to production, verify:
 
 ### Code Quality
+
 - [ ] All TypeScript type errors resolved (`bun run client:build`, `bun run server:build`)
 - [ ] Code formatted with Prettier (`bun run format`)
 - [ ] No console.log or debugging code left in production code
 
 ### Testing
+
 - [ ] Manual testing completed locally
 - [ ] Authentication flow tested (Google OAuth)
 - [ ] API endpoints tested with Postman/Hoppscotch
 - [ ] Real-time features tested (lobby system)
 
 ### Environment Variables
+
 - [ ] `clients/web/.env.production` has correct production values
 - [ ] `server/.env.production` has correct production values
 - [ ] Digital Ocean environment variables are set and encrypted
 - [ ] Supabase auth redirects include production frontend URL
 
 ### Database
+
 - [ ] Migrations tested locally (`bun run db:test`)
 - [ ] Migrations previewed for production (`bun run deploy:preview`)
 - [ ] Database types regenerated if schema changed
 - [ ] RLS policies reviewed for security
 
 ### Configuration
+
 - [ ] CORS configuration allows production frontend domain
 - [ ] Supabase `config.toml` has correct `site_url`
 - [ ] Cloudflare `wrangler.toml` has correct custom domain
 - [ ] Google OAuth credentials configured for production domain
 
 ### Git
+
 - [ ] All changes committed to `main` branch
 - [ ] Working directory is clean (`git status`)
 - [ ] Latest changes pulled from remote
@@ -432,6 +451,7 @@ bun run db:test        # Test migrations locally
 If deployment fails or introduces bugs:
 
 **Client (Cloudflare):**
+
 ```bash
 # Option 1: Revert the problematic commit (recommended - safe for shared branches)
 git checkout prod/client
@@ -440,6 +460,7 @@ git push origin prod/client
 ```
 
 **Server (Digital Ocean):**
+
 ```bash
 # Revert the problematic commit
 git checkout prod/server
@@ -449,10 +470,11 @@ git push origin prod/server
 
 **NOTE:** it is also possible to `git reset` on branch `main` then redeploy, however
 this is not recommended as it may be possible to deploy an intermediate commit.
-By using `git revert`, on the `prod/*` branch, we know that we can roll back to 
-a working build.  
+By using `git revert`, on the `prod/*` branch, we know that we can roll back to
+a working build.
 
 **Database (Supabase):**
+
 ```bash
 # Create a rollback migration
 # Supabase doesn't support automatic rollback
@@ -465,7 +487,7 @@ supabase db push
 ```
 
 **NOTE:** this is why we must be extremely careful when dealing with supabase DB
-migrations. Rollbacks are **NOT GARAUNTEED** unlike the server and client. Changes 
+migrations. Rollbacks are **NOT GARAUNTEED** unlike the server and client. Changes
 are destructive, and require manually reconcilation if gone wrong.
 
 ---
@@ -479,6 +501,7 @@ are destructive, and require manually reconcilation if gone wrong.
 **Impact**: Changing `.env.production` after deployment requires a rebuild and redeploy.
 
 **Solution**:
+
 - Always verify `.env.production` before building
 - Test builds locally before deploying
 - If you need to change env vars post-deployment, rebuild and redeploy
@@ -490,6 +513,7 @@ are destructive, and require manually reconcilation if gone wrong.
 **Impact**: New developers or machines can't run local Supabase without generating keys.
 
 **Solution**:
+
 ```bash
 # Generate signing keys for local development
 supabase start
@@ -505,6 +529,7 @@ supabase start
 **Impact**: Manual fixes directly on deployment branches get overwritten on next deploy.
 
 **Solution**:
+
 - Never commit directly to `prod/*` branches
 - Always fix issues on `main` and redeploy
 - If emergency fix needed on prod branch, backport to `main` immediately
@@ -516,6 +541,7 @@ supabase start
 **Impact**: Stale types cause TypeScript errors or runtime bugs.
 
 **Solution**:
+
 ```bash
 # After any database schema change
 supabase gen types typescript --local > shared/database.types.ts
@@ -530,8 +556,10 @@ git commit -m "Update database types"
 **Impact**: Any website can call your API (security risk).
 
 **Solution**:
+
 - Update `server/app.ts` CORS headers to only allow production frontend domain
 - Example:
+
 ```typescript
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://your-domain.com",
@@ -546,11 +574,14 @@ const corsHeaders = {
 **Impact**: Users can't log in via Google OAuth if redirect URL isn't configured.
 
 **Solution**:
+
 - Update `supabase/config.toml`:
+
 ```toml
 site_url = "https://your-production-domain.com"
 additional_redirect_urls = ["http://localhost:3000"]
 ```
+
 - Run `bun run deploy:sb` to apply changes
 
 ### 7. Google OAuth Secrets
@@ -560,6 +591,7 @@ additional_redirect_urls = ["http://localhost:3000"]
 **Impact**: Secret must be manually set by each developer.
 
 **Solution**:
+
 - Get secret from Google Cloud Console
 - Add to `supabase/.env.local`
 - Never commit `.env.local` to git (it's in .gitignore)
@@ -571,6 +603,7 @@ additional_redirect_urls = ["http://localhost:3000"]
 **Impact**: Bugs can be deployed to production.
 
 **Solution**:
+
 - Manual testing checklist (see above)
 - Consider adding test suite and GitHub Actions in future
 
@@ -581,6 +614,7 @@ additional_redirect_urls = ["http://localhost:3000"]
 **Impact**: Data loss in production.
 
 **Solution**:
+
 - Always run `bun run deploy:preview` first
 - Review generated SQL before deploying
 - Back up production data before major migrations
@@ -593,6 +627,7 @@ additional_redirect_urls = ["http://localhost:3000"]
 **Impact**: Large git history, slow clones.
 
 **Solution**:
+
 - Periodically squash deployment branch history
 - Or: delete and recreate deployment branches (requires force push setup in hosting platforms)
 
@@ -603,6 +638,7 @@ additional_redirect_urls = ["http://localhost:3000"]
 ### Build Failures
 
 **Client build fails:**
+
 ```bash
 # Check TypeScript errors
 cd clients/web
@@ -615,6 +651,7 @@ bun run build
 ```
 
 **Server build fails:**
+
 ```bash
 # Check TypeScript errors
 cd server
@@ -628,12 +665,14 @@ bun run build
 ### Deployment Issues
 
 **Digital Ocean deployment fails:**
+
 1. Check build logs in DO dashboard
 2. Verify `prod/server` branch exists and has latest changes
 3. Check if DO is watching the correct branch
 4. Verify environment variables are set
 
 **Supabase push fails:**
+
 ```bash
 # Check project linkage
 supabase link --project-ref <your-project-id>
@@ -650,12 +689,14 @@ supabase db push --dry-run
 **Symptoms**: Frontend shows CORS errors in console
 
 **Solutions**:
+
 1. Check backend CORS headers in `server/app.ts`
 2. Ensure backend allows frontend domain
 3. Verify preflight requests (OPTIONS) are handled
 4. Check Digital Ocean app allows CORS
 
 **Quick fix for testing** (not for production):
+
 ```typescript
 // server/app.ts
 const corsHeaders = {
@@ -667,12 +708,14 @@ const corsHeaders = {
 ### Authentication Issues
 
 **Google OAuth fails:**
+
 1. Verify Google OAuth credentials in Google Cloud Console
 2. Check authorized redirect URIs include your production domain
 3. Verify Supabase `config.toml` has correct `site_url`
 4. Check `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET` is set
 
 **Session expires immediately:**
+
 1. Check JWT expiry in `supabase/config.toml` (default: 3600 seconds)
 2. Verify browser allows cookies from Supabase domain
 3. Check for clock skew between client and server

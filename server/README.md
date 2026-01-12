@@ -39,6 +39,7 @@ SUPABASE_SERVICE_ROLE_KEY=<your-local-service-role-key>
 ```
 
 **Where to get values:**
+
 - `SUPABASE_URL`: Local Supabase API URL
 - `SUPABASE_SERVICE_ROLE_KEY`: Run `supabase start` and copy the `service_role key` from output
 
@@ -160,13 +161,17 @@ app.post("/api/lobbies", zValidator("json", CreateLobbySchema), async (c) => {
 ### Authentication Middleware
 
 <!-- TODO: This is no longer true. We use shared signing keys to validate. -->
+
 JWT validation using Supabase:
 
 ```typescript
 // middleware/auth.ts
 export const validateAuth = async (c, next) => {
   const token = c.req.header("Authorization")?.replace("Bearer ", "");
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
 
   if (error || !user) {
     return c.json({ error: "Unauthorized" }, 401);
@@ -231,6 +236,7 @@ bun run deploy:server
 ```
 
 **Process:**
+
 1. Squash merges `main` → `prod/server`
 2. Pushes to GitHub
 3. Digital Ocean auto-deploys
@@ -249,6 +255,7 @@ See `/DEPLOYMENT.md` for details.
 ### Adding a New Endpoint
 
 1. **Define schema** in `/shared/index.ts`:
+
 ```typescript
 export const GameMoveSchema = z.object({
   from: z.string(),
@@ -257,6 +264,7 @@ export const GameMoveSchema = z.object({
 ```
 
 2. **Create route handler** in `routes/`:
+
 ```typescript
 // routes/game.ts
 import { Hono } from "hono";
@@ -273,6 +281,7 @@ gameRoutes.post("/move", zValidator("json", GameMoveSchema), async (c) => {
 ```
 
 3. **Register in app**:
+
 ```typescript
 // app.ts
 import { gameRoutes } from "./routes/game";
@@ -287,7 +296,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 // Query
@@ -313,15 +322,16 @@ const channel = supabase.channel(`lobby:${code}`);
 await channel.send({
   type: "broadcast",
   event: "lobby-update",
-  payload: { state: newState }
+  payload: { state: newState },
 });
 ```
 
 ## Testing
 
-*Note: Testing not yet implemented*
+_Note: Testing not yet implemented_
 
 Planned:
+
 - Bun test for unit tests
 - Supertest for API integration tests
 

@@ -16,7 +16,13 @@
 
     // Additional web-specific checks
     "erasableSyntaxOnly": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    // Path aliases for shadcn/ui
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
 
     // Inherited from root tsconfig.json:
     // - moduleResolution: bundler

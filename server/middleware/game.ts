@@ -23,7 +23,8 @@ export const validatePlayer: MiddlewareHandler<GameEnv> = async (c, next) => {
   if (user.id === lobby.hostUid) {
     playerColor = lobby.config.gameConfig.hostColor;
   } else if (user.id === lobby.guestUid) {
-    playerColor = lobby.config.gameConfig.hostColor === "white" ? "black" : "white";
+    playerColor =
+      lobby.config.gameConfig.hostColor === "white" ? "black" : "white";
   } else {
     throw new HTTPException(403, { message: "Not a player in this game" });
   }
@@ -37,15 +38,18 @@ export const validateTurn: MiddlewareHandler<GameEnv> = async (c, next) => {
   const playerColor = c.get("playerColor");
 
   if (playerColor !== gameState.turn)
-    throw new HTTPException(400, {message: "Not your turn"});
+    throw new HTTPException(400, { message: "Not your turn" });
 
   await next();
 };
 
-export const recordReceivedTime: MiddlewareHandler<GameEnv> = async (c, next) => {
+export const recordReceivedTime: MiddlewareHandler<GameEnv> = async (
+  c,
+  next,
+) => {
   c.set("receivedTime", Date.now());
   await next();
-}
+};
 
 // NOTE: this middleware has the potential to explode the lobby logic.
 // It mutates state in a somewhat weird way. It is responsible for catching "late moves"
@@ -54,11 +58,14 @@ export const recordReceivedTime: MiddlewareHandler<GameEnv> = async (c, next) =>
 export const validateTime: MiddlewareHandler<GameEnv> = async (c, next) => {
   const gameState = c.get("gameState");
   const receivedTime = c.get("receivedTime");
-  const timeUsed = gameState.timeState.prev === null ? 0 : receivedTime - gameState.timeState.prev;
+  const timeUsed =
+    gameState.timeState.prev === null
+      ? 0
+      : receivedTime - gameState.timeState.prev;
 
   if (timeUsed >= gameState.timeState.time[gameState.turn]) {
     throw new HTTPException(400, { message: "Move came after timeout." });
   }
 
   await next();
-}
+};

@@ -1,4 +1,3 @@
-// TODO: for multiplayer, think about browser to browser connections.
 import { PseudoChess } from "shared/game/pseudoChess";
 import {
   makeSquare,
@@ -22,20 +21,9 @@ import {
   availableCapture,
   availableMove,
   selectedSquare,
-} from "./BoardStyle";
-import type { AuctionChessState, Bid } from "shared";
-import BidPanel from "./BidPanel";
-import "./Board.css";
-
-interface BoardProps {
-  gameState: AuctionChessState;
-  playerColor: Color;
-  hostUsername: string;
-  guestUsername: string;
-  onMakeMove: (move: NormalMove) => void;
-  onMakeBid: (bid: Bid) => void;
-}
-
+} from "./BoardStyle.ts";
+import type { AuctionChessState } from "shared";
+import { makeMove } from "@/services/game.ts";
 
 function PromotionMenu({
   color,
@@ -107,13 +95,15 @@ function PromotionMenu({
   );
 }
 
+interface BoardProps {
+  gameState: AuctionChessState;
+  playerColor: Color;
+}
+
+
 export function AuctionChessBoard({
   gameState,
   playerColor,
-  hostUsername,
-  guestUsername,
-  onMakeMove,
-  onMakeBid,
 }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
@@ -140,7 +130,7 @@ export function AuctionChessBoard({
 
   function playPromotion(role: Role) {
     if (!promotionMove) return;
-    onMakeMove({ ...promotionMove, promotion: role });
+    makeMove({ ...promotionMove, promotion: role });
     setMoveFrom(null);
     setPromotionMove(null);
   }
@@ -167,7 +157,7 @@ export function AuctionChessBoard({
     }
 
     if (chessLogic.isLegalDest(move)) {
-      onMakeMove(move);
+      makeMove(move);
       setMoveFrom(null);
       setPromotionMove(null);
       return true;
@@ -199,7 +189,7 @@ export function AuctionChessBoard({
     if (chessLogic.isLegalDest(move, playerColor) && shouldPromote(move)) {
       setPromotionMove(move);
     } else if (chessLogic.isLegalDest(move, playerColor)) {
-      onMakeMove(move);
+      makeMove(move);
       setMoveFrom(null);
     } else {
       setMoveFrom(piece === null ? null : square);
@@ -207,7 +197,7 @@ export function AuctionChessBoard({
   }
 
   return (
-    <div className="board-container">
+    <div>
       {gameState.outcome && (
         <h1>{gameState.outcome ? (gameState.outcome.winner === playerColor ? "You win!" : "You lose.") : "Draw."}</h1>
       )}
@@ -231,13 +221,6 @@ export function AuctionChessBoard({
           }}
         />
       </div>
-      <BidPanel
-        gameState={gameState}
-        playerColor={playerColor}
-        hostUsername={hostUsername}
-        guestUsername={guestUsername}
-        onMakeBid={onMakeBid}
-      />
     </div>
   );
 }
