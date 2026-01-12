@@ -35,6 +35,19 @@ function RouteComponent() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      console.error('Error signing in with Google:', error);
+      alert(`Error: ${error.message}`);
+    }
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center bg-(--color-background)">
       <div className="w-full max-w-md rounded-lg border bg-neutral-800 p-8">
@@ -91,7 +104,10 @@ function RouteComponent() {
         </div>
 
         {/* Google Sign In */}
-        <button className="w-full rounded-lg border  px-4 py-2 transition-colors hover:bg-gray-50">
+        <button
+          onClick={handleGoogleSignIn}
+          className="w-full rounded-lg border  px-4 py-2 transition-colors hover:bg-gray-50"
+        >
           Sign in with Google
         </button>
 
