@@ -1,9 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
-import { createLobby, joinLobby } from '@/services/lobbies';
+import { createLobby, getLobby, joinLobby } from '@/services/lobbies';
 import type { Color } from 'shared';
 
 export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
+  beforeLoad: async () => {
+    const resLobby = await getLobby();
+    if (!resLobby.ok) throw Error('Failed to fetch lobby');
+    const lobby = resLobby.value;
+    if (lobby) throw redirect({ to: '/lobbies' });
+  },
   component: RouteComponent
 });
 
