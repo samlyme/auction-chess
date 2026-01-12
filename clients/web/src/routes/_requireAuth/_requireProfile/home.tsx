@@ -64,51 +64,6 @@ function RouteComponent() {
         </h1>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          {/* Casual Match Card */}
-          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
-            <h2
-              className="mb-4 text-3xl font-bold"
-              style={{ color: 'var(--color-primary-600)' }}
-            >
-              Casual Match
-            </h2>
-            <p
-              className="mb-6 text-base"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Jump into a relaxed game with no pressure. Perfect for practicing
-              new strategies or playing for fun.
-            </p>
-            <button
-              disabled
-              className="w-full cursor-not-allowed rounded-lg bg-primary-500 px-6 py-3 text-base text-white"
-            >
-              Play Casual
-            </button>
-          </div>
-
-          {/* Ranked Match Card */}
-          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
-            <h2
-              className="mb-4 text-3xl font-bold"
-              style={{ color: 'var(--color-primary-600)' }}
-            >
-              Ranked Match
-            </h2>
-            <p
-              className="mb-6 text-base"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Compete against players of similar skill level. Win to climb the
-              ranks and prove your mastery.
-            </p>
-            <button
-              disabled
-              className="w-full cursor-not-allowed rounded-lg bg-primary-500 px-6 py-3 text-base text-white"
-            >
-              Play Ranked
-            </button>
-          </div>
 
           {/* Custom Lobby Card */}
           <div className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
@@ -197,6 +152,51 @@ function RouteComponent() {
                 {loading ? 'Joining...' : 'Join Lobby'}
               </button>
             </form>
+          </div>
+          {/* Casual Match Card */}
+          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
+            <h2
+              className="mb-4 text-3xl font-bold"
+              style={{ color: 'var(--color-primary-600)' }}
+            >
+              Casual Match
+            </h2>
+            <p
+              className="mb-6 text-base"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Jump into a relaxed game with no pressure. Perfect for practicing
+              new strategies or playing for fun.
+            </p>
+            <button
+              disabled
+              className="w-full cursor-not-allowed rounded-lg bg-primary-500 px-6 py-3 text-base text-white"
+            >
+              Play Casual
+            </button>
+          </div>
+
+          {/* Ranked Match Card */}
+          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
+            <h2
+              className="mb-4 text-3xl font-bold"
+              style={{ color: 'var(--color-primary-600)' }}
+            >
+              Ranked Match
+            </h2>
+            <p
+              className="mb-6 text-base"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Compete against players of similar skill level. Win to climb the
+              ranks and prove your mastery.
+            </p>
+            <button
+              disabled
+              className="w-full cursor-not-allowed rounded-lg bg-primary-500 px-6 py-3 text-base text-white"
+            >
+              Play Ranked
+            </button>
           </div>
         </div>
       </div>
