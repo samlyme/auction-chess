@@ -74,9 +74,13 @@ function RouteComponent() {
   const { lobby: initLobby, game: initGame, opp } = Route.useLoaderData();
 
   const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
-  const [game, setGameState] = useState<AuctionChessState | null>(
-    initGame || defaultGameState
-  );
+  const [game, setGameState] = useState<AuctionChessState | null>(initGame);
+  // useState ignores subsequent initialization calls, so this is needed to sync the state when the useLoaderData changes.
+  useEffect(() => {
+    setLobby(initLobby);
+    setGameState(initGame);
+  }, [initLobby, initGame])
+
   useRealtime(userId, initLobby.code, setLobby, setGameState);
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
