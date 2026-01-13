@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // Server environment - Node/Bun runtime (no DOM)
+    "lib": ["ESNext"]
+  }
+}

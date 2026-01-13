@@ -16,6 +16,7 @@ _.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # dotenv environment variable files
+.env
 .env.development.local
 .env.test.local
 .env.production.local
@@ -25,20 +26,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .eslintcache
 .cache
 *.tsbuildinfo
-.deno-cache
 
 # IntelliJ based IDEs
 .idea
 
-# JWT Signing keys
-signing_keys.json
-
 # Finder (MacOS) folder config
 .DS_Store
-<<<<<<< HEAD
-.env
-*.o
-__pycache__
-**.egg-info
-=======
->>>>>>> main
