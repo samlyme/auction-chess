@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import supabase from '@/supabase';
-import { createProfile } from '@/services/profiles';
+import { useCreateProfile } from '@/hooks/queries/profiles';
 
 export const Route = createFileRoute('/auth/create-profile')({
   // TODO: redirect user off this page if profile is created.
@@ -12,13 +12,10 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const createProfileMutation = useCreateProfile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
     try {
       const {
@@ -26,17 +23,15 @@ function RouteComponent() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      await createProfile({
+      await createProfileMutation.mutateAsync({
         id: user.id,
         username,
         bio,
       });
 
       navigate({ to: '/lobbies' });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create profile');
-    } finally {
-      setLoading(false);
+    } catch {
+      // Error is handled by the mutation state
     }
   };
 
@@ -71,13 +66,17 @@ function RouteComponent() {
               className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-base"
             />
           </div>
-          {error && <div className="mb-4 text-base text-red-600">{error}</div>}
+          {createProfileMutation.error && (
+            <div className="mb-4 text-base text-red-600">
+              {createProfileMutation.error.message}
+            </div>
+          )}
           <button
             type="submit"
-            disabled={loading}
+            disabled={createProfileMutation.isPending}
             className="rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
           >
-            {loading ? 'Creating...' : 'Create Profile'}
+            {createProfileMutation.isPending ? 'Creating...' : 'Create Profile'}
           </button>
         </form>
       </div>

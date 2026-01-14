@@ -23,7 +23,7 @@ import {
   selectedSquare,
 } from '@/components/game/BoardStyle';
 import type { AuctionChessState } from 'shared';
-import { makeMove } from '@/services/game.ts';
+import { useMakeMove } from '@/hooks/queries/game';
 
 function PromotionMenu({
   color,
@@ -103,6 +103,7 @@ interface BoardProps {
 export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
+  const makeMoveMutation = useMakeMove();
 
   const chessLogic = new PseudoChess(gameState.chessState.fen);
 
@@ -126,7 +127,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
 
   function playPromotion(role: Role) {
     if (!promotionMove) return;
-    makeMove({ ...promotionMove, promotion: role });
+    makeMoveMutation.mutate({ ...promotionMove, promotion: role });
     setMoveFrom(null);
     setPromotionMove(null);
   }
@@ -153,7 +154,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
     }
 
     if (chessLogic.isLegalDest(move)) {
-      makeMove(move);
+      makeMoveMutation.mutate(move);
       setMoveFrom(null);
       setPromotionMove(null);
       return true;
@@ -185,7 +186,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
     if (chessLogic.isLegalDest(move, playerColor) && shouldPromote(move)) {
       setPromotionMove(move);
     } else if (chessLogic.isLegalDest(move, playerColor)) {
-      makeMove(move);
+      makeMoveMutation.mutate(move);
       setMoveFrom(null);
     } else {
       setMoveFrom(piece === null ? null : square);

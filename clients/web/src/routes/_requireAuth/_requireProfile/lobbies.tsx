@@ -6,17 +6,13 @@ import {
   type UseCountdownTimerResult,
 } from '@/hooks/useCountdownTimer';
 import useRealtime from '@/hooks/useRealtime';
-import { getGame, timecheck } from '@/services/game';
+import { useTimecheck, useGame } from '@/hooks/queries/game';
+import { useLobby } from '@/hooks/queries/lobbies';
 import { getLobby } from '@/services/lobbies';
 import { getProfile } from '@/services/profiles';
 import { createFileRoute, Navigate, redirect } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import {
-  LobbyPayload,
-  type AuctionChessState,
-  type Color,
-  type Profile,
-} from 'shared';
+import { useEffect } from 'react';
+import { type AuctionChessState, type Color, type Profile } from 'shared';
 
 const defaultGameState = {
   chessState: {
@@ -49,11 +45,11 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
 
     const oppId = userId === lobby.hostUid ? lobby.guestUid : lobby.hostUid;
 
-    const oppProfile: Profile | null = oppId ? await getProfile({ id: oppId }) : null;
+    const oppProfile: Profile | null = oppId
+      ? await getProfile({ id: oppId })
+      : null;
 
-    const game = await getGame();
-
-    return { lobby, game, oppProfile };
+    return { lobby, oppProfile };
   },
   component: RouteComponent,
 });
@@ -62,20 +58,16 @@ function RouteComponent() {
   const userId = Route.useRouteContext().auth.session.user.id;
   const userProfile = Route.useRouteContext().profile;
 
-  const { lobby: initLobby, game: initGame, oppProfile: initOppProfile } = Route.useLoaderData();
+  const { lobby: initLobby, oppProfile: initOppProfile } =
+    Route.useLoaderData();
 
-  const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
-  const [game, setGameState] = useState<AuctionChessState | null>(initGame);
-  // useState ignores subsequent initialization calls, so this is needed to sync the state when the useLoaderData changes.
-  useEffect(() => {
-    setLobby(initLobby);
-    setGameState(initGame);
-  }, [initLobby, initGame])
-
-  // TODO: realtime updates should notice players joining.
+  // Use TanStack Query for real-time data instead of manual state management
+  const { data: lobby } = useLobby();
+  const { data: game } = useGame();
+  const timecheckMutation = useTimecheck();
 
   // Bind the lobby and game to the real time updates.
-  useRealtime(userId, initLobby.code, setLobby, setGameState);
+  useRealtime(userId, initLobby.code);
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
   const hostColor = lobby?.config.gameConfig.hostColor || 'white';
@@ -89,14 +81,13 @@ function RouteComponent() {
   const playerTimer = useCountdownTimer({
     durationMs: lobby?.config.gameConfig.initTime[playerColor] || 0,
     onExpire: async () => {
-      await timecheck();
+      await timecheckMutation.mutateAsync();
     },
   });
   const oppTimer = useCountdownTimer({
-    durationMs:
-      lobby?.config.gameConfig.initTime[opposite(playerColor)] || 0,
+    durationMs: lobby?.config.gameConfig.initTime[opposite(playerColor)] || 0,
     onExpire: async () => {
-      await timecheck();
+      await timecheckMutation.mutateAsync();
     },
   });
 
@@ -108,7 +99,7 @@ function RouteComponent() {
       // The game isn't started, so use the lobby's config for time.
       playerTimer.reset(lobby.config.gameConfig.initTime[playerColor]);
       oppTimer.reset(lobby.config.gameConfig.initTime[opposite(playerColor)]);
-    } else {
+    } else if (game) {
       const prev = game.timeState.prev || Date.now();
       const now = Date.now();
       const elapsed = now - prev;

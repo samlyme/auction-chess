@@ -1,4 +1,4 @@
-import { updateProfile } from '@/services/profiles';
+import { useUpdateProfile } from '@/hooks/queries/profiles';
 import supabase from '@/supabase';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -10,14 +10,12 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/settings')({
 function RouteComponent() {
   const profile = Route.useRouteContext().profile;
   const [bio, setBio] = useState(profile.bio);
-  const [loading, setLoading] = useState(false);
+  const updateProfileMutation = useUpdateProfile();
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    await updateProfile({ bio });
-    setLoading(false);
+    await updateProfileMutation.mutateAsync({ bio });
   };
 
   const handleSignOut = async () => {
@@ -47,7 +45,7 @@ function RouteComponent() {
                 type="text"
                 value={profile.username}
                 disabled
-                className="w-full rounded-lg border border-neutral-300 bg-neutral-600 px-4 py-2 text-base text-neutral-400 cursor-not-allowed"
+                className="w-full cursor-not-allowed rounded-lg border border-neutral-300 bg-neutral-600 px-4 py-2 text-base text-neutral-400"
               />
             </div>
 
@@ -67,10 +65,12 @@ function RouteComponent() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={updateProfileMutation.isPending}
               className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
             >
-              {loading ? 'Updating...' : 'Update Profile'}
+              {updateProfileMutation.isPending
+                ? 'Updating...'
+                : 'Update Profile'}
             </button>
           </form>
         </div>

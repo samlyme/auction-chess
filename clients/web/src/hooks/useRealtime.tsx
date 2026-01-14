@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AuctionChessState, LobbyEventType, LobbyPayload } from 'shared';
 import supabase from '@/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
 // provide all initial values. Thus, this hook's only responsibility is to
 // list for updates. However, that means it still does the logic for fetching
@@ -9,9 +10,9 @@ import supabase from '@/supabase';
 export default function useRealtime(
   userId: string,
   lobbyCode: string,
-  setLobby: React.Dispatch<React.SetStateAction<LobbyPayload | null>>,
-  setGameState: React.Dispatch<React.SetStateAction<AuctionChessState | null>>
 ) {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     console.log('sub to realtime');
     const channel = supabase.channel(`lobby-${lobbyCode}`);
@@ -28,23 +29,23 @@ export default function useRealtime(
             if (userId === newLobby.hostUid || userId === newLobby.guestUid) {
               console.log('update lobby');
 
-              setLobby(newLobby);
-              if (!newLobby.gameStarted) setGameState(null);
+              queryClient.setQueryData(['lobby'], newLobby);
+              if (!newLobby.gameStarted) queryClient.setQueryData(['game'], null);
             } else {
               console.log('left lobby');
-              setLobby(null);
+              queryClient.setQueryData(['lobby'], null);
             }
             break;
           }
 
           case LobbyEventType.LobbyDelete:
-            setLobby(null);
+            queryClient.setQueryData(['lobby'], null);
             console.log('lobby deleted');
             break;
 
           case LobbyEventType.GameUpdate: {
             const newGameState = AuctionChessState.parse(update.payload);
-            setGameState(newGameState);
+            queryClient.setQueryData(['game'], newGameState);
             break;
           }
         }

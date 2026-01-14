@@ -4,6 +4,7 @@ import AuthContextProvider from '@/components/providers/AuthContextProvider';
 import { useContext, type ReactElement } from 'react';
 import { AuthContext } from '@/contexts/Auth';
 import type { RouterContext } from '@/routes/__root';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Create router with context type
 const router = createRouter({
@@ -41,13 +42,17 @@ function InnerApp() {
   return <RouterProvider router={router} context={{ auth }} />;
 }
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <AuthContextProvider>
-      <AspectRatioWrapper>
-        <InnerApp />
-      </AspectRatioWrapper>
-    </AuthContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthContextProvider>
+        <AspectRatioWrapper>
+          <InnerApp />
+        </AspectRatioWrapper>
+      </AuthContextProvider>
+    </QueryClientProvider>
   );
 }
 
