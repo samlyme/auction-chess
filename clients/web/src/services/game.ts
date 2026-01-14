@@ -1,5 +1,5 @@
 import type { Bid, NormalMove, AuctionChessState } from 'shared';
-import { api } from './api';
+import { api } from '@/services/api';
 import { parseResponse } from 'hono/client';
 
 export async function makeBid(bid: Bid): Promise<undefined> {

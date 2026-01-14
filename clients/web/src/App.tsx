@@ -1,9 +1,9 @@
 import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
-import AuthContextProvider from './components/providers/AuthContextProvider';
+import { routeTree } from '@/routeTree.gen';
+import AuthContextProvider from '@/components/providers/AuthContextProvider';
 import { useContext, type ReactElement } from 'react';
-import { AuthContext } from './contexts/Auth';
-import type { RouterContext } from './routes/__root';
+import { AuthContext } from '@/contexts/Auth';
+import type { RouterContext } from '@/routes/__root';
 
 // Create router with context type
 const router = createRouter({
@@ -23,7 +23,9 @@ declare module '@tanstack/react-router' {
 function AspectRatioWrapper({ children }: { children: ReactElement }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
-      <div className="@container h-full w-full border flex justify-center items-center">{children}</div>
+      <div className="@container flex h-full w-full items-center justify-center border">
+        {children}
+      </div>
     </div>
   );
 }

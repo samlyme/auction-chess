@@ -44,23 +44,14 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
   loader: async ({ context }) => {
     const userId = context.auth.session.user.id;
 
-    const resLobby = await getLobby();
-    if (!resLobby.ok) throw Error('Failed to fetch lobby');
-    const lobby = resLobby.value;
+    const lobby = await getLobby();
     if (!lobby) throw redirect({ to: '/home' });
 
     const oppId = userId === lobby.hostUid ? lobby.guestUid : lobby.hostUid;
 
-    let oppProfile: Profile | null = null;
-    if (oppId) {
-      const resOpp = await getProfile({ id: oppId });
-      if (!resOpp.ok) throw Error('Failed to get opponent profile');
-      oppProfile = resOpp.value;
-    }
+    const oppProfile: Profile | null = oppId ? await getProfile({ id: oppId }) : null;
 
-    const resGame = await getGame();
-    if (!resGame.ok) throw Error('Failed to fetch game');
-    const game = resGame.value;
+    const game = await getGame();
 
     return { lobby, game, oppProfile };
   },

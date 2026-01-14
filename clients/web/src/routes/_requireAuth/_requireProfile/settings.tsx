@@ -16,13 +16,7 @@ function RouteComponent() {
     e.preventDefault();
     setLoading(true);
 
-    const result = await updateProfile({ bio });
-
-    if (result.ok) {
-      alert('Profile updated successfully!');
-    } else {
-      alert(`Error: ${result.error.message}`);
-    }
+    await updateProfile({ bio });
     setLoading(false);
   };
 

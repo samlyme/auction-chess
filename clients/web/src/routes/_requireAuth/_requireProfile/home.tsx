@@ -5,9 +5,7 @@ import type { Color } from 'shared';
 
 export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
   beforeLoad: async () => {
-    const resLobby = await getLobby();
-    if (!resLobby.ok) throw Error('Failed to fetch lobby');
-    const lobby = resLobby.value;
+    const lobby = await getLobby();
     if (lobby) throw redirect({ to: '/lobbies' });
   },
   component: RouteComponent
@@ -24,7 +22,7 @@ function RouteComponent() {
     e.preventDefault();
     setLoading(true);
 
-    const result = await createLobby({
+    await createLobby({
       gameConfig: {
         hostColor,
         initTime: {
@@ -34,11 +32,7 @@ function RouteComponent() {
       },
     });
 
-    if (result.ok) {
-      navigate({ to: '/lobbies' });
-    } else {
-      alert(result.error);
-    }
+    navigate({ to: '/lobbies' });
     setLoading(false);
   };
 
@@ -46,13 +40,9 @@ function RouteComponent() {
     e.preventDefault();
     setLoading(true);
 
-    const result = await joinLobby(lobbyCode.trim());
+    await joinLobby(lobbyCode.trim());
 
-    if (result.ok) {
-      navigate({ to: '/lobbies' });
-    } else {
-      alert(result.error);
-    }
+    navigate({ to: '/lobbies' });
     setLoading(false);
   };
 

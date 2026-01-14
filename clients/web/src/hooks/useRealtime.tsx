@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AuctionChessState, LobbyEventType, LobbyPayload } from 'shared';
-import supabase from '../supabase';
+import supabase from '@/supabase';
 
 // provide all initial values. Thus, this hook's only responsibility is to
 // list for updates. However, that means it still does the logic for fetching
@@ -13,7 +13,7 @@ export default function useRealtime(
   setGameState: React.Dispatch<React.SetStateAction<AuctionChessState | null>>
 ) {
   useEffect(() => {
-    console.log('sub to realtime' );
+    console.log('sub to realtime');
     const channel = supabase.channel(`lobby-${lobbyCode}`);
 
     channel
@@ -25,9 +25,9 @@ export default function useRealtime(
             const newLobby = LobbyPayload.parse(update.payload);
             console.log('newLobby', newLobby);
 
-            if (userId === newLobby.hostUid || userId === newLobby.guestUid){
-              console.log("update lobby");
-              
+            if (userId === newLobby.hostUid || userId === newLobby.guestUid) {
+              console.log('update lobby');
+
               setLobby(newLobby);
               if (!newLobby.gameStarted) setGameState(null);
             } else {

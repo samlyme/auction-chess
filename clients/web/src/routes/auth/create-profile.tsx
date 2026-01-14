@@ -1,46 +1,44 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
-import supabase from '../../supabase'
-import { createProfile } from '@/services/profiles'
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+import supabase from '@/supabase';
+import { createProfile } from '@/services/profiles';
 
 export const Route = createFileRoute('/auth/create-profile')({
-    // TODO: redirect user off this page if profile is created.
+  // TODO: redirect user off this page if profile is created.
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  const navigate = useNavigate()
-  const [username, setUsername] = useState('')
-  const [bio, setBio] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [bio, setBio] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      const response = await createProfile({
-          id: user.id,
-          username,
-          bio,
-      })
+      await createProfile({
+        id: user.id,
+        username,
+        bio,
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to create profile')
-      }
-
-      navigate({ to: '/lobbies' })
+      navigate({ to: '/lobbies' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create profile')
+      setError(err instanceof Error ? err.message : 'Failed to create profile');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="h-full w-full overflow-auto bg-(--color-background) p-8">
@@ -84,5 +82,5 @@ function RouteComponent() {
         </form>
       </div>
     </div>
-  )
+  );
 }

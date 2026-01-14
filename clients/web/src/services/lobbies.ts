@@ -1,5 +1,5 @@
 import type { LobbyConfig, LobbyPayload } from 'shared';
-import { api } from './api';
+import { api } from '@/services/api';
 import { parseResponse } from 'hono/client';
 
 export async function createLobby(

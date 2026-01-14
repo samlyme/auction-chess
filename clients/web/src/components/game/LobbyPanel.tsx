@@ -1,5 +1,5 @@
 import type { LobbyPayload } from 'shared';
-import { startLobby, endLobby, deleteLobby, leaveLobby } from '../../services/lobbies';
+import { startLobby, endLobby, deleteLobby, leaveLobby } from '@/services/lobbies';
 
 interface LobbyPanelProps {
   isHost: boolean;
@@ -8,31 +8,19 @@ interface LobbyPanelProps {
 
 export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
   const handleStartLobby = async () => {
-    const result = await startLobby();
-    if (!result.ok) {
-      console.error('Failed to start lobby:', result.error);
-    }
+    await startLobby();
   };
 
   const handleEndLobby = async () => {
-    const result = await endLobby();
-    if (!result.ok) {
-      console.error('Failed to end lobby:', result.error);
-    }
+    await endLobby();
   };
 
   const handleDeleteLobby = async () => {
-    const result = await deleteLobby();
-    if (!result.ok) {
-      console.error('Failed to delete lobby:', result.error);
-    }
+    await deleteLobby();
   };
 
   const handleLeaveLobby = async () => {
-    const result = await leaveLobby();
-    if (!result.ok) {
-      console.error('Failed to leave lobby:', result.error);
-    }
+    await leaveLobby();
   };
 
   const handleCopyCode = async () => {
