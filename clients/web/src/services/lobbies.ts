@@ -1,33 +1,33 @@
-import type { LobbyConfig, LobbyPayload, Result } from 'shared';
+import type { LobbyConfig, LobbyPayload } from 'shared';
 import { api } from './api';
-import { handleApiCall } from './utils';
+import { parseResponse } from 'hono/client';
 
 export async function createLobby(
   lobbyConfig: LobbyConfig
-): Promise<Result<LobbyPayload>> {
-  return handleApiCall(() => api.api.lobbies.$post({ json: lobbyConfig }));
+): Promise<LobbyPayload> {
+  return await parseResponse(api.lobbies.$post({ json: lobbyConfig }));
 }
 
-export async function getLobby(): Promise<Result<LobbyPayload | null>> {
-  return handleApiCall(() => api.api.lobbies.$get());
+export async function getLobby(): Promise<LobbyPayload | null> {
+  return await parseResponse(api.lobbies.$get());
 }
 
-export async function deleteLobby(): Promise<Result<null>> {
-  return handleApiCall(() => api.api.lobbies.$delete());
+export async function deleteLobby(): Promise<null> {
+  return await parseResponse(api.lobbies.$delete());
 }
 
-export async function joinLobby(code: string): Promise<Result<LobbyPayload>> {
-  return handleApiCall(() => api.api.lobbies.join.$post({ query: { code } }));
+export async function joinLobby(code: string): Promise<LobbyPayload> {
+  return await parseResponse(api.lobbies.join.$post({ query: { code } }));
 }
 
-export async function leaveLobby(): Promise<Result<LobbyPayload | null>> {
-  return handleApiCall(() => api.api.lobbies.leave.$post());
+export async function leaveLobby(): Promise<LobbyPayload | null> {
+  return await parseResponse(api.lobbies.leave.$post());
 }
 
-export async function startLobby(): Promise<Result<LobbyPayload>> {
-  return handleApiCall(() => api.api.lobbies.start.$post());
+export async function startLobby(): Promise<LobbyPayload> {
+  return await parseResponse(api.lobbies.start.$post());
 }
 
-export async function endLobby(): Promise<Result<LobbyPayload>> {
-  return handleApiCall(() => api.api.lobbies.end.$post());
+export async function endLobby(): Promise<LobbyPayload> {
+  return await parseResponse(api.lobbies.end.$post());
 }
