@@ -283,7 +283,7 @@ export default function BidPanel({
   const makeBidMutation = useMutation(useMakeBidMutationOptions());
 
   const handleBid = (amount: number) => {
-    makeBidMutation.mutate({ amount });
+    makeBidMutation.mutate({ amount, fold: false });
   };
 
   const handleFold = () => {

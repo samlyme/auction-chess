@@ -141,7 +141,7 @@ export function makeBid(
     draft.timeState.prev = Date.now();
 
     // Handle fold
-    if ("fold" in bid) {
+    if (bid.fold) {
       if (lastBid && "amount" in lastBid) {
         draft.auctionState.balance[opposite(draft.turn)] -= lastBid.amount;
       }

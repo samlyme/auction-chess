@@ -37,12 +37,13 @@ export type Phase = z.infer<typeof Phase>;
 
 // "from" field should not exist here. Not the responsibility of the game
 // logic to validate the source of moves.
-export const Bid = z.union([
+export const Bid = z.discriminatedUnion("fold", [
   z.object({
     amount: z.number(),
+    fold: z.literal(false),
   }),
   z.object({
-    fold: z.boolean(),
+    fold: z.literal(true),
   }),
 ]);
 export type Bid = z.infer<typeof Bid>;
