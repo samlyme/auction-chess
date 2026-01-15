@@ -46,7 +46,9 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
+    // Just use standard patterns, otherwise you are making a footgun
     <QueryClientProvider client={queryClient}>
+      {/* Auth Context only really exists in the browser, don't need to use Query. */}
       <AuthContextProvider>
         <AspectRatioWrapper>
           <InnerApp />
