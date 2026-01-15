@@ -1,5 +1,6 @@
+import { useDeleteLobbyMutationOptions, useEndLobbyMutationOptions, useLeaveLobbyMutationOptions, useStartLobbyMutationOptions } from '@/queries/lobbies';
+import { useMutation } from '@tanstack/react-query';
 import type { LobbyPayload } from 'shared';
-import { startLobby, endLobby, deleteLobby, leaveLobby } from '../../services/lobbies';
 
 interface LobbyPanelProps {
   isHost: boolean;
@@ -7,32 +8,25 @@ interface LobbyPanelProps {
 }
 
 export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
+  const startLobbyMutation = useMutation(useStartLobbyMutationOptions());
+  const endLobbyMutation = useMutation(useEndLobbyMutationOptions());
+  const deleteLobbyMutation = useMutation(useDeleteLobbyMutationOptions());
+  const leaveLobbyMutation = useMutation(useLeaveLobbyMutationOptions());
+
   const handleStartLobby = async () => {
-    const result = await startLobby();
-    if (!result.ok) {
-      console.error('Failed to start lobby:', result.error);
-    }
+    await startLobbyMutation.mutateAsync();
   };
 
   const handleEndLobby = async () => {
-    const result = await endLobby();
-    if (!result.ok) {
-      console.error('Failed to end lobby:', result.error);
-    }
+    await endLobbyMutation.mutateAsync();
   };
 
   const handleDeleteLobby = async () => {
-    const result = await deleteLobby();
-    if (!result.ok) {
-      console.error('Failed to delete lobby:', result.error);
-    }
+    await deleteLobbyMutation.mutateAsync();
   };
 
   const handleLeaveLobby = async () => {
-    const result = await leaveLobby();
-    if (!result.ok) {
-      console.error('Failed to leave lobby:', result.error);
-    }
+    await leaveLobbyMutation.mutateAsync();
   };
 
   const handleCopyCode = async () => {
@@ -51,7 +45,9 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
               <div className="mb-4 flex flex-col gap-2">
                 <div className="rounded bg-neutral-600 p-3 text-center">
                   <p className="mb-1 text-sm text-neutral-400">Lobby Code</p>
-                  <p className="text-2xl font-mono font-bold tracking-wider">{lobby.code}</p>
+                  <p className="font-mono text-2xl font-bold tracking-wider">
+                    {lobby.code}
+                  </p>
                 </div>
                 <button
                   onClick={handleCopyCode}
@@ -65,30 +61,40 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={handleStartLobby}
-                    className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300"
+                    disabled={startLobbyMutation.isPending}
+                    className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:bg-neutral-400"
                   >
-                    Start Game
+                    {startLobbyMutation.isPending
+                      ? 'Starting...'
+                      : 'Start Game'}
                   </button>
                   <button
                     onClick={handleEndLobby}
-                    className="w-full cursor-pointer rounded bg-yellow-400 px-4 py-3 text-xl hover:bg-yellow-300"
+                    disabled={endLobbyMutation.isPending}
+                    className="w-full cursor-pointer rounded bg-yellow-400 px-4 py-3 text-xl hover:bg-yellow-300 disabled:bg-neutral-400"
                   >
-                    End Game
+                    {endLobbyMutation.isPending ? 'Ending...' : 'End Game'}
                   </button>
                   <button
                     onClick={handleDeleteLobby}
-                    className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300"
+                    disabled={deleteLobbyMutation.isPending}
+                    className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300 disabled:bg-neutral-400"
                   >
-                    Delete Lobby
+                    {deleteLobbyMutation.isPending
+                      ? 'Deleting...'
+                      : 'Delete Lobby'}
                   </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={handleLeaveLobby}
-                    className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300"
+                    disabled={leaveLobbyMutation.isPending}
+                    className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300 disabled:bg-neutral-400"
                   >
-                    Leave Lobby
+                    {leaveLobbyMutation.isPending
+                      ? 'Leaving...'
+                      : 'Leave Lobby'}
                   </button>
                 </div>
               )}

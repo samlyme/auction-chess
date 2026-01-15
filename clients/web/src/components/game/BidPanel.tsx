@@ -1,5 +1,6 @@
 import type { UseCountdownTimerResult } from '@/hooks/useCountdownTimer';
-import { makeBid } from '@/services/game';
+import { useMakeBidMutationOptions } from '@/queries/game';
+import { useMutation } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import type { AuctionChessState, Color } from 'shared';
 
@@ -21,11 +22,15 @@ function PlayerInfoCard({ username, balance, timer }: PlayerInfoCardProps) {
     <div className="rounded-lg bg-neutral-800 p-4">
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
-          <div className=" flex gap-2">
-            <div className={`p-2 m-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"}`}>
-              <p className="text-2xl">{minutes}:{seconds}</p>
+          <div className="flex gap-2">
+            <div
+              className={`m-2 p-2 ${timer.isRunning ? 'bg-green-600' : 'bg-neutral-600'}`}
+            >
+              <p className="text-2xl">
+                {minutes}:{seconds}
+              </p>
             </div>
-            <div className='p-2 m-2 bg-neutral-600'>
+            <div className="m-2 bg-neutral-600 p-2">
               <p className="text-2xl">{username}</p>
             </div>
           </div>
@@ -65,9 +70,20 @@ interface BidControlsProps {
   setBid: React.Dispatch<React.SetStateAction<number>>;
   minBid: number;
   maxBid: number;
+  onBid: (amount: number) => void;
+  onFold: () => void;
+  isBidPending: boolean;
 }
 
-function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
+function BidControls({
+  bid,
+  setBid,
+  minBid,
+  maxBid,
+  onBid,
+  onFold,
+  isBidPending,
+}: BidControlsProps) {
   const canBid = bid >= minBid && bid <= maxBid;
 
   const [inputValue, setInputValue] = useState<string>(bid.toString());
@@ -118,23 +134,18 @@ function BidControls({ bid, setBid, minBid, maxBid }: BidControlsProps) {
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-2 gap-2">
           <button
-            onClick={async () => {
-              const res = await makeBid({ amount: bid })
-              console.log('bid', res);
-            }}
-            disabled={!canBid}
+            onClick={() => onBid(bid)}
+            disabled={!canBid || isBidPending}
             className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            BID
+            {isBidPending ? 'Bidding...' : 'BID'}
           </button>
           <button
-            onClick={async () => {
-              const res = await makeBid({ fold: true });
-              console.log("fold", res);
-            }}
-            className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300"
+            onClick={onFold}
+            disabled={isBidPending}
+            className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            FOLD
+            {isBidPending ? 'Folding...' : 'FOLD'}
           </button>
         </div>
         <button
@@ -153,7 +164,12 @@ function BidAdjustmentControls({
   setBid,
   minBid,
   maxBid,
-}: BidControlsProps) {
+}: {
+  bid: number;
+  setBid: React.Dispatch<React.SetStateAction<number>>;
+  minBid: number;
+  maxBid: number;
+}) {
   const stepSmall = 1;
   const stepLarge = 5;
 
@@ -261,11 +277,20 @@ export default function BidPanel({
   oppUsername: string | undefined;
   playerColor: Color;
   gameState: AuctionChessState;
-  timers: Record<Color, UseCountdownTimerResult>
+  timers: Record<Color, UseCountdownTimerResult>;
 }) {
   const [bid, setBid] = useState<number>(0);
+  const makeBidMutation = useMutation(useMakeBidMutationOptions());
+
+  const handleBid = (amount: number) => {
+    makeBidMutation.mutate({ amount });
+  };
+
+  const handleFold = () => {
+    makeBidMutation.mutate({ fold: true });
+  };
   const { bidHistory } = gameState.auctionState;
-  const opponentColor = playerColor === "white" ? "black" : "white";
+  const opponentColor = playerColor === 'white' ? 'black' : 'white';
 
   // TODO: fix this jank
   const bidStack = bidHistory[bidHistory.length - 1] ?? [];
@@ -276,21 +301,28 @@ export default function BidPanel({
   let prevPlayerBidAmount = 0;
   let prevOppBidAmount = 0;
   if (gameState.turn !== playerColor) {
-    prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
+    prevPlayerBidAmount = 'amount' in lastBid ? lastBid.amount : 0;
+    prevOppBidAmount = 'amount' in secondLastBid ? secondLastBid.amount : 0;
   } else {
-    prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
+    prevOppBidAmount = 'amount' in lastBid ? lastBid.amount : 0;
+    prevPlayerBidAmount = 'amount' in secondLastBid ? secondLastBid.amount : 0;
   }
 
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
-        <PlayerInfoCard username={oppUsername || "waiting..."} balance={gameState.auctionState.balance[opponentColor]} timer={timers[opponentColor]}/>
+        <PlayerInfoCard
+          username={oppUsername || 'waiting...'}
+          balance={gameState.auctionState.balance[opponentColor]}
+          timer={timers[opponentColor]}
+        />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
-            <BidComparison opponentBid={prevOppBidAmount} yourBid={prevPlayerBidAmount} />
+            <BidComparison
+              opponentBid={prevOppBidAmount}
+              yourBid={prevPlayerBidAmount}
+            />
             <div className="flex-1 rounded-md bg-neutral-700 p-4">
               <div className="flex h-full gap-2">
                 <BidControls
@@ -298,6 +330,9 @@ export default function BidPanel({
                   setBid={setBid}
                   minBid={0} // fix this
                   maxBid={gameState.auctionState.balance[playerColor]}
+                  onBid={handleBid}
+                  onFold={handleFold}
+                  isBidPending={makeBidMutation.isPending}
                 />
                 <BidAdjustmentControls
                   bid={bid}
@@ -310,7 +345,11 @@ export default function BidPanel({
           </div>
         </div>
 
-        <PlayerInfoCard username={username} balance={gameState.auctionState.balance[playerColor]} timer={timers[playerColor]} />
+        <PlayerInfoCard
+          username={username}
+          balance={gameState.auctionState.balance[playerColor]}
+          timer={timers[playerColor]}
+        />
       </div>
     </div>
   );

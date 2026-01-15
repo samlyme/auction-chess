@@ -6,17 +6,13 @@ import {
   type UseCountdownTimerResult,
 } from '@/hooks/useCountdownTimer';
 import useRealtime from '@/hooks/useRealtime';
-import { getGame, timecheck } from '@/services/game';
-import { getLobby } from '@/services/lobbies';
-import { getProfile } from '@/services/profiles';
+import { useLobbyOptions } from '@/queries/lobbies';
 import { createFileRoute, Navigate, redirect } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import {
-  LobbyPayload,
-  type AuctionChessState,
-  type Color,
-  type Profile,
-} from 'shared';
+import { useEffect } from 'react';
+import { type AuctionChessState, type Color } from 'shared';
+import { useProfileOptions } from '@/queries/profiles';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useGameOptions, useTimecheckMutationOptions } from '@/queries/game';
 
 const defaultGameState = {
   chessState: {
@@ -42,27 +38,12 @@ const defaultGameState = {
 
 export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
   loader: async ({ context }) => {
-    const userId = context.auth.session.user.id;
+    const { queryClient } = context;
 
-    const resLobby = await getLobby();
-    if (!resLobby.ok) throw Error('Failed to fetch lobby');
-    const lobby = resLobby.value;
+    const lobby = await queryClient.ensureQueryData(useLobbyOptions());
     if (!lobby) throw redirect({ to: '/home' });
 
-    const oppId = userId === lobby.hostUid ? lobby.guestUid : lobby.hostUid;
-
-    let oppProfile: Profile | null = null;
-    if (oppId) {
-      const resOpp = await getProfile({ id: oppId });
-      if (!resOpp.ok) throw Error('Failed to get opponent profile');
-      oppProfile = resOpp.value;
-    }
-
-    const resGame = await getGame();
-    if (!resGame.ok) throw Error('Failed to fetch game');
-    const game = resGame.value;
-
-    return { lobby, game, oppProfile };
+    return { lobby };
   },
   component: RouteComponent,
 });
@@ -71,20 +52,16 @@ function RouteComponent() {
   const userId = Route.useRouteContext().auth.session.user.id;
   const userProfile = Route.useRouteContext().profile;
 
-  const { lobby: initLobby, game: initGame, oppProfile: initOppProfile } = Route.useLoaderData();
+  const { lobby: initLobby } =
+    Route.useLoaderData();
 
-  const [lobby, setLobby] = useState<LobbyPayload | null>(initLobby);
-  const [game, setGameState] = useState<AuctionChessState | null>(initGame);
-  // useState ignores subsequent initialization calls, so this is needed to sync the state when the useLoaderData changes.
-  useEffect(() => {
-    setLobby(initLobby);
-    setGameState(initGame);
-  }, [initLobby, initGame])
-
-  // TODO: realtime updates should notice players joining.
+  // Use TanStack Query for real-time data instead of manual state management
+  const { data: lobby } = useQuery(useLobbyOptions(initLobby));
+  const { data: game } = useQuery(useGameOptions());
+  const timecheckMutation = useMutation(useTimecheckMutationOptions());
 
   // Bind the lobby and game to the real time updates.
-  useRealtime(userId, initLobby.code, setLobby, setGameState);
+  useRealtime(userId, initLobby.code);
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
   const hostColor = lobby?.config.gameConfig.hostColor || 'white';
@@ -94,18 +71,23 @@ function RouteComponent() {
   const gameStarted = lobby?.gameStarted || false;
   const phase = game?.phase || 'bid';
 
+  const oppId = (userId === lobby?.hostUid ? lobby?.guestUid : lobby?.hostUid) || null;
+  const { data, error } = useQuery({...useProfileOptions({ id: oppId || "" }), enabled: !!oppId});
+  if (error) throw error;
+
+  const oppProfile = data || null;
+
   // All hooks must be called before any early returns
   const playerTimer = useCountdownTimer({
     durationMs: lobby?.config.gameConfig.initTime[playerColor] || 0,
     onExpire: async () => {
-      await timecheck();
+      await timecheckMutation.mutateAsync();
     },
   });
   const oppTimer = useCountdownTimer({
-    durationMs:
-      lobby?.config.gameConfig.initTime[opposite(playerColor)] || 0,
+    durationMs: lobby?.config.gameConfig.initTime[opposite(playerColor)] || 0,
     onExpire: async () => {
-      await timecheck();
+      await timecheckMutation.mutateAsync();
     },
   });
 
@@ -117,7 +99,7 @@ function RouteComponent() {
       // The game isn't started, so use the lobby's config for time.
       playerTimer.reset(lobby.config.gameConfig.initTime[playerColor]);
       oppTimer.reset(lobby.config.gameConfig.initTime[opposite(playerColor)]);
-    } else {
+    } else if (game) {
       const prev = game.timeState.prev || Date.now();
       const now = Date.now();
       const elapsed = now - prev;
@@ -147,6 +129,8 @@ function RouteComponent() {
   // NOW we can do the early return, after all hooks have been called
   if (!lobby) return <Navigate to={'/home'} />;
 
+
+
   return (
     <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
@@ -167,7 +151,7 @@ function RouteComponent() {
         >
           <BidPanel
             username={userProfile.username}
-            oppUsername={initOppProfile?.username}
+            oppUsername={oppProfile?.username}
             playerColor={playerColor}
             gameState={game || defaultGameState}
             timers={timers}

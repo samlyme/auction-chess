@@ -1,13 +1,12 @@
+import { useCreateLobbyMutationOptions, useJoinLobbyMutationOptions, useLobbyOptions } from '@/queries/lobbies';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
-import { createLobby, getLobby, joinLobby } from '@/services/lobbies';
 import type { Color } from 'shared';
 
 export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
-  beforeLoad: async () => {
-    const resLobby = await getLobby();
-    if (!resLobby.ok) throw Error('Failed to fetch lobby');
-    const lobby = resLobby.value;
+  beforeLoad: async ({ context: { queryClient }}) => {
+    const lobby = await queryClient.ensureQueryData(useLobbyOptions());
     if (lobby) throw redirect({ to: '/lobbies' });
   },
   component: RouteComponent
@@ -20,11 +19,14 @@ function RouteComponent() {
   const [lobbyCode, setLobbyCode] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const createLobbyMutation = useMutation(useCreateLobbyMutationOptions());
+    const joinLobbyMutation = useMutation(useJoinLobbyMutationOptions());
+
   const handleCreateLobby = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const result = await createLobby({
+    await createLobbyMutation.mutateAsync({
       gameConfig: {
         hostColor,
         initTime: {
@@ -34,11 +36,7 @@ function RouteComponent() {
       },
     });
 
-    if (result.ok) {
-      navigate({ to: '/lobbies' });
-    } else {
-      alert(result.error);
-    }
+    navigate({ to: '/lobbies' });
     setLoading(false);
   };
 
@@ -46,13 +44,9 @@ function RouteComponent() {
     e.preventDefault();
     setLoading(true);
 
-    const result = await joinLobby(lobbyCode.trim());
+    await joinLobbyMutation.mutateAsync(lobbyCode.trim());
 
-    if (result.ok) {
-      navigate({ to: '/lobbies' });
-    } else {
-      alert(result.error);
-    }
+    navigate({ to: '/lobbies' });
     setLoading(false);
   };
 
