@@ -1,5 +1,5 @@
 import type { UseCountdownTimerResult } from '@/hooks/useCountdownTimer';
-import { useMakeBid } from '@/hooks/queries/game';
+import { useMakeBidMutation } from '@/hooks/queries/game';
 import { useState, useEffect } from 'react';
 import type { AuctionChessState, Color } from 'shared';
 
@@ -279,7 +279,7 @@ export default function BidPanel({
   timers: Record<Color, UseCountdownTimerResult>;
 }) {
   const [bid, setBid] = useState<number>(0);
-  const makeBidMutation = useMakeBid();
+  const makeBidMutation = useMakeBidMutation();
 
   const handleBid = (amount: number) => {
     makeBidMutation.mutate({ amount });

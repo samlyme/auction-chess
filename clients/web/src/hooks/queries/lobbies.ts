@@ -1,77 +1,94 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { LobbyConfig } from 'shared';
+import {
+  useQuery,
+  useMutation,
+  queryOptions,
+  mutationOptions,
+} from '@tanstack/react-query';
+import type { LobbyConfig, LobbyPayload } from 'shared';
 import { parseResponse } from 'hono/client';
 import { api } from './api';
 
-export function useLobby() {
-  return useQuery({
+export function useLobbyOptions(initLobby?: LobbyPayload) {
+  return queryOptions({
     queryKey: ['lobby'],
-    queryFn: () => parseResponse(api.lobbies.$get())
+    queryFn: () => parseResponse(api.lobbies.$get()),
+    initialData: initLobby
   });
 }
+export function useLobby(initLobby?: LobbyPayload) {
+  return useQuery(useLobbyOptions(initLobby));
+}
 
-export function useCreateLobby() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (lobbyConfig: LobbyConfig) => parseResponse(api.lobbies.$post({ json: lobbyConfig })),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['lobby'], data);
+export function useCreateLobbyMutationOptions() {
+  return mutationOptions({
+    mutationFn: (lobbyConfig: LobbyConfig) =>
+      parseResponse(api.lobbies.$post({ json: lobbyConfig })),
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['lobby'], data);
     },
   });
 }
+export function useCreateLobbyMutation() {
+  return useMutation(useCreateLobbyMutationOptions());
+}
 
-export function useJoinLobby() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (code: string) => parseResponse(api.lobbies.join.$post({ query: { code }})),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['lobby'], data);
+export function useJoinLobbyMutationOptions() {
+  return mutationOptions({
+    mutationFn: (code: string) =>
+      parseResponse(api.lobbies.join.$post({ query: { code } })),
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['lobby'], data);
     },
   });
 }
+export function useJoinLobbyMutation() {
+  return useMutation(useJoinLobbyMutationOptions());
+}
 
-export function useLeaveLobby() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export function useLeaveLobbyMutationOptions() {
+  return mutationOptions({
     mutationFn: () => parseResponse(api.lobbies.leave.$post()),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['lobby'], data);
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['lobby'], data);
     },
   });
 }
+export function useLeaveLobbyMutation() {
+  return useMutation(useLeaveLobbyMutationOptions());
+}
 
-export function useStartLobby() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export function useStartLobbyMutationOptions() {
+  return mutationOptions({
     mutationFn: () => parseResponse(api.lobbies.start.$post()),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['lobby'], data);
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['lobby'], data);
     },
   });
 }
+export function useStartLobbyMutation() {
+  return useMutation(useStartLobbyMutationOptions());
+}
 
-export function useEndLobby() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export function useEndLobbyMutationOptions() {
+  return mutationOptions({
     mutationFn: () => parseResponse(api.lobbies.end.$post()),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['lobby'], data);
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['lobby'], data);
     },
   });
 }
+export function useEndLobbyMutation() {
+  return useMutation(useEndLobbyMutationOptions());
+}
 
-export function useDeleteLobby() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export function useDeleteLobbyMutationOptions() {
+  return mutationOptions({
     mutationFn: () => parseResponse(api.lobbies.$delete()),
-    onSuccess: () => {
-      queryClient.setQueryData(['lobby'], null);
+    onSuccess: (_data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['lobby'], null);
     },
   });
+}
+export function useDeleteLobbyMutation() {
+  return useMutation(useDeleteLobbyMutationOptions());
 }

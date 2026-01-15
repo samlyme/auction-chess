@@ -1,11 +1,11 @@
+import { useCreateLobbyMutation, useJoinLobbyMutation, useLobbyOptions } from '@/hooks/queries/lobbies';
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
-import { createLobby, getLobby, joinLobby } from '@/services/lobbies';
 import type { Color } from 'shared';
 
 export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
-  beforeLoad: async () => {
-    const lobby = await getLobby();
+  beforeLoad: async ({ context: { queryClient }}) => {
+    const lobby = await queryClient.ensureQueryData(useLobbyOptions());
     if (lobby) throw redirect({ to: '/lobbies' });
   },
   component: RouteComponent
@@ -18,11 +18,14 @@ function RouteComponent() {
   const [lobbyCode, setLobbyCode] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const createLobbyMutation = useCreateLobbyMutation();
+    const joinLobbyMutation = useJoinLobbyMutation();
+
   const handleCreateLobby = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    await createLobby({
+    await createLobbyMutation.mutateAsync({
       gameConfig: {
         hostColor,
         initTime: {
@@ -40,7 +43,7 @@ function RouteComponent() {
     e.preventDefault();
     setLoading(true);
 
-    await joinLobby(lobbyCode.trim());
+    await joinLobbyMutation.mutateAsync(lobbyCode.trim());
 
     navigate({ to: '/lobbies' });
     setLoading(false);

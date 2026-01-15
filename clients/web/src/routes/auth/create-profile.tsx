@@ -1,10 +1,15 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import supabase from '@/supabase';
-import { useCreateProfile } from '@/hooks/queries/profiles';
+import { useCreateProfileMutation, useProfileOptions } from '@/hooks/queries/profiles';
 
 export const Route = createFileRoute('/auth/create-profile')({
   // TODO: redirect user off this page if profile is created.
+  beforeLoad: async ({ context }) => {
+    const { queryClient } = context;
+    const profile = await queryClient.ensureQueryData(useProfileOptions());
+    if (profile) throw redirect({ to: "/home" });
+  },
   component: RouteComponent,
 });
 
@@ -12,7 +17,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const createProfileMutation = useCreateProfile();
+  const createProfileMutation = useCreateProfileMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

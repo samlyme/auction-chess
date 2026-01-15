@@ -1,4 +1,4 @@
-import { useUpdateProfile } from '@/hooks/queries/profiles';
+import { useUpdateProfileMutation } from '@/hooks/queries/profiles';
 import supabase from '@/supabase';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/_requireAuth/_requireProfile/settings')({
 function RouteComponent() {
   const profile = Route.useRouteContext().profile;
   const [bio, setBio] = useState(profile.bio);
-  const updateProfileMutation = useUpdateProfile();
+  const updateProfileMutation = useUpdateProfileMutation();
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

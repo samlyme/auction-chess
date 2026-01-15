@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, queryOptions, mutationOptions } from '@tanstack/react-query';
 import type { Bid, NormalMove } from 'shared';
 import { api } from '@/hooks/queries/api';
 import { parseResponse } from 'hono/client';
 
-export function useGame() {
-  return useQuery({
+export function useGameOptions() {
+  return queryOptions({
     queryKey: ['game'],
   // NOTE: the get request is routed to the lobbies route for a reason.
   // It is so that the get request can actually go through the lobby validation,
@@ -12,31 +12,41 @@ export function useGame() {
     queryFn: () => parseResponse(api.lobbies.game.$get()),
   });
 }
+export function useGame() {
+  return useQuery(useGameOptions());
+}
 
-export function useMakeBid() {
-  const queryClient = useQueryClient();
 
-  return useMutation({
+export function useMakeBidMutationOptions() {
+  return mutationOptions({
     mutationFn: (bid: Bid) => parseResponse(api.game.play.bid.$post({ json: bid })),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game'] });
+    onSuccess: (_data, _variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({ queryKey: ['game'] });
     },
-  });
+  })
+}
+export function useMakeBidMutation() {
+  return useMutation(useMakeBidMutationOptions());
 }
 
-export function useMakeMove() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+export function useMakeMoveMutationOptions() {
+  return mutationOptions({
     mutationFn: (move: NormalMove) => parseResponse(api.game.play.move.$post({ json: move })),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game'] });
+    onSuccess: (_data, _variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({ queryKey: ['game'] });
     },
-  });
+  }
+  )
+}
+export function useMakeMove() {
+  return useMutation(useMakeMoveMutationOptions());
 }
 
-export function useTimecheck() {
-  return useMutation({
+export function useTimecheckMutationOptions() {
+  return mutationOptions({
     mutationFn: () => parseResponse(api.game.timecheck.$post()),
-  });
+  })
+}
+export function useTimecheckMutation() {
+  return useMutation(useTimecheckMutationOptions());
 }

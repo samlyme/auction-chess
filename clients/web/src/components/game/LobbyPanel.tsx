@@ -1,9 +1,9 @@
 import type { LobbyPayload } from 'shared';
 import {
-  useStartLobby,
-  useEndLobby,
-  useDeleteLobby,
-  useLeaveLobby,
+  useStartLobbyMutation,
+  useEndLobbyMutation,
+  useDeleteLobbyMutation,
+  useLeaveLobbyMutation,
 } from '@/hooks/queries/lobbies';
 
 interface LobbyPanelProps {
@@ -12,10 +12,10 @@ interface LobbyPanelProps {
 }
 
 export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
-  const startLobbyMutation = useStartLobby();
-  const endLobbyMutation = useEndLobby();
-  const deleteLobbyMutation = useDeleteLobby();
-  const leaveLobbyMutation = useLeaveLobby();
+  const startLobbyMutation = useStartLobbyMutation();
+  const endLobbyMutation = useEndLobbyMutation();
+  const deleteLobbyMutation = useDeleteLobbyMutation();
+  const leaveLobbyMutation = useLeaveLobbyMutation();
 
   const handleStartLobby = async () => {
     await startLobbyMutation.mutateAsync();

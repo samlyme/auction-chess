@@ -1,10 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  queryOptions,
+  mutationOptions,
+} from '@tanstack/react-query';
 import type { ProfileCreate, ProfileUpdate } from 'shared';
 import { parseResponse } from 'hono/client';
 import { api } from './api';
 
-export function useProfile(query?: { username: string } | { id: string }) {
-  return useQuery({
+export function useProfileOptions(
+  query?: { username: string } | { id: string }
+) {
+  return queryOptions({
     queryKey: ['profile', query],
     queryFn: () => {
       if (query) {
@@ -15,32 +22,42 @@ export function useProfile(query?: { username: string } | { id: string }) {
     },
   });
 }
+export function useProfile(query?: { username: string } | { id: string }) {
+  return useQuery(useProfileOptions(query));
+}
 
-export function useMyProfile() {
-  return useQuery({
+export function useMyProfileOptions() {
+  return queryOptions({
     queryKey: ['profile', 'me'],
     queryFn: () => parseResponse(api.profiles.me.$get()),
   });
 }
+export function useMyProfile() {
+  return useQuery(useMyProfileOptions());
+}
 
-export function useCreateProfile() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (profile: ProfileCreate) => parseResponse(api.profiles.$post({ json: profile })),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['profile', 'me'], data);
+export function useCreateProfileMutationOptions() {
+  return mutationOptions({
+    mutationFn: (profile: ProfileCreate) =>
+      parseResponse(api.profiles.$post({ json: profile })),
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['profile', 'me'], data);
     },
   });
 }
+export function useCreateProfileMutation() {
+  return useMutation(useCreateProfileMutationOptions());
+}
 
-export function useUpdateProfile() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (profile: ProfileUpdate) => parseResponse(api.profiles.$put({ json: profile })),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['profile', 'me'], data);
+export function useUpdateProfileMutationOptions() {
+  return mutationOptions({
+    mutationFn: (profile: ProfileUpdate) =>
+      parseResponse(api.profiles.$put({ json: profile })),
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(['profile', 'me'], data);
     },
   });
+}
+export function useUpdateProfileMutation() {
+  return useMutation(useUpdateProfileMutationOptions());
 }
