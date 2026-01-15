@@ -1,19 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  createLobby,
-  deleteLobby,
-  getLobby,
-  joinLobby,
-  leaveLobby,
-  startLobby,
-  endLobby,
-} from '@/services/lobbies';
 import type { LobbyConfig } from 'shared';
+import { parseResponse } from 'hono/client';
+import { api } from './api';
 
 export function useLobby() {
   return useQuery({
     queryKey: ['lobby'],
-    queryFn: getLobby,
+    queryFn: () => parseResponse(api.lobbies.$get())
   });
 }
 
@@ -21,7 +14,7 @@ export function useCreateLobby() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (lobbyConfig: LobbyConfig) => createLobby(lobbyConfig),
+    mutationFn: (lobbyConfig: LobbyConfig) => parseResponse(api.lobbies.$post({ json: lobbyConfig })),
     onSuccess: (data) => {
       queryClient.setQueryData(['lobby'], data);
     },
@@ -32,7 +25,7 @@ export function useJoinLobby() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (code: string) => joinLobby(code),
+    mutationFn: (code: string) => parseResponse(api.lobbies.join.$post({ query: { code }})),
     onSuccess: (data) => {
       queryClient.setQueryData(['lobby'], data);
     },
@@ -43,7 +36,7 @@ export function useLeaveLobby() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => leaveLobby(),
+    mutationFn: () => parseResponse(api.lobbies.leave.$post()),
     onSuccess: (data) => {
       queryClient.setQueryData(['lobby'], data);
     },
@@ -54,7 +47,7 @@ export function useStartLobby() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => startLobby(),
+    mutationFn: () => parseResponse(api.lobbies.start.$post()),
     onSuccess: (data) => {
       queryClient.setQueryData(['lobby'], data);
     },
@@ -65,7 +58,7 @@ export function useEndLobby() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => endLobby(),
+    mutationFn: () => parseResponse(api.lobbies.end.$post()),
     onSuccess: (data) => {
       queryClient.setQueryData(['lobby'], data);
     },
@@ -76,7 +69,7 @@ export function useDeleteLobby() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => deleteLobby(),
+    mutationFn: () => parseResponse(api.lobbies.$delete()),
     onSuccess: () => {
       queryClient.setQueryData(['lobby'], null);
     },
