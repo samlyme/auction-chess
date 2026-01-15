@@ -13,7 +13,7 @@ export function useGameOptions() {
   });
 }
 
-
+// TODO: Optimistic updates here!
 export function useMakeBidMutationOptions() {
   return mutationOptions({
     mutationFn: (bid: Bid) => parseResponse(api.game.play.bid.$post({ json: bid })),
@@ -33,6 +33,7 @@ export function useMakeMoveMutationOptions() {
   )
 }
 
+// NOTE: do not make this optimistic!
 export function useTimecheckMutationOptions() {
   return mutationOptions({
     mutationFn: () => parseResponse(api.game.timecheck.$post()),
