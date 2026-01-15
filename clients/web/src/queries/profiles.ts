@@ -1,6 +1,4 @@
 import {
-  useQuery,
-  useMutation,
   queryOptions,
   mutationOptions,
 } from '@tanstack/react-query';
@@ -22,18 +20,12 @@ export function useProfileOptions(
     },
   });
 }
-export function useProfile(query?: { username: string } | { id: string }) {
-  return useQuery(useProfileOptions(query));
-}
 
 export function useMyProfileOptions() {
   return queryOptions({
     queryKey: ['profile', 'me'],
     queryFn: () => parseResponse(api.profiles.me.$get()),
   });
-}
-export function useMyProfile() {
-  return useQuery(useMyProfileOptions());
 }
 
 export function useCreateProfileMutationOptions() {
@@ -45,9 +37,6 @@ export function useCreateProfileMutationOptions() {
     },
   });
 }
-export function useCreateProfileMutation() {
-  return useMutation(useCreateProfileMutationOptions());
-}
 
 export function useUpdateProfileMutationOptions() {
   return mutationOptions({
@@ -57,7 +46,4 @@ export function useUpdateProfileMutationOptions() {
       context.client.setQueryData(['profile', 'me'], data);
     },
   });
-}
-export function useUpdateProfileMutation() {
-  return useMutation(useUpdateProfileMutationOptions());
 }

@@ -1,6 +1,4 @@
 import {
-  useQuery,
-  useMutation,
   queryOptions,
   mutationOptions,
 } from '@tanstack/react-query';
@@ -15,9 +13,6 @@ export function useLobbyOptions(initLobby?: LobbyPayload) {
     initialData: initLobby
   });
 }
-export function useLobby(initLobby?: LobbyPayload) {
-  return useQuery(useLobbyOptions(initLobby));
-}
 
 export function useCreateLobbyMutationOptions() {
   return mutationOptions({
@@ -27,9 +22,6 @@ export function useCreateLobbyMutationOptions() {
       context.client.setQueryData(['lobby'], data);
     },
   });
-}
-export function useCreateLobbyMutation() {
-  return useMutation(useCreateLobbyMutationOptions());
 }
 
 export function useJoinLobbyMutationOptions() {
@@ -41,9 +33,6 @@ export function useJoinLobbyMutationOptions() {
     },
   });
 }
-export function useJoinLobbyMutation() {
-  return useMutation(useJoinLobbyMutationOptions());
-}
 
 export function useLeaveLobbyMutationOptions() {
   return mutationOptions({
@@ -52,9 +41,6 @@ export function useLeaveLobbyMutationOptions() {
       context.client.setQueryData(['lobby'], data);
     },
   });
-}
-export function useLeaveLobbyMutation() {
-  return useMutation(useLeaveLobbyMutationOptions());
 }
 
 export function useStartLobbyMutationOptions() {
@@ -65,9 +51,6 @@ export function useStartLobbyMutationOptions() {
     },
   });
 }
-export function useStartLobbyMutation() {
-  return useMutation(useStartLobbyMutationOptions());
-}
 
 export function useEndLobbyMutationOptions() {
   return mutationOptions({
@@ -77,9 +60,6 @@ export function useEndLobbyMutationOptions() {
     },
   });
 }
-export function useEndLobbyMutation() {
-  return useMutation(useEndLobbyMutationOptions());
-}
 
 export function useDeleteLobbyMutationOptions() {
   return mutationOptions({
@@ -88,7 +68,4 @@ export function useDeleteLobbyMutationOptions() {
       context.client.setQueryData(['lobby'], null);
     },
   });
-}
-export function useDeleteLobbyMutation() {
-  return useMutation(useDeleteLobbyMutationOptions());
 }

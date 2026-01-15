@@ -1,6 +1,6 @@
-import { useQuery, useMutation, queryOptions, mutationOptions } from '@tanstack/react-query';
+import { queryOptions, mutationOptions } from '@tanstack/react-query';
 import type { Bid, NormalMove } from 'shared';
-import { api } from '@/hooks/queries/api';
+import { api } from '@/queries/api';
 import { parseResponse } from 'hono/client';
 
 export function useGameOptions() {
@@ -12,9 +12,6 @@ export function useGameOptions() {
     queryFn: () => parseResponse(api.lobbies.game.$get()),
   });
 }
-export function useGame() {
-  return useQuery(useGameOptions());
-}
 
 
 export function useMakeBidMutationOptions() {
@@ -24,9 +21,6 @@ export function useMakeBidMutationOptions() {
       context.client.invalidateQueries({ queryKey: ['game'] });
     },
   })
-}
-export function useMakeBidMutation() {
-  return useMutation(useMakeBidMutationOptions());
 }
 
 export function useMakeMoveMutationOptions() {
@@ -38,15 +32,9 @@ export function useMakeMoveMutationOptions() {
   }
   )
 }
-export function useMakeMove() {
-  return useMutation(useMakeMoveMutationOptions());
-}
 
 export function useTimecheckMutationOptions() {
   return mutationOptions({
     mutationFn: () => parseResponse(api.game.timecheck.$post()),
   })
-}
-export function useTimecheckMutation() {
-  return useMutation(useTimecheckMutationOptions());
 }

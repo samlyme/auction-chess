@@ -1,4 +1,4 @@
-import { useProfileOptions } from '@/hooks/queries/profiles';
+import { useProfileOptions } from '@/queries/profiles';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 // TODO: cache this result. This must be done with something like Tanstack Query.

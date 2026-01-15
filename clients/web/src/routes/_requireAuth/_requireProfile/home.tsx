@@ -1,4 +1,5 @@
-import { useCreateLobbyMutation, useJoinLobbyMutation, useLobbyOptions } from '@/hooks/queries/lobbies';
+import { useCreateLobbyMutationOptions, useJoinLobbyMutationOptions, useLobbyOptions } from '@/queries/lobbies';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { Color } from 'shared';
@@ -18,8 +19,8 @@ function RouteComponent() {
   const [lobbyCode, setLobbyCode] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const createLobbyMutation = useCreateLobbyMutation();
-    const joinLobbyMutation = useJoinLobbyMutation();
+  const createLobbyMutation = useMutation(useCreateLobbyMutationOptions());
+    const joinLobbyMutation = useMutation(useJoinLobbyMutationOptions());
 
   const handleCreateLobby = async (e: React.FormEvent) => {
     e.preventDefault();

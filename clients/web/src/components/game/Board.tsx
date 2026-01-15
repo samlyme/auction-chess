@@ -23,7 +23,8 @@ import {
   selectedSquare,
 } from '@/components/game/BoardStyle';
 import type { AuctionChessState } from 'shared';
-import { useMakeMove } from '@/hooks/queries/game';
+import { useMutation } from '@tanstack/react-query';
+import { useMakeMoveMutationOptions } from '@/queries/game';
 
 function PromotionMenu({
   color,
@@ -103,7 +104,7 @@ interface BoardProps {
 export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
-  const makeMoveMutation = useMakeMove();
+  const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
   const chessLogic = new PseudoChess(gameState.chessState.fen);
 

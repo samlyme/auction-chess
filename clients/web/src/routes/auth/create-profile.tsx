@@ -1,7 +1,8 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import supabase from '@/supabase';
-import { useCreateProfileMutation, useProfileOptions } from '@/hooks/queries/profiles';
+import { useCreateProfileMutationOptions, useProfileOptions } from '@/queries/profiles';
+import { useMutation } from '@tanstack/react-query';
 
 export const Route = createFileRoute('/auth/create-profile')({
   // TODO: redirect user off this page if profile is created.
@@ -17,7 +18,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const createProfileMutation = useCreateProfileMutation();
+  const createProfileMutation = useMutation(useCreateProfileMutationOptions());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

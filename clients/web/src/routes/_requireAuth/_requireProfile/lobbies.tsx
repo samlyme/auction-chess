@@ -6,13 +6,13 @@ import {
   type UseCountdownTimerResult,
 } from '@/hooks/useCountdownTimer';
 import useRealtime from '@/hooks/useRealtime';
-import { useTimecheckMutation, useGame } from '@/hooks/queries/game';
-import { useLobby, useLobbyOptions } from '@/hooks/queries/lobbies';
+import { useLobbyOptions } from '@/queries/lobbies';
 import { createFileRoute, Navigate, redirect } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { type AuctionChessState, type Color } from 'shared';
-import { useProfileOptions } from '@/hooks/queries/profiles';
-import { useQuery } from '@tanstack/react-query';
+import { useProfileOptions } from '@/queries/profiles';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useGameOptions, useTimecheckMutationOptions } from '@/queries/game';
 
 const defaultGameState = {
   chessState: {
@@ -56,9 +56,9 @@ function RouteComponent() {
     Route.useLoaderData();
 
   // Use TanStack Query for real-time data instead of manual state management
-  const { data: lobby } = useLobby(initLobby);
-  const { data: game } = useGame();
-  const timecheckMutation = useTimecheckMutation();
+  const { data: lobby } = useQuery(useLobbyOptions(initLobby));
+  const { data: game } = useQuery(useGameOptions());
+  const timecheckMutation = useMutation(useTimecheckMutationOptions());
 
   // Bind the lobby and game to the real time updates.
   useRealtime(userId, initLobby.code);
