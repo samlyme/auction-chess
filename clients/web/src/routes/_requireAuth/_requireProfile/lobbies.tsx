@@ -1,22 +1,22 @@
-import BidPanel from '@/components/game/BidPanel';
-import { AuctionChessBoard } from '@/components/game/Board';
-import LobbyPanel from '@/components/game/LobbyPanel';
+import BidPanel from "@/components/game/BidPanel";
+import { AuctionChessBoard } from "@/components/game/Board";
+import LobbyPanel from "@/components/game/LobbyPanel";
 import {
   useCountdownTimer,
   type UseCountdownTimerResult,
-} from '@/hooks/useCountdownTimer';
-import useRealtime from '@/hooks/useRealtime';
-import { useLobbyOptions } from '@/queries/lobbies';
-import { createFileRoute, Navigate, redirect } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import { type AuctionChessState, type Color } from 'shared';
-import { useProfileOptions } from '@/queries/profiles';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useGameOptions, useTimecheckMutationOptions } from '@/queries/game';
+} from "@/hooks/useCountdownTimer";
+import useRealtime from "@/hooks/useRealtime";
+import { useLobbyOptions } from "@/queries/lobbies";
+import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { type AuctionChessState, type Color } from "shared/types";
+import { useProfileOptions } from "@/queries/profiles";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
 
 const defaultGameState = {
   chessState: {
-    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   },
   auctionState: {
     balance: {
@@ -32,16 +32,16 @@ const defaultGameState = {
     },
     prev: null,
   },
-  turn: 'white',
-  phase: 'bid',
+  turn: "white",
+  phase: "bid",
 } as AuctionChessState;
 
-export const Route = createFileRoute('/_requireAuth/_requireProfile/lobbies')({
+export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
   loader: async ({ context }) => {
     const { queryClient } = context;
 
     const lobby = await queryClient.ensureQueryData(useLobbyOptions());
-    if (!lobby) throw redirect({ to: '/home' });
+    if (!lobby) throw redirect({ to: "/home" });
 
     return { lobby };
   },
@@ -52,8 +52,7 @@ function RouteComponent() {
   const userId = Route.useRouteContext().auth.session.user.id;
   const userProfile = Route.useRouteContext().profile;
 
-  const { lobby: initLobby } =
-    Route.useLoaderData();
+  const { lobby: initLobby } = Route.useLoaderData();
 
   // Use TanStack Query for real-time data instead of manual state management
   const { data: lobby } = useQuery(useLobbyOptions(initLobby));
@@ -64,16 +63,20 @@ function RouteComponent() {
   useRealtime(userId, initLobby.code);
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
-  const hostColor = lobby?.config.gameConfig.hostColor || 'white';
-  const opposite = (color: Color) => (color === 'white' ? 'black' : 'white');
+  const hostColor = lobby?.config.gameConfig.hostColor || "white";
+  const opposite = (color: Color) => (color === "white" ? "black" : "white");
   const playerColor =
     lobby && userId === lobby.hostUid ? hostColor : opposite(hostColor);
   const gameStarted = lobby?.gameStarted || false;
-  const phase = game?.phase || 'bid';
+  const phase = game?.phase || "bid";
 
   // TODO: Flatten this request by having the lobbies API return usernames and id.
-  const oppId = (userId === lobby?.hostUid ? lobby?.guestUid : lobby?.hostUid) || null;
-  const { data, error } = useQuery({...useProfileOptions({ id: oppId || "" }), enabled: !!oppId});
+  const oppId =
+    (userId === lobby?.hostUid ? lobby?.guestUid : lobby?.hostUid) || null;
+  const { data, error } = useQuery({
+    ...useProfileOptions({ id: oppId || "" }),
+    enabled: !!oppId,
+  });
   if (error) throw error;
 
   const oppProfile = data || null;
@@ -123,14 +126,12 @@ function RouteComponent() {
   }, [game, lobby]);
 
   const timers: Record<Color, UseCountdownTimerResult> =
-    playerColor === 'white'
+    playerColor === "white"
       ? { white: playerTimer, black: oppTimer }
       : { white: oppTimer, black: playerTimer };
 
   // NOW we can do the early return, after all hooks have been called
-  if (!lobby) return <Navigate to={'/home'} />;
-
-
+  if (!lobby) return <Navigate to={"/home"} />;
 
   return (
     <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
@@ -140,7 +141,7 @@ function RouteComponent() {
         </div>
 
         <div
-          className={`${!gameStarted || phase !== 'move' ? 'opacity-50' : ''} col-span-6 flex items-center justify-center`}
+          className={`${!gameStarted || phase !== "move" ? "opacity-50" : ""} col-span-6 flex items-center justify-center`}
         >
           <AuctionChessBoard
             gameState={game || defaultGameState}
@@ -148,7 +149,7 @@ function RouteComponent() {
           />
         </div>
         <div
-          className={`${!gameStarted || phase !== 'bid' ? 'opacity-50' : ''} col-span-3`}
+          className={`${!gameStarted || phase !== "bid" ? "opacity-50" : ""} col-span-3`}
         >
           <BidPanel
             username={userProfile.username}

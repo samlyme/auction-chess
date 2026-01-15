@@ -1,10 +1,13 @@
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
-import supabase from '@/supabase';
-import { useCreateProfileMutationOptions, useProfileOptions } from '@/queries/profiles';
-import { useMutation } from '@tanstack/react-query';
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import supabase from "@/supabase";
+import {
+  useCreateProfileMutationOptions,
+  useProfileOptions,
+} from "@/queries/profiles";
+import { useMutation } from "@tanstack/react-query";
 
-export const Route = createFileRoute('/auth/create-profile')({
+export const Route = createFileRoute("/auth/create-profile")({
   // TODO: redirect user off this page if profile is created.
   beforeLoad: async ({ context }) => {
     const { queryClient } = context;
@@ -16,8 +19,8 @@ export const Route = createFileRoute('/auth/create-profile')({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('');
+  const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
   const createProfileMutation = useMutation(useCreateProfileMutationOptions());
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +30,7 @@ function RouteComponent() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error("Not authenticated");
 
       await createProfileMutation.mutateAsync({
         id: user.id,
@@ -35,7 +38,7 @@ function RouteComponent() {
         bio,
       });
 
-      navigate({ to: '/lobbies' });
+      navigate({ to: "/lobbies" });
     } catch {
       // Error is handled by the mutation state
     }
@@ -82,7 +85,7 @@ function RouteComponent() {
             disabled={createProfileMutation.isPending}
             className="rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
           >
-            {createProfileMutation.isPending ? 'Creating...' : 'Create Profile'}
+            {createProfileMutation.isPending ? "Creating..." : "Create Profile"}
           </button>
         </form>
       </div>

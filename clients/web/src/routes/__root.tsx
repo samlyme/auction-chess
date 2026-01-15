@@ -1,6 +1,6 @@
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
-import type { Session } from '@supabase/supabase-js';
-import type { QueryClient } from '@tanstack/react-query';
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import type { Session } from "@supabase/supabase-js";
+import type { QueryClient } from "@tanstack/react-query";
 
 export interface RouterContext {
   auth: {

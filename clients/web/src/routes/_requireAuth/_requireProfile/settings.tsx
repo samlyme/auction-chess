@@ -1,10 +1,10 @@
-import { useUpdateProfileMutationOptions } from '@/queries/profiles';
-import supabase from '@/supabase';
-import { useMutation } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useUpdateProfileMutationOptions } from "@/queries/profiles";
+import supabase from "@/supabase";
+import { useMutation } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
-export const Route = createFileRoute('/_requireAuth/_requireProfile/settings')({
+export const Route = createFileRoute("/_requireAuth/_requireProfile/settings")({
   component: RouteComponent,
 });
 
@@ -24,7 +24,7 @@ function RouteComponent() {
     if (error) {
       alert(`Error signing out: ${error.message}`);
     } else {
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
 
@@ -70,8 +70,8 @@ function RouteComponent() {
               className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
             >
               {updateProfileMutation.isPending
-                ? 'Updating...'
-                : 'Update Profile'}
+                ? "Updating..."
+                : "Update Profile"}
             </button>
           </form>
         </div>

@@ -8,7 +8,7 @@ import type {
   Result,
   GameConfig,
   Outcome,
-} from "../index";
+} from "../types/index";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const STARTING_BALANCE = 1000;

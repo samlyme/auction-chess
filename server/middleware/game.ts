@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { Color } from "shared";
+import type { Color } from "shared/types";
 import type { GameEnv } from "../types/honoEnvs.ts";
 
 export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {

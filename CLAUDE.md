@@ -261,7 +261,7 @@ export const GameMoveSchema = z.object({
 
 // server/routes/game.ts - Add route
 import { zValidator } from "@hono/zod-validator";
-import { GameMoveSchema } from "shared";
+import { GameMoveSchema } from "shared/types";
 
 export const gameRoutes = new Hono();
 

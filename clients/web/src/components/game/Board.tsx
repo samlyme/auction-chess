@@ -1,4 +1,4 @@
-import { PseudoChess } from 'shared/game/pseudoChess';
+import { PseudoChess } from "shared/game/pseudoChess";
 import {
   makeSquare,
   parseSquare,
@@ -8,23 +8,23 @@ import {
   type Color,
   type NormalMove,
   type Role,
-} from 'chessops';
+} from "chessops";
 import {
   Chessboard,
   defaultPieces,
   type PieceDropHandlerArgs,
   type PieceHandlerArgs,
   type SquareHandlerArgs,
-} from 'react-chessboard';
-import { useState } from 'react';
+} from "react-chessboard";
+import { useState } from "react";
 import {
   availableCapture,
   availableMove,
   selectedSquare,
-} from '@/components/game/BoardStyle';
-import type { AuctionChessState } from 'shared';
-import { useMutation } from '@tanstack/react-query';
-import { useMakeMoveMutationOptions } from '@/queries/game';
+} from "@/components/game/BoardStyle";
+import type { AuctionChessState } from "shared/types";
+import { useMutation } from "@tanstack/react-query";
+import { useMakeMoveMutationOptions } from "@/queries/game";
 
 function PromotionMenu({
   color,
@@ -43,49 +43,49 @@ function PromotionMenu({
       ?.getBoundingClientRect()?.width ?? 0;
 
   return (
-    <div className="promotion-menu" style={{ position: 'relative' }}>
+    <div className="promotion-menu" style={{ position: "relative" }}>
       <div
         onClick={cancel}
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
           height: squareWidth * 8,
           width: squareWidth * 8,
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: "rgba(0, 0, 0, 0.1)",
           zIndex: 1000,
         }}
       />
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: fileIndex * squareWidth,
-          backgroundColor: 'white',
+          backgroundColor: "white",
           width: squareWidth,
           zIndex: 1001,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.5)',
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.5)",
         }}
       >
-        {(['queen', 'rook', 'bishop', 'knight'] as Role[]).map((role) => (
+        {(["queen", "rook", "bishop", "knight"] as Role[]).map((role) => (
           <button
             key={role}
             onClick={() => {
               select(role);
             }}
             style={{
-              width: '100%',
-              aspectRatio: '1',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: "100%",
+              aspectRatio: "1",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               padding: 0,
-              border: 'none',
-              cursor: 'pointer',
+              border: "none",
+              cursor: "pointer",
             }}
           >
             {defaultPieces[`${color[0]}${roleToChar(role).toUpperCase()}`]!()}
@@ -122,7 +122,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   }
 
   function shouldPromote(move: NormalMove): boolean {
-    if (chessLogic.get(move.from)?.role !== 'pawn') return false;
+    if (chessLogic.get(move.from)?.role !== "pawn") return false;
     return SquareSet.backranks().has(move.to);
   }
 
@@ -134,7 +134,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   }
 
   function onPieceDrag({ square, piece }: PieceHandlerArgs): void {
-    const pieceColor = piece.pieceType.includes('w') ? 'white' : 'black';
+    const pieceColor = piece.pieceType.includes("w") ? "white" : "black";
     if (pieceColor === playerColor) setMoveFrom(square);
   }
 
@@ -178,7 +178,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
         return;
       }
 
-      const pieceColor = piece.pieceType.includes('w') ? 'white' : 'black';
+      const pieceColor = piece.pieceType.includes("w") ? "white" : "black";
       setMoveFrom(pieceColor === playerColor ? square : null);
       return;
     }
@@ -200,9 +200,9 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
         <h1>
           {gameState.outcome
             ? gameState.outcome.winner === playerColor
-              ? 'You win!'
-              : 'You lose.'
-            : 'Draw.'}
+              ? "You win!"
+              : "You lose."
+            : "Draw."}
         </h1>
       )}
       {promotionMove && (
@@ -214,15 +214,15 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
         />
       )}
       <div
-        className={`board-wrapper ${gameState.phase === 'bid' ? 'grayed-out' : ''}`}
+        className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}
       >
         <Chessboard
           options={{
             position: gameState.chessState.fen,
-            onPieceDrag: gameState.phase === 'bid' ? undefined : onPieceDrag,
-            onPieceDrop: gameState.phase === 'bid' ? undefined : onPieceDrop,
+            onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
+            onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
             onSquareClick:
-              gameState.phase === 'bid' ? undefined : onSquareClick,
+              gameState.phase === "bid" ? undefined : onSquareClick,
             squareStyles,
             boardOrientation: playerColor,
           }}

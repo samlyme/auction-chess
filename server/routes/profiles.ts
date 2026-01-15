@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { type MaybeProfileEnv } from "../types/honoEnvs.ts";
-import { Profile, ProfileCreate } from "shared";
-import { ProfileUpdate } from "shared";
+import { Profile, ProfileCreate } from "shared/types";
+import { ProfileUpdate } from "shared/types";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
@@ -74,14 +74,14 @@ const route = new Hono<MaybeProfileEnv>()
       })
       .select()
       .single();
-    
+
     // TODO: make types for PG error code.
     const PG_UNIQUE_VIOLATION_ERROR_CODE = "23505";
     if (error) {
       if (error.code === PG_UNIQUE_VIOLATION_ERROR_CODE) {
         throw new HTTPException(400, { message: "Username already taken." });
       }
-      
+
       throw new HTTPException(500, { message: error.message });
     }
 

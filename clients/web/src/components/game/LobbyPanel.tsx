@@ -1,6 +1,11 @@
-import { useDeleteLobbyMutationOptions, useEndLobbyMutationOptions, useLeaveLobbyMutationOptions, useStartLobbyMutationOptions } from '@/queries/lobbies';
-import { useMutation } from '@tanstack/react-query';
-import type { LobbyPayload } from 'shared';
+import {
+  useDeleteLobbyMutationOptions,
+  useEndLobbyMutationOptions,
+  useLeaveLobbyMutationOptions,
+  useStartLobbyMutationOptions,
+} from "@/queries/lobbies";
+import { useMutation } from "@tanstack/react-query";
+import type { LobbyPayload } from "shared/types";
 
 interface LobbyPanelProps {
   isHost: boolean;
@@ -65,15 +70,15 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                     className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:bg-neutral-400"
                   >
                     {startLobbyMutation.isPending
-                      ? 'Starting...'
-                      : 'Start Game'}
+                      ? "Starting..."
+                      : "Start Game"}
                   </button>
                   <button
                     onClick={handleEndLobby}
                     disabled={endLobbyMutation.isPending}
                     className="w-full cursor-pointer rounded bg-yellow-400 px-4 py-3 text-xl hover:bg-yellow-300 disabled:bg-neutral-400"
                   >
-                    {endLobbyMutation.isPending ? 'Ending...' : 'End Game'}
+                    {endLobbyMutation.isPending ? "Ending..." : "End Game"}
                   </button>
                   <button
                     onClick={handleDeleteLobby}
@@ -81,8 +86,8 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                     className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300 disabled:bg-neutral-400"
                   >
                     {deleteLobbyMutation.isPending
-                      ? 'Deleting...'
-                      : 'Delete Lobby'}
+                      ? "Deleting..."
+                      : "Delete Lobby"}
                   </button>
                 </div>
               ) : (
@@ -93,8 +98,8 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                     className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300 disabled:bg-neutral-400"
                   >
                     {leaveLobbyMutation.isPending
-                      ? 'Leaving...'
-                      : 'Leave Lobby'}
+                      ? "Leaving..."
+                      : "Leave Lobby"}
                   </button>
                 </div>
               )}

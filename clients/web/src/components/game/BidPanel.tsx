@@ -1,8 +1,8 @@
-import type { UseCountdownTimerResult } from '@/hooks/useCountdownTimer';
-import { useMakeBidMutationOptions } from '@/queries/game';
-import { useMutation } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
-import type { AuctionChessState, Color } from 'shared';
+import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
+import { useMakeBidMutationOptions } from "@/queries/game";
+import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import type { AuctionChessState, Color } from "shared/types";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -15,8 +15,8 @@ function PlayerInfoCard({ username, balance, timer }: PlayerInfoCardProps) {
 
   const totalSeconds = remainingMs / 1000;
 
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-  const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
   return (
     <div className="rounded-lg bg-neutral-800 p-4">
@@ -24,7 +24,7 @@ function PlayerInfoCard({ username, balance, timer }: PlayerInfoCardProps) {
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
             <div
-              className={`m-2 p-2 ${timer.isRunning ? 'bg-green-600' : 'bg-neutral-600'}`}
+              className={`m-2 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"}`}
             >
               <p className="text-2xl">
                 {minutes}:{seconds}
@@ -100,7 +100,7 @@ function BidControls({
       setIsValidInput(false);
     } else {
       if (i <= maxBid && i >= minBid) {
-        console.log('valid bid input', i);
+        console.log("valid bid input", i);
 
         setIsValidInput(true);
         setBid(i);
@@ -127,7 +127,7 @@ function BidControls({
                 setIsValidInput(true);
               }
             }}
-            className={`placeholder:text-color-tertiary w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? 'text-red-500' : 'text-white'}`}
+            className={`placeholder:text-color-tertiary w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? "text-red-500" : "text-white"}`}
           />
         </div>
       </div>
@@ -138,14 +138,14 @@ function BidControls({
             disabled={!canBid || isBidPending}
             className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isBidPending ? 'Bidding...' : 'BID'}
+            {isBidPending ? "Bidding..." : "BID"}
           </button>
           <button
             onClick={onFold}
             disabled={isBidPending}
             className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isBidPending ? 'Folding...' : 'FOLD'}
+            {isBidPending ? "Folding..." : "FOLD"}
           </button>
         </div>
         <button
@@ -290,7 +290,7 @@ export default function BidPanel({
     makeBidMutation.mutate({ fold: true });
   };
   const { bidHistory } = gameState.auctionState;
-  const opponentColor = playerColor === 'white' ? 'black' : 'white';
+  const opponentColor = playerColor === "white" ? "black" : "white";
 
   // TODO: fix this jank
   const bidStack = bidHistory[bidHistory.length - 1] ?? [];
@@ -301,18 +301,18 @@ export default function BidPanel({
   let prevPlayerBidAmount = 0;
   let prevOppBidAmount = 0;
   if (gameState.turn !== playerColor) {
-    prevPlayerBidAmount = 'amount' in lastBid ? lastBid.amount : 0;
-    prevOppBidAmount = 'amount' in secondLastBid ? secondLastBid.amount : 0;
+    prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
+    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
   } else {
-    prevOppBidAmount = 'amount' in lastBid ? lastBid.amount : 0;
-    prevPlayerBidAmount = 'amount' in secondLastBid ? secondLastBid.amount : 0;
+    prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
+    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
   }
 
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
         <PlayerInfoCard
-          username={oppUsername || 'waiting...'}
+          username={oppUsername || "waiting..."}
           balance={gameState.auctionState.balance[opponentColor]}
           timer={timers[opponentColor]}
         />

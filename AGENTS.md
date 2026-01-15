@@ -115,7 +115,7 @@ import { Hono } from "hono";
 import React from "react";
 
 // 2. Workspace packages (shared, server)
-import { GameSchema } from "shared";
+import { GameSchema } from "shared/types";
 import type { AppType } from "server/app";
 
 // 3. Local imports (relative)
@@ -147,7 +147,7 @@ import { GameComponent } from "../components/game";
 
 ```typescript
 import { zValidator } from "@hono/zod-validator";
-import { GameSchema } from "shared";
+import { GameSchema } from "shared/types";
 
 export const gameRoutes = new Hono();
 

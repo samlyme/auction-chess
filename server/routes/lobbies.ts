@@ -1,5 +1,5 @@
 import { type Context, Hono } from "hono";
-import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared";
+import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared/types";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
@@ -128,7 +128,6 @@ const route = new Hono<MaybeLobbyEnv>()
 
     // Initialize default game state for Auction Chess
     startGame(lobby.code);
-
 
     const payload = broadcastLobbyUpdate(channel, lobby);
 

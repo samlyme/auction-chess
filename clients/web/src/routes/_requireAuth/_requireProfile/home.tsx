@@ -1,26 +1,30 @@
-import { useCreateLobbyMutationOptions, useJoinLobbyMutationOptions, useLobbyOptions } from '@/queries/lobbies';
-import { useMutation } from '@tanstack/react-query';
-import { createFileRoute, Link, redirect } from '@tanstack/react-router';
-import { useState } from 'react';
-import type { Color } from 'shared';
+import {
+  useCreateLobbyMutationOptions,
+  useJoinLobbyMutationOptions,
+  useLobbyOptions,
+} from "@/queries/lobbies";
+import { useMutation } from "@tanstack/react-query";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { useState } from "react";
+import type { Color } from "shared/types";
 
-export const Route = createFileRoute('/_requireAuth/_requireProfile/home')({
-  beforeLoad: async ({ context: { queryClient }}) => {
+export const Route = createFileRoute("/_requireAuth/_requireProfile/home")({
+  beforeLoad: async ({ context: { queryClient } }) => {
     const lobby = await queryClient.ensureQueryData(useLobbyOptions());
-    if (lobby) throw redirect({ to: '/lobbies' });
+    if (lobby) throw redirect({ to: "/lobbies" });
   },
-  component: RouteComponent
+  component: RouteComponent,
 });
 
 function RouteComponent() {
   const navigate = Route.useNavigate();
-  const [hostColor, setHostColor] = useState<Color>('white');
+  const [hostColor, setHostColor] = useState<Color>("white");
   const [timeMinutes, setTimeMinutes] = useState(5);
-  const [lobbyCode, setLobbyCode] = useState('');
+  const [lobbyCode, setLobbyCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const createLobbyMutation = useMutation(useCreateLobbyMutationOptions());
-    const joinLobbyMutation = useMutation(useJoinLobbyMutationOptions());
+  const joinLobbyMutation = useMutation(useJoinLobbyMutationOptions());
 
   const handleCreateLobby = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +40,7 @@ function RouteComponent() {
       },
     });
 
-    navigate({ to: '/lobbies' });
+    navigate({ to: "/lobbies" });
     setLoading(false);
   };
 
@@ -46,14 +50,14 @@ function RouteComponent() {
 
     await joinLobbyMutation.mutateAsync(lobbyCode.trim());
 
-    navigate({ to: '/lobbies' });
+    navigate({ to: "/lobbies" });
     setLoading(false);
   };
 
   return (
     <div className="h-full w-full overflow-auto bg-(--color-background)">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="mb-12 flex items-center justify-center relative">
+        <div className="relative mb-12 flex items-center justify-center">
           <h1 className="text-center text-5xl font-bold">
             Choose Your Game Mode
           </h1>
@@ -66,24 +70,26 @@ function RouteComponent() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-
           {/* Custom Lobby Card */}
           <div className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
-              style={{ color: 'var(--color-primary-600)' }}
+              style={{ color: "var(--color-primary-600)" }}
             >
               Custom Lobby
             </h2>
             <p
               className="mb-6 text-base"
-              style={{ color: 'var(--color-text-secondary)' }}
+              style={{ color: "var(--color-text-secondary)" }}
             >
               Create a new lobby or join an existing one with a code.
             </p>
 
             {/* Create Lobby Form */}
-            <form onSubmit={handleCreateLobby} className="mb-6 flex flex-col gap-4">
+            <form
+              onSubmit={handleCreateLobby}
+              className="mb-6 flex flex-col gap-4"
+            >
               <h3 className="text-lg font-semibold">Create Lobby</h3>
               <div>
                 <label htmlFor="hostColor" className="mb-2 block text-sm">
@@ -118,7 +124,7 @@ function RouteComponent() {
                 disabled={loading}
                 className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
               >
-                {loading ? 'Creating...' : 'Create Lobby'}
+                {loading ? "Creating..." : "Create Lobby"}
               </button>
             </form>
 
@@ -151,7 +157,7 @@ function RouteComponent() {
                 disabled={loading || lobbyCode.length !== 6}
                 className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
               >
-                {loading ? 'Joining...' : 'Join Lobby'}
+                {loading ? "Joining..." : "Join Lobby"}
               </button>
             </form>
           </div>
@@ -159,20 +165,20 @@ function RouteComponent() {
           <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
-              style={{ color: 'var(--color-primary-600)' }}
+              style={{ color: "var(--color-primary-600)" }}
             >
               Casual Match
             </h2>
             <p
               className="mb-6 text-base"
-              style={{ color: 'var(--color-text-secondary)' }}
+              style={{ color: "var(--color-text-secondary)" }}
             >
               Jump into a relaxed game with no pressure. Perfect for practicing
               new strategies or playing for fun.
             </p>
             <button
               disabled
-              className="w-full cursor-not-allowed rounded-lg bg-primary-500 px-6 py-3 text-base text-white"
+              className="bg-primary-500 w-full cursor-not-allowed rounded-lg px-6 py-3 text-base text-white"
             >
               Play Casual
             </button>
@@ -182,20 +188,20 @@ function RouteComponent() {
           <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
-              style={{ color: 'var(--color-primary-600)' }}
+              style={{ color: "var(--color-primary-600)" }}
             >
               Ranked Match
             </h2>
             <p
               className="mb-6 text-base"
-              style={{ color: 'var(--color-text-secondary)' }}
+              style={{ color: "var(--color-text-secondary)" }}
             >
               Compete against players of similar skill level. Win to climb the
               ranks and prove your mastery.
             </p>
             <button
               disabled
-              className="w-full cursor-not-allowed rounded-lg bg-primary-500 px-6 py-3 text-base text-white"
+              className="bg-primary-500 w-full cursor-not-allowed rounded-lg px-6 py-3 text-base text-white"
             >
               Play Ranked
             </button>

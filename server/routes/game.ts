@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { Bid, NormalMove } from "shared";
+import { Bid, NormalMove } from "shared/types";
 import {
   makeBid as makeBidLogic,
   movePiece as movePieceLogic,

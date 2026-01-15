@@ -1,4 +1,4 @@
-import type { AuctionChessState, Lobby, LobbyConfig } from "shared";
+import type { AuctionChessState, Lobby, LobbyConfig } from "shared/types";
 import { randomUUIDv7 } from "bun";
 import { createGame } from "shared/game/auctionChess";
 
