@@ -71,6 +71,7 @@ function RouteComponent() {
   const gameStarted = lobby?.gameStarted || false;
   const phase = game?.phase || 'bid';
 
+  // TODO: Flatten this request by having the lobbies API return usernames and id.
   const oppId = (userId === lobby?.hostUid ? lobby?.guestUid : lobby?.hostUid) || null;
   const { data, error } = useQuery({...useProfileOptions({ id: oppId || "" }), enabled: !!oppId});
   if (error) throw error;
