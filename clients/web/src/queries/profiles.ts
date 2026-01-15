@@ -6,6 +6,7 @@ import type { ProfileCreate, ProfileUpdate } from 'shared';
 import { parseResponse } from 'hono/client';
 import { api } from './api';
 
+// TODO: Cache profiles!
 export function useProfileOptions(
   query?: { username: string } | { id: string }
 ) {
