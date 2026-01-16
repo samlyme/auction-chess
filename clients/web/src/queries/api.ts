@@ -3,7 +3,8 @@ import type { AppType } from "server/app";
 import supabase from "@/supabase";
 
 // This lets the query client know that all errors are DetailedErrors because
-// they come from `parseResponse` object
+// they come from `parseResponse` object.
+// For now, make sure that parseResponse is used, or this assumption is wrong.
 declare module '@tanstack/react-query' {
   interface Register {
     defaultError: DetailedError;
