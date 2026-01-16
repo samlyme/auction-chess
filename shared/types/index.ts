@@ -201,7 +201,7 @@ export const APIError = z.object({
 export type APIError = z.infer<typeof APIError>;
 
 // Result type for API responses
-export type Result<T, E = APIError> =
+export type Result<T, E = any> =
   | { ok: true; value: T }
   | { ok: false; error: E };
 
