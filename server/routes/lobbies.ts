@@ -18,6 +18,7 @@ import {
   joinLobby,
   leaveLobby,
   startGame,
+  updateLobbyConfig,
 } from "../state/lobbies.ts";
 
   // could be a perf bottleneck since we are getting their profile on each req.
@@ -39,6 +40,23 @@ const route = new Hono<MaybeLobbyEnv>().use(getLobby, getProfile, validateProfil
     // data, and not have to send an update.
     const supabase = c.get("supabase");
     const channel = supabase.channel(`lobby-${lobby.code}`);
+    const payload = broadcastLobbyUpdate(channel, lobby);
+    return c.json(payload);
+  })
+
+  .put("/", zValidator("json", LobbyConfig), async (c) => {
+    const lobby = c.get("lobby");
+    if (!lobby) throw new HTTPException(400, { message: "user not in lobby" });
+
+    const user = c.get("user");
+    if (user.id !== lobby.hostUid) throw new HTTPException(401, { message: "user not host of lobby."});
+
+    const { code } = lobby;
+    const config = c.req.valid("json");
+    updateLobbyConfig(code, config);
+
+    const supabase = c.get("supabase");
+    const channel = supabase.channel(`lobby-${code}`);
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
   })

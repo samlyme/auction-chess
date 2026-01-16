@@ -1,5 +1,5 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { LobbyConfig, LobbyPayload } from "shared/types";
+import { LobbyConfig, type LobbyPayload } from "shared/types";
 import { parseResponse } from "hono/client";
 import { api } from "./api";
 
@@ -15,6 +15,16 @@ export function useCreateLobbyMutationOptions() {
   return mutationOptions({
     mutationFn: (lobbyConfig: LobbyConfig) =>
       parseResponse(api.lobbies.$post({ json: lobbyConfig })),
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(["lobby"], data);
+    },
+  });
+}
+
+export function useUpdateLobbyConfigMutationOptions() {
+  return mutationOptions({
+    mutationFn: (lobbyConfig: LobbyConfig) =>
+      parseResponse(api.lobbies.$put({ json: lobbyConfig })),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
     },

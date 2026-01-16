@@ -31,6 +31,11 @@ export function createLobby(userId: string, config: LobbyConfig): Lobby {
   return newLobby;
 }
 
+export function updateLobbyConfig(lobbyCode: string, config: LobbyConfig): void {
+  const lobby = lobbies[lobbyCode]!;
+  lobby.config = config;
+}
+
 export function joinLobby(userId: string, lobbyCode: string): void {
   const lobby = lobbies[lobbyCode]!;
   lobby.guestUid = userId;
