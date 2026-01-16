@@ -1,11 +1,11 @@
-import { useProfileOptions } from "@/queries/profiles";
+import { useMyProfileOptions } from "@/queries/profiles";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 // TODO: cache this result. This must be done with something like Tanstack Query.
 export const Route = createFileRoute("/_requireAuth/_requireProfile")({
   beforeLoad: async ({ context }) => {
     const profile =
-      await context.queryClient.ensureQueryData(useProfileOptions());
+      await context.queryClient.ensureQueryData(useMyProfileOptions());
     if (profile === null) {
       throw redirect({ to: "/auth/create-profile" });
     }

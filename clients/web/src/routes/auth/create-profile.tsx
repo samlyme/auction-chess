@@ -20,7 +20,6 @@ export const Route = createFileRoute("/auth/create-profile")({
 function RouteComponent() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
   const createProfileMutation = useMutation(useCreateProfileMutationOptions());
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,10 +34,11 @@ function RouteComponent() {
       await createProfileMutation.mutateAsync({
         id: user.id,
         username,
-        bio,
       });
 
-      navigate({ to: "/lobbies" });
+      console.log("trying to navigate");
+
+      navigate({ to: "/home" });
     } catch {
       // Error is handled by the mutation state
     }
@@ -59,19 +59,6 @@ function RouteComponent() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-base"
-            />
-          </div>
-          <div>
-            <label htmlFor="bio" className="mb-2 block text-base">
-              Bio
-            </label>
-            <textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              required
-              rows={4}
               className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-base"
             />
           </div>

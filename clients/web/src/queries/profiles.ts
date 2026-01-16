@@ -31,6 +31,8 @@ export function useCreateProfileMutationOptions() {
     mutationFn: (profile: ProfileCreate) =>
       parseResponse(api.profiles.$post({ json: profile })),
     onSuccess: (data, _variables, _onMutateResult, context) => {
+      console.log("muation successful", { data });
+
       context.client.setQueryData(["profile", "me"], data);
     },
   });
