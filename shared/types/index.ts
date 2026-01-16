@@ -152,21 +152,14 @@ export type LobbyJoin = z.infer<typeof LobbyJoinQuery>;
 // ============================================================================
 
 export const Profile = z.object({
-  bio: z.string(),
+  username: z.string(),
   // stop messing with DB naming conventions lol. Just leave it, it's not worth.
   created_at: z.string(),
   id: z.string(),
-  username: z.string(),
 });
 export type Profile = z.infer<typeof Profile>;
 
-export const ProfileCreate = z
-  .object({
-    id: z.string(),
-    username: z.string(),
-    bio: z.string(),
-  })
-  .strict();
+export const ProfileCreate = Profile.omit({ created_at: true }).strict();
 export type ProfileCreate = z.infer<typeof ProfileCreate>;
 
 export const ProfileUpdate = z

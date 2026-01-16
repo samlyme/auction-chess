@@ -37,6 +37,7 @@ const gameplay = new Hono<GameEnv>()
     const channel = c.get("channel");
     const bid = c.req.valid("json");
 
+    // NOTE: if time is not enabled, the deductTime function acts like a noOp
     const timeUsed = c.get("timeUsed");
     const timeResult = deductTime(gameState, timeUsed);
     if (!timeResult.ok) {
@@ -55,7 +56,7 @@ const gameplay = new Hono<GameEnv>()
 
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
 
-    return c.body(null, 204);
+    return c.json(gameResult.value);
   })
 
   // POST /game/move - Make a chess move
@@ -64,6 +65,7 @@ const gameplay = new Hono<GameEnv>()
     const channel = c.get("channel");
     const move = c.req.valid("json");
 
+    // NOTE: if time is not enabled, the deductTime function acts like a noOp
     const timeUsed = c.get("timeUsed");
     const timeResult = deductTime(gameState, timeUsed);
     if (!timeResult.ok) {
@@ -82,7 +84,7 @@ const gameplay = new Hono<GameEnv>()
 
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
 
-    return c.body(null, 204);
+    return c.json(gameResult.value);
   });
 
 const timecheckRoute = new Hono()
@@ -91,7 +93,7 @@ const timecheckRoute = new Hono()
     const gameState = c.get("gameState");
     const timeUsed = c.get("timeUsed");
     console.log("handler", {timeUsed});
-    
+
 
     const result = timecheck(gameState, timeUsed);
 
