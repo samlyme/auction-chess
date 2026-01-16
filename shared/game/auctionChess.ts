@@ -71,10 +71,12 @@ export function movePiece(
 
     // Check if opponent is broke - they automatically fold
     if (draft.auctionState.balance[opponent] === 0) {
+      draft.auctionState.balance[draft.turn] -= draft.auctionState.minBid;
       // Push a fold for the broke player
       currentBidStack.push({ fold: true });
       draft.auctionState.bidHistory.push([]);
-      draft.auctionState.balance[draft.turn] -= draft.auctionState.minBid;
+
+      draft.auctionState.minBid = 1;
       draft.phase = "move";
       // turn stays the same
     } else {
