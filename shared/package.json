@@ -1,8 +1,13 @@
 {
-  "name": "shared/types",
+  "name": "shared",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "exports": {
+    "./types": "./types/index.ts",
+    "./game/auctionChess": "./game/auctionChess.ts",
+    "./game/pseudoChess": "./game/pseudoChess.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

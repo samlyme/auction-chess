@@ -35,6 +35,17 @@ function RouteComponent() {
     }
   };
 
+  const handleAnonymousSignIn = async () => {
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      console.error("Error signing in Anonymously:", error);
+      alert(`Error: ${error.message}`);
+    }
+    else {
+      navigate({ to: "/home" })
+    }
+  }
+
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -90,7 +101,7 @@ function RouteComponent() {
 
           <button
             type="submit"
-            className="bg-primary-500 hover:bg-primary-600 w-full rounded-lg px-4 py-2 text-white transition-colors"
+            className="bg-blue-500 hover:bg-blue-400 w-full rounded-lg px-4 py-2 text-white transition-colors"
           >
             {isSignUp ? "Sign Up" : "Sign In"}
           </button>
@@ -102,6 +113,15 @@ function RouteComponent() {
           <span className="px-4 text-sm text-gray-500">or</span>
           <div className="flex-1 border-t"></div>
         </div>
+
+        {/* Anonymous Sign In */}
+        <button
+          onClick={handleAnonymousSignIn}
+          className="w-full mb-6 rounded-lg border px-4 py-2 transition-colors hover:bg-gray-50"
+        >
+          Play as Guest.
+        </button>
+
 
         {/* Google Sign In */}
         <button
