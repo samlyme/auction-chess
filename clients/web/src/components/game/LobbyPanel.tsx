@@ -38,6 +38,8 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
     await navigator.clipboard.writeText(lobby.code);
   };
 
+  const { gameStarted } = lobby;
+
   return (
     <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
       <div className="flex h-full w-full flex-col gap-4">
@@ -64,6 +66,8 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
 
               {isHost ? (
                 <div className="flex flex-col gap-3">
+                  {
+                    !gameStarted ?
                   <button
                     onClick={handleStartLobby}
                     disabled={startLobbyMutation.isPending}
@@ -72,7 +76,7 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                     {startLobbyMutation.isPending
                       ? "Starting..."
                       : "Start Game"}
-                  </button>
+                  </button> :
                   <button
                     onClick={handleEndLobby}
                     disabled={endLobbyMutation.isPending}
@@ -80,6 +84,8 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                   >
                     {endLobbyMutation.isPending ? "Ending..." : "End Game"}
                   </button>
+
+                  }
                   <button
                     onClick={handleDeleteLobby}
                     disabled={deleteLobbyMutation.isPending}
