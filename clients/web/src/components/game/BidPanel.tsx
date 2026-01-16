@@ -102,8 +102,6 @@ function BidControls({
       setIsValidInput(false);
     } else {
       if (i <= maxBid && i >= minBid) {
-        console.log("valid bid input", i);
-
         setIsValidInput(true);
         setBid(i);
       } else {
@@ -122,6 +120,11 @@ function BidControls({
             placeholder={minBid.toString()}
             value={inputValue}
             onChange={handleInputChange}
+            onKeyDown={(e) => {
+              if (e.code === "Enter") {
+                if (isValidInput) onBid(bid);
+              }
+            }}
             onFocus={(e) => e.target.select()}
             onBlur={() => {
               if (!isValidInput) {
