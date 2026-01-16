@@ -168,7 +168,7 @@ export function deductTime(
   game: AuctionChessState,
   timeUsed: number,
 ): GameResult {
-  if (!game.timeState) return { ok: false, error: "Time not enabled." };
+  if (!game.timeState) return { ok: true, value: game };
 
   const nextState = produce(game, (draft) => {
     if (!draft.timeState) throw Error("how");

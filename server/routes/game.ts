@@ -37,6 +37,7 @@ const gameplay = new Hono<GameEnv>()
     const channel = c.get("channel");
     const bid = c.req.valid("json");
 
+    // NOTE: if time is not enabled, the deductTime function acts like a noOp
     const timeUsed = c.get("timeUsed");
     const timeResult = deductTime(gameState, timeUsed);
     if (!timeResult.ok) {
@@ -64,6 +65,7 @@ const gameplay = new Hono<GameEnv>()
     const channel = c.get("channel");
     const move = c.req.valid("json");
 
+    // NOTE: if time is not enabled, the deductTime function acts like a noOp
     const timeUsed = c.get("timeUsed");
     const timeResult = deductTime(gameState, timeUsed);
     if (!timeResult.ok) {
