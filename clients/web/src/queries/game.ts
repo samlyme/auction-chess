@@ -18,8 +18,8 @@ export function useMakeBidMutationOptions() {
   return mutationOptions({
     mutationFn: (bid: Bid) =>
       parseResponse(api.game.play.bid.$post({ json: bid })),
-    onSuccess: (_data, _variables, _onMutateResult, context) => {
-      context.client.invalidateQueries({ queryKey: ["game"] });
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(["game"], data);
     },
   });
 }
@@ -28,8 +28,8 @@ export function useMakeMoveMutationOptions() {
   return mutationOptions({
     mutationFn: (move: NormalMove) =>
       parseResponse(api.game.play.move.$post({ json: move })),
-    onSuccess: (_data, _variables, _onMutateResult, context) => {
-      context.client.invalidateQueries({ queryKey: ["game"] });
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(["game"], data);
     },
   });
 }

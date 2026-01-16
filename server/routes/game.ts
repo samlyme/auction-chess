@@ -55,7 +55,7 @@ const gameplay = new Hono<GameEnv>()
 
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
 
-    return c.body(null, 204);
+    return c.json(gameResult.value);
   })
 
   // POST /game/move - Make a chess move
@@ -82,7 +82,7 @@ const gameplay = new Hono<GameEnv>()
 
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
 
-    return c.body(null, 204);
+    return c.json(gameResult.value);
   });
 
 const timecheckRoute = new Hono()
@@ -91,7 +91,7 @@ const timecheckRoute = new Hono()
     const gameState = c.get("gameState");
     const timeUsed = c.get("timeUsed");
     console.log("handler", {timeUsed});
-    
+
 
     const result = timecheck(gameState, timeUsed);
 
