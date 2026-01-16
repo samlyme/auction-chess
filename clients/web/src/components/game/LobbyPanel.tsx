@@ -67,29 +67,35 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
 
               {isHost ? (
                 <div className="flex flex-col gap-3">
-                  <div className="bg-neutral-600 p-4 rounded">
-                    <LobbyConfigForm isCreate={false} initConfig={lobby.config}/>
-                  </div>
-                  {
-                    !gameStarted ?
-                  <button
-                    onClick={handleStartLobby}
-                    disabled={startLobbyMutation.isPending || !lobby.guestUid}
-                    className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:bg-neutral-400 disabled:cursor-not-allowed"
-                  >
-                    {startLobbyMutation.isPending
-                      ? "Starting..."
-                      : "Start Game"}
-                  </button> :
-                  <button
-                    onClick={handleEndLobby}
-                    disabled={endLobbyMutation.isPending}
-                    className="w-full cursor-pointer rounded bg-yellow-400 px-4 py-3 text-xl hover:bg-yellow-300 disabled:bg-neutral-400"
-                  >
-                    {endLobbyMutation.isPending ? "Ending..." : "End Game"}
-                  </button>
-
-                  }
+                  {!gameStarted ? (
+                    <>
+                      <div className={`rounded bg-neutral-600 p-4`}>
+                        <LobbyConfigForm
+                          isCreate={false}
+                          initConfig={lobby.config}
+                        />
+                      </div>
+                      <button
+                        onClick={handleStartLobby}
+                        disabled={
+                          startLobbyMutation.isPending || !lobby.guestUid
+                        }
+                        className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                      >
+                        {startLobbyMutation.isPending
+                          ? "Starting..."
+                          : "Start Game"}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleEndLobby}
+                      disabled={endLobbyMutation.isPending}
+                      className="w-full cursor-pointer rounded bg-yellow-400 px-4 py-3 text-xl hover:bg-yellow-300 disabled:bg-neutral-400"
+                    >
+                      {endLobbyMutation.isPending ? "Ending..." : "End Game"}
+                    </button>
+                  )}
                   <button
                     onClick={handleDeleteLobby}
                     disabled={deleteLobbyMutation.isPending}
