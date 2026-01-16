@@ -4,7 +4,7 @@ import {
   LobbyEventType,
   LobbyToPayload,
   type Lobby,
-} from "shared";
+} from "shared/types";
 
 export function broadcastLobbyDelete(channel: RealtimeChannel) {
   channel.httpSend(LobbyEventType.LobbyDelete, {});

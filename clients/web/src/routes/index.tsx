@@ -1,12 +1,10 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/')({
-  beforeLoad: ({context}) => {
-    if (context.auth.session) throw redirect({to: "/home"});
+export const Route = createFileRoute("/")({
+  beforeLoad: ({ context }) => {
+    if (context.auth.session) throw redirect({ to: "/home" });
   },
-  component: () => (
-      <RouteComponent />
-  ),
+  component: () => <RouteComponent />,
 });
 
 function RouteComponent() {
@@ -50,8 +48,8 @@ function RouteComponent() {
         </div>
 
         <button
-          onClick={() => navigate({ to: '/auth' })}
-          className="rounded-lg px-6 py-3 text-base transition-colors bg-blue-600 hover:bg-blue-400"
+          onClick={() => navigate({ to: "/auth" })}
+          className="rounded-lg bg-blue-600 px-6 py-3 text-base transition-colors hover:bg-blue-400"
         >
           Play
         </button>

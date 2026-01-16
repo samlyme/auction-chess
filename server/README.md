@@ -149,7 +149,7 @@ Uses Zod schemas from `shared` package:
 
 ```typescript
 import { zValidator } from "@hono/zod-validator";
-import { CreateLobbySchema } from "shared";
+import { CreateLobbySchema } from "shared/types";
 
 app.post("/api/lobbies", zValidator("json", CreateLobbySchema), async (c) => {
   const data = c.req.valid("json"); // Fully typed!
@@ -269,7 +269,7 @@ export const GameMoveSchema = z.object({
 // routes/game.ts
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { GameMoveSchema } from "shared";
+import { GameMoveSchema } from "shared/types";
 
 export const gameRoutes = new Hono();
 

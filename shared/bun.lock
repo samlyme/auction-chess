@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "shared",
+      "name": "shared/types",
       "dependencies": {
         "zod": "^4.1.13",
       },

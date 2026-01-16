@@ -7,12 +7,12 @@ export type UseCountdownTimerOptions = {
 };
 
 export type UseCountdownTimerResult = {
-    start: () => void;
-    stop: () => void;
-    reset: (newDurationMs: number) => void;
-    isRunning: boolean;
-    remainingMs: number;
-}
+  start: () => void;
+  stop: () => void;
+  reset: (newDurationMs: number) => void;
+  isRunning: boolean;
+  remainingMs: number;
+};
 
 export function useCountdownTimer({
   durationMs,
@@ -74,13 +74,16 @@ export function useCountdownTimer({
     setIsRunning(true);
   }, [tick, tickMs]);
 
-  const reset = useCallback((newDuration: number) => {
-    stop();
-    consumedRef.current = 0;
-    expiredRef.current = false;
-    currentDurationRef.current = newDuration;
-    setRemainingMs(newDuration);
-  }, [stop]);
+  const reset = useCallback(
+    (newDuration: number) => {
+      stop();
+      consumedRef.current = 0;
+      expiredRef.current = false;
+      currentDurationRef.current = newDuration;
+      setRemainingMs(newDuration);
+    },
+    [stop]
+  );
 
   useEffect(() => stop, [stop]);
 

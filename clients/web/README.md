@@ -311,26 +311,6 @@ import { Link } from '@tanstack/react-router'
 - Use `beforeLoad` hooks for custom route guards
 - File structure mirrors URL structure (e.g., `_auth/game.tsx` → `/game`)
 
-### Calling a Backend API
-
-1. Ensure endpoint exists in backend (see `/server/README.md`)
-
-2. Use Hono RPC client:
-
-```typescript
-import { useBackend } from "../services/api";
-
-function MyComponent() {
-  const client = useBackend();
-
-  const fetchData = async () => {
-    const res = await client.api.endpoint.$get();
-    const data = await res.json();
-    return data;
-  };
-}
-```
-
 ### Using Supabase Auth
 
 ```typescript

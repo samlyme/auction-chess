@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import supabase from '../../supabase';
-import { AuthContext } from '../../contexts/Auth';
-import { type User, type Session } from '@supabase/auth-js';
+import { useEffect, useState } from "react";
+import supabase from "@/supabase";
+import { AuthContext } from "@/contexts/Auth";
+import { type User, type Session } from "@supabase/auth-js";
 
 export default function AuthContextProvider({
   children,
