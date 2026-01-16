@@ -65,12 +65,6 @@ export function movePiece(
 
     draft.chessState.fen = newFen;
 
-    if (outcome) {
-      draft.outcome = outcome;
-    }
-
-
-
     const opponent = opposite(draft.turn);
     const currentBidStack =
       draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
@@ -104,6 +98,16 @@ export function movePiece(
       draft.turn = opponent;
       draft.auctionState.minBid = 1; // TODO: define a function for starting minBid based on gameState.
       draft.phase = "bid";
+    }
+
+    if (outcome) {
+      draft.outcome = outcome;
+    } else if (draft.auctionState.balance.white <= 0 && draft.auctionState.balance.black <= 0) {
+      // egregious code.
+      // TODO: This actually gives the opposite player one less move than it should. There is more complex state here.
+      draft.auctionState.balance.white = 0;
+      draft.auctionState.balance.black = 0;
+      draft.outcome = { winner: null, message: "draw" };
     }
   });
 
