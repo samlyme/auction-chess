@@ -123,6 +123,7 @@ function BidControls({
             onKeyDown={(e) => {
               if (e.code === "Enter") {
                 if (isValidInput) onBid(bid);
+                else if (inputValue.toLowerCase() === "fold") onFold();
               }
             }}
             onFocus={(e) => e.target.select()}
