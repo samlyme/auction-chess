@@ -62,7 +62,7 @@ function PromotionMenu({
         style={{
           position: "absolute",
           top: 0,
-          left: fileIndex * squareWidth,
+          left: (color === "white" ? fileIndex : 7 - fileIndex) * squareWidth,
           backgroundColor: "white",
           width: squareWidth,
           zIndex: 1001,
