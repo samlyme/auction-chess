@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import { Bid, NormalMove } from "shared/types";
 import {
+  deductTime,
   makeBid as makeBidLogic,
   movePiece as movePieceLogic,
   timecheck,
@@ -37,18 +38,22 @@ const gameplay = new Hono<GameEnv>()
     const bid = c.req.valid("json");
 
     const timeUsed = c.get("timeUsed");
-    const result = makeBidLogic(gameState, bid, timeUsed);
+    const timeResult = deductTime(gameState, timeUsed);
+    if (!timeResult.ok) {
+      throw new HTTPException(400, { message: timeResult.error })
+    }
 
-    if (!result.ok) {
-      throw new HTTPException(400, { message: result.error });
+    const gameResult = makeBidLogic(timeResult.value, bid);
+    if (!gameResult.ok) {
+      throw new HTTPException(400, { message: gameResult.error });
     }
 
     // Lag compensation for realtime service.
     // result.value.timeState.prev = Date.now();
     const lobby = c.get("lobby");
-    updateGameState(lobby.code, result.value);
+    updateGameState(lobby.code, gameResult.value);
 
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
 
     return c.body(null, 204);
   })
@@ -60,18 +65,22 @@ const gameplay = new Hono<GameEnv>()
     const move = c.req.valid("json");
 
     const timeUsed = c.get("timeUsed");
-    const result = movePieceLogic(gameState, move, timeUsed);
+    const timeResult = deductTime(gameState, timeUsed);
+    if (!timeResult.ok) {
+      throw new HTTPException(400, { message: timeResult.error })
+    }
 
-    if (!result.ok) {
-      throw new HTTPException(400, { message: result.error });
+    const gameResult = movePieceLogic(timeResult.value, move);
+    if (!gameResult.ok) {
+      throw new HTTPException(400, { message: gameResult.error });
     }
 
     // Supabase Realtime Service Lag comp.
     // result.value.timeState.prev = Date.now();
     const lobby = c.get("lobby");
-    updateGameState(lobby.code, result.value);
+    updateGameState(lobby.code, gameResult.value);
 
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
 
     return c.body(null, 204);
   });

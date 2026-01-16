@@ -40,16 +40,10 @@ export function createGame(config: GameConfig): AuctionChessState {
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
-  usedTime: number,
 ): GameResult {
-  if (game.timeState && usedTime > game.timeState.time[game.turn]) {
-    // This should genuinely never happen.
-    return { ok: false, error: "Move came after timeout." };
-  }
+  if (game.outcome) return { ok: false, error: "Game already over." };
 
-  if (game.phase !== "move") {
-    return { ok: false, error: "Not in move phase" };
-  }
+  if (game.phase !== "move") return { ok: false, error: "Not in move phase" };
 
   // NOTE: Source of potential perf bottleneck. This code here can "thrash" in
   // high move volume situations. Ie. allocate and deallocate a lot of PseudoChess
@@ -70,11 +64,6 @@ export function movePiece(
 
   const nextState = produce(game, (draft) => {
     draft.chessState.fen = newFen;
-
-    if (draft.timeState) {
-      draft.timeState.time[draft.turn] -= usedTime;
-      draft.timeState.prev = Date.now();
-    }
 
     const opponent = opposite(draft.turn);
     const currentBidStack =
@@ -107,15 +96,8 @@ export function movePiece(
   };
 }
 
-export function makeBid(
-  game: AuctionChessState,
-  bid: Bid,
-  usedTime: number,
-): GameResult {
-  if (game.timeState && usedTime > game.timeState.time[game.turn]) {
-    // This should genuinely never happen.
-    return { ok: false, error: "Move came after timeout." };
-  }
+export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
+  if (game.outcome) return { ok: false, error: "Game already over." };
 
   if (game.phase !== "bid") {
     return { ok: false, error: "Not in bid phase" };
@@ -145,11 +127,6 @@ export function makeBid(
     const currentBidStack =
       draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
 
-    if (draft.timeState) {
-      draft.timeState.time[draft.turn] -= usedTime;
-      draft.timeState.prev = Date.now();
-    }
-
     // Handle fold
     if (bid.fold) {
       if (lastBid && "amount" in lastBid) {
@@ -164,7 +141,10 @@ export function makeBid(
     draft.auctionState.minBid = bid.amount + currentBidStack.length + 1;
 
     // Handle bid that opponent can't beat
-    if (draft.auctionState.minBid > draft.auctionState.balance[opposite(draft.turn)]) {
+    if (
+      draft.auctionState.minBid >
+      draft.auctionState.balance[opposite(draft.turn)]
+    ) {
       draft.auctionState.balance[draft.turn] -= bid.amount;
       currentBidStack.push(bid);
       draft.phase = "move";
@@ -184,6 +164,34 @@ export function makeBid(
   };
 }
 
+export function deductTime(
+  game: AuctionChessState,
+  timeUsed: number,
+): GameResult {
+  if (!game.timeState) return { ok: false, error: "Time not enabled." };
+
+  const nextState = produce(game, (draft) => {
+    if (!draft.timeState) throw Error("how");
+
+    draft.timeState.time[draft.turn] -= timeUsed;
+
+    if (draft.timeState.time[draft.turn] >= 0) {
+      draft.timeState.prev = Date.now();
+    } else {
+      // Ran out of time!
+      draft.timeState.time[draft.turn] = 0;
+      draft.timeState.prev = null;
+
+      draft.outcome = {
+        winner: opposite(draft.turn),
+        message: "timeout",
+      };
+    }
+  });
+
+  return { ok: true, value: nextState };
+}
+
 export function timecheck(
   gameState: AuctionChessState,
   timeUsed: number,
@@ -193,7 +201,7 @@ export function timecheck(
   const nextState = produce(gameState, (draft) => {
     // NOTE: draft.timeState should always be defined here.
     console.log("timecheck", { timeUsed });
-    
+
     if (draft.timeState && timeUsed >= draft.timeState.time[draft.turn]) {
       // TODO: make a helper function for this
       draft.timeState.prev = null;
