@@ -26,7 +26,7 @@ function PlayerInfoCard({ username, balance, timer, enableTimer }: PlayerInfoCar
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
             <div
-              className={`m-2 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
+              className={`w-22 m-2 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
             >
               <p className="text-2xl">
                 {minutes}:{seconds}
