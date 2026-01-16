@@ -162,9 +162,10 @@ export type Profile = z.infer<typeof Profile>;
 export const ProfileCreate = Profile.omit({ created_at: true }).strict();
 export type ProfileCreate = z.infer<typeof ProfileCreate>;
 
+// Disable ProfileUpdate at the type level.
 export const ProfileUpdate = z
   .object({
-    bio: z.string(),
+    // bio: z.string(),
   })
   .strict();
 export type ProfileUpdate = z.infer<typeof ProfileUpdate>;
