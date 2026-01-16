@@ -21,8 +21,9 @@ import {
   updateLobbyConfig,
 } from "../state/lobbies.ts";
 
-  // could be a perf bottleneck since we are getting their profile on each req.
-const route = new Hono<MaybeLobbyEnv>().use(getLobby, getProfile, validateProfile)
+// could be a perf bottleneck since we are getting their profile on each req.
+const route = new Hono<MaybeLobbyEnv>()
+  .use(getLobby, getProfile, validateProfile)
 
   .post("/", zValidator("json", LobbyConfig), async (c) => {
     if (c.get("lobby"))
@@ -48,8 +49,12 @@ const route = new Hono<MaybeLobbyEnv>().use(getLobby, getProfile, validateProfil
     const lobby = c.get("lobby");
     if (!lobby) throw new HTTPException(400, { message: "user not in lobby" });
 
+    if (lobby.gameState)
+      throw new HTTPException(400, { message: "lobby already started" });
+
     const user = c.get("user");
-    if (user.id !== lobby.hostUid) throw new HTTPException(401, { message: "user not host of lobby."});
+    if (user.id !== lobby.hostUid)
+      throw new HTTPException(401, { message: "user not host of lobby." });
 
     const { code } = lobby;
     const config = c.req.valid("json");
