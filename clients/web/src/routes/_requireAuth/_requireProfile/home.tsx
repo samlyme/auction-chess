@@ -19,6 +19,7 @@ export const Route = createFileRoute("/_requireAuth/_requireProfile/home")({
 function RouteComponent() {
   const navigate = Route.useNavigate();
   const [hostColor, setHostColor] = useState<Color>("white");
+  const [timeEnabled, setTimeEnabled] = useState(false);
   const [timeMinutes, setTimeMinutes] = useState(5);
   const [lobbyCode, setLobbyCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,10 +34,15 @@ function RouteComponent() {
     await createLobbyMutation.mutateAsync({
       gameConfig: {
         hostColor,
-        initTime: {
-          white: timeMinutes * 60 * 1000,
-          black: timeMinutes * 60 * 1000,
-        },
+        timeConfig: timeEnabled
+          ? {
+              enabled: true,
+              initTime: {
+                white: timeMinutes * 60 * 1000,
+                black: timeMinutes * 60 * 1000,
+              },
+            }
+          : { enabled: false },
       },
     });
 
@@ -106,19 +112,33 @@ function RouteComponent() {
                 </select>
               </div>
               <div>
-                <label htmlFor="timeMinutes" className="mb-2 block text-sm">
-                  Time (minutes)
+                <label htmlFor="timeEnabled" className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    id="timeEnabled"
+                    type="checkbox"
+                    checked={timeEnabled}
+                    onChange={(e) => setTimeEnabled(e.target.checked)}
+                    className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-sm">Enable Timer</span>
                 </label>
-                <input
-                  id="timeMinutes"
-                  type="number"
-                  min="1"
-                  max="60"
-                  value={timeMinutes}
-                  onChange={(e) => setTimeMinutes(Number(e.target.value))}
-                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
-                />
               </div>
+              {timeEnabled && (
+                <div>
+                  <label htmlFor="timeMinutes" className="mb-2 block text-sm">
+                    Time (minutes)
+                  </label>
+                  <input
+                    id="timeMinutes"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={timeMinutes}
+                    onChange={(e) => setTimeMinutes(Number(e.target.value))}
+                    className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
+                  />
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={loading}

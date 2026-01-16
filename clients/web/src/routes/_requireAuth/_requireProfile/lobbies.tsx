@@ -82,14 +82,21 @@ function RouteComponent() {
   const oppProfile = data || null;
 
   // All hooks must be called before any early returns
+  const initPlayerTime = lobby?.config.gameConfig.timeConfig.enabled
+    ? lobby.config.gameConfig.timeConfig.initTime[playerColor]
+    : 0;
   const playerTimer = useCountdownTimer({
-    durationMs: lobby?.config.gameConfig.initTime[playerColor] || 0,
+    durationMs: initPlayerTime,
     onExpire: async () => {
       await timecheckMutation.mutateAsync();
     },
   });
+
+  const initOppTime = lobby?.config.gameConfig.timeConfig.enabled
+    ? lobby.config.gameConfig.timeConfig.initTime[opposite(playerColor)]
+    : 0;
   const oppTimer = useCountdownTimer({
-    durationMs: lobby?.config.gameConfig.initTime[opposite(playerColor)] || 0,
+    durationMs: initOppTime,
     onExpire: async () => {
       await timecheckMutation.mutateAsync();
     },
@@ -101,9 +108,9 @@ function RouteComponent() {
 
     if (!lobby.gameStarted || !game) {
       // The game isn't started, so use the lobby's config for time.
-      playerTimer.reset(lobby.config.gameConfig.initTime[playerColor]);
-      oppTimer.reset(lobby.config.gameConfig.initTime[opposite(playerColor)]);
-    } else if (game) {
+      playerTimer.reset(initPlayerTime);
+      oppTimer.reset(initOppTime);
+    } else if (game && game.timeState) {
       const prev = game.timeState.prev || Date.now();
       const now = Date.now();
       const elapsed = now - prev;
@@ -157,6 +164,7 @@ function RouteComponent() {
             playerColor={playerColor}
             gameState={game || defaultGameState}
             timers={timers}
+            enableTimers={!!game?.timeState}
           />
         </div>
       </div>
