@@ -16,12 +16,16 @@ const STARTING_BALANCE = 1000;
 export type GameResult = Result<AuctionChessState, string>;
 
 export function createGame(config: GameConfig): AuctionChessState {
+  const timeState = config.timeConfig.enabled
+    ? {
+        time: { ...config.timeConfig.initTime },
+        prev: null,
+      }
+    : undefined;
+
   return {
     chessState: { fen: STARTING_FEN },
-    timeState: {
-      time: { ...config.initTime }, // if this is not deep copied, strange things happen.
-      prev: null,
-    },
+    timeState,
     auctionState: {
       balance: { white: STARTING_BALANCE, black: STARTING_BALANCE },
       bidHistory: [[]],
@@ -34,10 +38,9 @@ export function createGame(config: GameConfig): AuctionChessState {
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
-  receivedTime: number,
+  usedTime: number,
 ): GameResult {
-  const usedTime = timeUsed(game, receivedTime);
-  if (usedTime >= game.timeState.time[game.turn]) {
+  if (game.timeState && usedTime >= game.timeState.time[game.turn]) {
     // This should genuinely never happen.
     return { ok: false, error: "Move came after timeout." };
   }
@@ -65,8 +68,11 @@ export function movePiece(
 
   const nextState = produce(game, (draft) => {
     draft.chessState.fen = newFen;
-    draft.timeState.time[draft.turn] -= usedTime;
-    draft.timeState.prev = Date.now();
+
+    if (draft.timeState) {
+      draft.timeState.time[draft.turn] -= usedTime;
+      draft.timeState.prev = Date.now();
+    }
 
     const opponent = opposite(draft.turn);
     const currentBidStack =
@@ -100,11 +106,9 @@ export function movePiece(
 export function makeBid(
   game: AuctionChessState,
   bid: Bid,
-  receivedTime: number,
+  usedTime: number,
 ): GameResult {
-  const usedTime = timeUsed(game, receivedTime);
-
-  if (usedTime >= game.timeState.time[game.turn]) {
+  if (game.timeState && usedTime >= game.timeState.time[game.turn]) {
     // This should genuinely never happen.
     return { ok: false, error: "Move came after timeout." };
   }
@@ -137,8 +141,10 @@ export function makeBid(
     const currentBidStack =
       draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
 
-    draft.timeState.time[draft.turn] -= usedTime;
-    draft.timeState.prev = Date.now();
+    if (draft.timeState) {
+      draft.timeState.time[draft.turn] -= usedTime;
+      draft.timeState.prev = Date.now();
+    }
 
     // Handle fold
     if (bid.fold) {
@@ -173,15 +179,13 @@ export function makeBid(
 
 export function timecheck(
   gameState: AuctionChessState,
-  receivedTime: number,
+  usedTime: number,
 ): GameResult {
-  const usedTime =
-    gameState.timeState.prev === null
-      ? 0
-      : receivedTime - gameState.timeState.prev;
+  if (!gameState.timeState) return { ok: false, error: "Time disabled." };
 
   const nextState = produce(gameState, (draft) => {
-    if (usedTime >= draft.timeState.time[draft.turn]) {
+    // NOTE: draft.timeState should always be defined here.
+    if (draft.timeState && usedTime >= draft.timeState.time[draft.turn]) {
       // TODO: make a helper function for this
       draft.timeState.prev = null;
       draft.timeState.time[draft.turn] = 0;
@@ -193,12 +197,6 @@ export function timecheck(
   });
 
   return { ok: true, value: nextState };
-}
-
-function timeUsed(gameState: AuctionChessState, receivedTime: number): number {
-  return gameState.timeState.prev === null
-    ? 0
-    : receivedTime - gameState.timeState.prev;
 }
 
 export function getCurrentBidStack(game: AuctionChessState) {

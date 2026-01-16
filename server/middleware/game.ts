@@ -59,11 +59,13 @@ export const validateTime: MiddlewareHandler<GameEnv> = async (c, next) => {
   const gameState = c.get("gameState");
   const receivedTime = c.get("receivedTime");
   const timeUsed =
-    gameState.timeState.prev === null
+    !gameState.timeState || gameState.timeState.prev === null
       ? 0
       : receivedTime - gameState.timeState.prev;
 
-  if (timeUsed >= gameState.timeState.time[gameState.turn]) {
+  c.set("timeUsed", timeUsed);
+
+  if (gameState.timeState && timeUsed > gameState.timeState.time[gameState.turn]) {
     throw new HTTPException(400, { message: "Move came after timeout." });
   }
 

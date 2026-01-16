@@ -37,8 +37,8 @@ const gameplay = new Hono<GameEnv>()
     const channel = c.get("channel");
     const bid = c.req.valid("json");
 
-    const receivedTime = c.get("receivedTime");
-    const result = makeBidLogic(gameState, bid, receivedTime);
+    const timeUsed = c.get("timeUsed");
+    const result = makeBidLogic(gameState, bid, timeUsed);
 
     if (!result.ok) {
       throw new HTTPException(400, { message: result.error });
@@ -59,8 +59,8 @@ const gameplay = new Hono<GameEnv>()
     const channel = c.get("channel");
     const move = c.req.valid("json");
 
-    const receivedTime = c.get("receivedTime");
-    const result = movePieceLogic(gameState, move, receivedTime);
+    const timeUsed = c.get("timeUsed");
+    const result = movePieceLogic(gameState, move, timeUsed);
 
     if (!result.ok) {
       throw new HTTPException(400, { message: result.error });
@@ -78,9 +78,9 @@ const timecheckRoute = new Hono()
   .use(recordReceivedTime, getLobby, validateLobby, validateGame)
   .post("/", async (c) => {
     const gameState = c.get("gameState");
-    const receivedTime = c.get("receivedTime");
+    const timeUsed = c.get("timeUsed");
 
-    const result = timecheck(gameState, receivedTime);
+    const result = timecheck(gameState, timeUsed);
 
     if (!result.ok) {
       throw new HTTPException(500, { message: "timecheck failed." });

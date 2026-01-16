@@ -20,9 +20,8 @@ import {
   startGame,
 } from "../state/lobbies.ts";
 
-const route = new Hono<MaybeLobbyEnv>()
   // could be a perf bottleneck since we are getting their profile on each req.
-  .use(getLobby, getProfile, validateProfile)
+const route = new Hono<MaybeLobbyEnv>().use(getLobby, getProfile, validateProfile)
 
   .post("/", zValidator("json", LobbyConfig), async (c) => {
     if (c.get("lobby"))

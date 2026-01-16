@@ -83,7 +83,7 @@ export type Outcome = z.infer<typeof Outcome>;
 export const AuctionChessState = z.object({
   chessState: ChessState,
   auctionState: AuctionState,
-  timeState: TimeState,
+  timeState: TimeState.optional(),
   turn: Color,
   phase: Phase,
   outcome: Outcome.optional(),
@@ -91,9 +91,13 @@ export const AuctionChessState = z.object({
 // Game state is immutable - only modified via Immer's produce()
 export type AuctionChessState = Immutable<z.infer<typeof AuctionChessState>>;
 
+export const TimeConfig = z.discriminatedUnion("enabled", [
+  z.object({ enabled: z.literal(false) }),
+  z.object({ enabled: z.literal(true), initTime: z.record(Color, z.number()) }),
+]);
 export const GameConfig = z.object({
   hostColor: Color,
-  initTime: z.record(Color, z.number()),
+  timeConfig: TimeConfig,
 });
 export type GameConfig = z.infer<typeof GameConfig>;
 
