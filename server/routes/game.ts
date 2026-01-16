@@ -32,7 +32,6 @@ const gameplay = new Hono<GameEnv>()
   )
   // POST /game/bid - Make a bid in the auction phase
   .post("/bid", zValidator("json", Bid), async (c) => {
-    const lobby = c.get("lobby");
     const gameState = c.get("gameState");
     const channel = c.get("channel");
     const bid = c.req.valid("json");
@@ -44,17 +43,18 @@ const gameplay = new Hono<GameEnv>()
       throw new HTTPException(400, { message: result.error });
     }
 
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
     // Lag compensation for realtime service.
     // result.value.timeState.prev = Date.now();
+    const lobby = c.get("lobby");
     updateGameState(lobby.code, result.value);
+
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
 
     return c.body(null, 204);
   })
 
   // POST /game/move - Make a chess move
   .post("/move", zValidator("json", NormalMove), async (c) => {
-    const lobby = c.get("lobby");
     const gameState = c.get("gameState");
     const channel = c.get("channel");
     const move = c.req.valid("json");
@@ -66,10 +66,12 @@ const gameplay = new Hono<GameEnv>()
       throw new HTTPException(400, { message: result.error });
     }
 
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
     // Supabase Realtime Service Lag comp.
     // result.value.timeState.prev = Date.now();
+    const lobby = c.get("lobby");
     updateGameState(lobby.code, result.value);
+
+    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
 
     return c.body(null, 204);
   });
@@ -85,6 +87,13 @@ const timecheckRoute = new Hono()
     if (!result.ok) {
       throw new HTTPException(500, { message: "timecheck failed." });
     }
+
+
+    // NOTE: for normal game moves, this comes after broadcasting, but for
+    // time checking logic, this is updated first to prevent weird race conditions.
+    const lobby = c.get("lobby");
+    updateGameState(lobby.code, result.value);
+
     const channel = c.get("channel");
     await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
     return c.body(null, 204);
