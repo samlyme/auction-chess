@@ -6,6 +6,7 @@ import {
 } from "@/queries/lobbies";
 import { useMutation } from "@tanstack/react-query";
 import type { LobbyPayload } from "shared/types";
+import LobbyConfigForm from "../forms/LobbyConfigForm";
 
 interface LobbyPanelProps {
   isHost: boolean;
@@ -66,6 +67,9 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
 
               {isHost ? (
                 <div className="flex flex-col gap-3">
+                  <div className="bg-neutral-600 p-4 rounded">
+                    <LobbyConfigForm isCreate={false} initConfig={lobby.config}/>
+                  </div>
                   {
                     !gameStarted ?
                   <button
