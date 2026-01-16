@@ -196,15 +196,6 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
 
   return (
     <div>
-      {gameState.outcome && (
-        <h1>
-          {gameState.outcome
-            ? gameState.outcome.winner === playerColor
-              ? "You win!"
-              : "You lose."
-            : "Draw."}
-        </h1>
-      )}
       {promotionMove && (
         <PromotionMenu
           color={playerColor}

@@ -1,6 +1,7 @@
 import BidPanel from "@/components/game/BidPanel";
 import { AuctionChessBoard } from "@/components/game/Board";
 import LobbyPanel from "@/components/game/LobbyPanel";
+import { OutcomeModal } from "@/components/game/OutcomeModal";
 import {
   useCountdownTimer,
   type UseCountdownTimerResult,
@@ -169,6 +170,7 @@ function RouteComponent() {
           />
         </div>
       </div>
+      {game?.outcome && <OutcomeModal outcome={game.outcome} />}
     </div>
   );
 }
