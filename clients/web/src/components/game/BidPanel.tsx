@@ -53,7 +53,7 @@ interface BidComparisonProps {
 function BidComparison({ opponentBid, yourBid }: BidComparisonProps) {
   return (
     <div className="rounded-md bg-neutral-700 p-4">
-      <div className="grid h-full grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <div className="flex-1 rounded-sm bg-red-500 p-2">
           <h3 className="text-center text-sm">Opponent Bid</h3>
           <h2 className="text-center text-4xl">${opponentBid}</h2>
@@ -283,7 +283,10 @@ export default function BidPanel({
   timers: Record<Color, UseCountdownTimerResult>;
   enableTimers: boolean
 }) {
-  const [bid, setBid] = useState<number>(0);
+  const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
+  useEffect(() => {
+    if (gameState.turn === playerColor) setBid(gameState.auctionState.minBid);
+  }, [gameState.auctionState.minBid]);
   const makeBidMutation = useMutation(useMakeBidMutationOptions());
 
   const handleBid = (amount: number) => {
@@ -333,7 +336,7 @@ export default function BidPanel({
                 <BidControls
                   bid={bid}
                   setBid={setBid}
-                  minBid={0} // fix this
+                  minBid={gameState.auctionState.minBid}
                   maxBid={gameState.auctionState.balance[playerColor]}
                   onBid={handleBid}
                   onFold={handleFold}
@@ -342,7 +345,7 @@ export default function BidPanel({
                 <BidAdjustmentControls
                   bid={bid}
                   setBid={setBid}
-                  minBid={0}
+                  minBid={gameState.auctionState.minBid}
                   maxBid={gameState.auctionState.balance[playerColor]}
                 />
               </div>

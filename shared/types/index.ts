@@ -51,6 +51,7 @@ export type Bid = z.infer<typeof Bid>;
 export const AuctionState = z.object({
   balance: z.record(Color, z.number()),
   bidHistory: z.array(z.array(Bid)),
+  minBid: z.number(),
 });
 export type AuctionState = z.infer<typeof AuctionState>;
 

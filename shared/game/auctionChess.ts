@@ -11,7 +11,7 @@ import type {
 } from "../types/index";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const STARTING_BALANCE = 1000;
+const STARTING_BALANCE = 100;
 
 export type GameResult = Result<AuctionChessState, string>;
 
@@ -29,6 +29,7 @@ export function createGame(config: GameConfig): AuctionChessState {
     auctionState: {
       balance: { white: STARTING_BALANCE, black: STARTING_BALANCE },
       bidHistory: [[]],
+      minBid: 1,
     },
     turn: "white",
     phase: "bid",
@@ -83,12 +84,14 @@ export function movePiece(
       // Push a fold for the broke player
       currentBidStack.push({ fold: true });
       draft.auctionState.bidHistory.push([]);
+      draft.auctionState.balance[draft.turn] -= draft.auctionState.minBid;
       draft.phase = "move";
       // turn stays the same
     } else {
       // Normal flow: switch to bid phase
       draft.auctionState.bidHistory.push([]);
       draft.turn = opponent;
+      draft.auctionState.minBid = 1; // TODO: define a function for starting minBid based on gameState.
       draft.phase = "bid";
     }
 
@@ -125,7 +128,7 @@ export function makeBid(
   const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 
   // Validate non-fold bids (bid has "amount" property)
-  if ("amount" in bid) {
+  if (!bid.fold) {
     if (bid.amount <= 0) {
       return { ok: false, error: "Bid amount must be positive" };
     }
@@ -168,6 +171,7 @@ export function makeBid(
 
     // Normal bid: continue bidding
     currentBidStack.push(bid);
+    draft.auctionState.minBid = bid.amount + currentBidStack.length; // TODO: implement increasing minBid
     draft.turn = opposite(draft.turn);
   });
 

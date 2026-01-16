@@ -24,6 +24,7 @@ const defaultGameState = {
       black: 0,
     },
     bidHistory: [],
+    minBid: 0,
   },
   timeState: {
     time: {
