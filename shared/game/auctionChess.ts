@@ -1,5 +1,5 @@
 import { opposite } from "chessops";
-import { produce } from "immer";
+import { castImmutable, produce } from "immer";
 import { PseudoChess } from "./pseudoChess";
 import type {
   Bid,
@@ -23,7 +23,7 @@ export function createGame(config: GameConfig): AuctionChessState {
       }
     : undefined;
 
-  return {
+  return castImmutable({
     chessState: { fen: STARTING_FEN },
     timeState,
     auctionState: {
@@ -32,7 +32,7 @@ export function createGame(config: GameConfig): AuctionChessState {
     },
     turn: "white",
     phase: "bid",
-  } as AuctionChessState; // Cast to satisfy Immutable type
+  }); // Cast to satisfy Immutable type
 }
 
 export function movePiece(
