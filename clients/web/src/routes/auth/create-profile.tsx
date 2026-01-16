@@ -3,7 +3,7 @@ import { useState } from "react";
 import supabase from "@/supabase";
 import {
   useCreateProfileMutationOptions,
-  useProfileOptions,
+  useMyProfileOptions,
 } from "@/queries/profiles";
 import { useMutation } from "@tanstack/react-query";
 
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/auth/create-profile")({
   // TODO: redirect user off this page if profile is created.
   beforeLoad: async ({ context }) => {
     const { queryClient } = context;
-    const profile = await queryClient.ensureQueryData(useProfileOptions());
+    const profile = await queryClient.ensureQueryData(useMyProfileOptions());
     if (profile) throw redirect({ to: "/home" });
   },
   component: RouteComponent,
@@ -20,7 +20,6 @@ export const Route = createFileRoute("/auth/create-profile")({
 function RouteComponent() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
   const createProfileMutation = useMutation(useCreateProfileMutationOptions());
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,19 +34,20 @@ function RouteComponent() {
       await createProfileMutation.mutateAsync({
         id: user.id,
         username,
-        bio,
       });
 
-      navigate({ to: "/lobbies" });
+      console.log("trying to navigate");
+
+      navigate({ to: "/home" });
     } catch {
       // Error is handled by the mutation state
     }
   };
 
   return (
-    <div className="h-full w-full overflow-auto bg-(--color-background) p-8">
-      <div className="mx-auto max-w-md">
-        <h1 className="mb-6 text-4xl">Create Your Profile</h1>
+    <div className="flex h-full w-full items-center justify-center overflow-auto bg-(--color-background) p-8">
+      <div className="w-full max-w-md rounded-lg border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
+        <h1 className="mb-6 text-4xl">Pick a username</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="username" className="mb-2 block text-base">
@@ -59,25 +59,12 @@ function RouteComponent() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-base"
-            />
-          </div>
-          <div>
-            <label htmlFor="bio" className="mb-2 block text-base">
-              Bio
-            </label>
-            <textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              required
-              rows={4}
-              className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-base"
+              className="w-full rounded-lg border border-neutral-300 bg-neutral-400 px-4 py-3 text-base"
             />
           </div>
           {createProfileMutation.error && (
             <div className="mb-4 text-base text-red-600">
-              {createProfileMutation.error.message}
+              {createProfileMutation.error.detail.data.message}
             </div>
           )}
           <button
