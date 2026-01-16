@@ -1,8 +1,5 @@
-import { useUpdateProfileMutationOptions } from "@/queries/profiles";
 import supabase from "@/supabase";
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/settings")({
   component: RouteComponent,
@@ -10,14 +7,6 @@ export const Route = createFileRoute("/_requireAuth/_requireProfile/settings")({
 
 function RouteComponent() {
   const profile = Route.useRouteContext().profile;
-  const [bio, setBio] = useState(profile.bio);
-  const updateProfileMutation = useMutation(useUpdateProfileMutationOptions());
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    await updateProfileMutation.mutateAsync({ bio });
-  };
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -36,7 +25,12 @@ function RouteComponent() {
         <div className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
           <h2 className="mb-6 text-2xl font-semibold">Profile</h2>
 
-          <form onSubmit={handleUpdateProfile} className="flex flex-col gap-6">
+          <form
+            onSubmit={() => {
+              console.log("Profile updates not supported");
+            }}
+            className="flex flex-col gap-6"
+          >
             <div>
               <label htmlFor="username" className="mb-2 block text-sm">
                 Username
@@ -50,28 +44,12 @@ function RouteComponent() {
               />
             </div>
 
-            <div>
-              <label htmlFor="bio" className="mb-2 block text-sm">
-                Bio
-              </label>
-              <textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={4}
-                className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
-                placeholder="Tell us about yourself..."
-              />
-            </div>
-
             <button
               type="submit"
-              disabled={updateProfileMutation.isPending}
+              disabled={true}
               className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
             >
-              {updateProfileMutation.isPending
-                ? "Updating..."
-                : "Update Profile"}
+              "Update Profile"
             </button>
           </form>
         </div>
