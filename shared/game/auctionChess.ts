@@ -53,17 +53,23 @@ export function movePiece(
     return { ok: false, error: "Invalid move" };
   }
 
-  const newFen = chess.toFen();
-  const chessOutcome = chess.outcome();
-  const outcome: Outcome | undefined = chessOutcome.winner
-    ? {
-        winner: chessOutcome.winner,
-        message: "mate",
-      }
-    : undefined;
-
   const nextState = produce(game, (draft) => {
+    const newFen = chess.toFen();
+    const chessOutcome = chess.outcome();
+    const outcome: Outcome | undefined = chessOutcome.winner
+      ? {
+          winner: chessOutcome.winner,
+          message: "mate",
+        }
+      : undefined;
+
     draft.chessState.fen = newFen;
+
+    if (outcome) {
+      draft.outcome = outcome;
+    }
+
+
 
     const opponent = opposite(draft.turn);
     const currentBidStack =
@@ -79,16 +85,25 @@ export function movePiece(
       draft.auctionState.minBid = 1;
       draft.phase = "move";
       // turn stays the same
-    } else {
+    } else if (draft.auctionState.balance[draft.turn] === 0) {
+      // Check if the player just went for broke. If they did, just automatically
+      // give the move to opponent.
+
+      // For now keep 1 as the defacto minBid.
+      const foldBidStack = [{fold: false as const, amount: 1}, {fold: true as const}];
+      draft.auctionState.bidHistory.push(foldBidStack);
+      draft.auctionState.balance[opponent] -= 1
+
+      draft.auctionState.minBid = 1;
+      draft.turn = opponent;
+      draft.phase = "move"
+    }
+    else {
       // Normal flow: switch to bid phase
       draft.auctionState.bidHistory.push([]);
       draft.turn = opponent;
       draft.auctionState.minBid = 1; // TODO: define a function for starting minBid based on gameState.
       draft.phase = "bid";
-    }
-
-    if (outcome) {
-      draft.outcome = outcome;
     }
   });
 
