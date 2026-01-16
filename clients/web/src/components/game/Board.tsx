@@ -21,9 +21,10 @@ import {
   availableCapture,
   availableMove,
   selectedSquare,
-} from "./BoardStyle.ts";
-import type { AuctionChessState } from "shared";
-import { makeMove } from "@/services/game.ts";
+} from "@/components/game/BoardStyle";
+import type { AuctionChessState } from "shared/types";
+import { useMutation } from "@tanstack/react-query";
+import { useMakeMoveMutationOptions } from "@/queries/game";
 
 function PromotionMenu({
   color,
@@ -31,7 +32,7 @@ function PromotionMenu({
   cancel,
   select,
 }: {
-  color: Color,
+  color: Color;
   fileIndex: number;
   cancel: () => void;
   select: (role: Role) => void;
@@ -100,13 +101,10 @@ interface BoardProps {
   playerColor: Color;
 }
 
-
-export function AuctionChessBoard({
-  gameState,
-  playerColor,
-}: BoardProps) {
+export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
+  const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
   const chessLogic = new PseudoChess(gameState.chessState.fen);
 
@@ -130,7 +128,7 @@ export function AuctionChessBoard({
 
   function playPromotion(role: Role) {
     if (!promotionMove) return;
-    makeMove({ ...promotionMove, promotion: role });
+    makeMoveMutation.mutate({ ...promotionMove, promotion: role });
     setMoveFrom(null);
     setPromotionMove(null);
   }
@@ -157,7 +155,7 @@ export function AuctionChessBoard({
     }
 
     if (chessLogic.isLegalDest(move)) {
-      makeMove(move);
+      makeMoveMutation.mutate(move);
       setMoveFrom(null);
       setPromotionMove(null);
       return true;
@@ -189,7 +187,7 @@ export function AuctionChessBoard({
     if (chessLogic.isLegalDest(move, playerColor) && shouldPromote(move)) {
       setPromotionMove(move);
     } else if (chessLogic.isLegalDest(move, playerColor)) {
-      makeMove(move);
+      makeMoveMutation.mutate(move);
       setMoveFrom(null);
     } else {
       setMoveFrom(piece === null ? null : square);
@@ -198,9 +196,6 @@ export function AuctionChessBoard({
 
   return (
     <div>
-      {gameState.outcome && (
-        <h1>{gameState.outcome ? (gameState.outcome.winner === playerColor ? "You win!" : "You lose.") : "Draw."}</h1>
-      )}
       {promotionMove && (
         <PromotionMenu
           color={playerColor}
@@ -209,15 +204,19 @@ export function AuctionChessBoard({
           select={playPromotion}
         />
       )}
-      <div className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}>
+      <div
+        className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}
+      >
         <Chessboard
           options={{
             position: gameState.chessState.fen,
             onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
             onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
-            onSquareClick: gameState.phase === "bid" ? undefined : onSquareClick,
+            onSquareClick:
+              gameState.phase === "bid" ? undefined : onSquareClick,
             squareStyles,
             boardOrientation: playerColor,
+            alphaNotationStyle: { fontSize: "var(--text-base)" }
           }}
         />
       </div>

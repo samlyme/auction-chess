@@ -1,5 +1,5 @@
 import { type Context, Hono } from "hono";
-import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared";
+import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared/types";
 import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
 import { getProfile, validateProfile } from "../middleware/profiles.ts";
 import { getLobby, validateLobby } from "../middleware/lobbies.ts";
@@ -18,10 +18,11 @@ import {
   joinLobby,
   leaveLobby,
   startGame,
+  updateLobbyConfig,
 } from "../state/lobbies.ts";
 
+// could be a perf bottleneck since we are getting their profile on each req.
 const route = new Hono<MaybeLobbyEnv>()
-  // could be a perf bottleneck since we are getting their profile on each req.
   .use(getLobby, getProfile, validateProfile)
 
   .post("/", zValidator("json", LobbyConfig), async (c) => {
@@ -40,6 +41,27 @@ const route = new Hono<MaybeLobbyEnv>()
     // data, and not have to send an update.
     const supabase = c.get("supabase");
     const channel = supabase.channel(`lobby-${lobby.code}`);
+    const payload = broadcastLobbyUpdate(channel, lobby);
+    return c.json(payload);
+  })
+
+  .put("/", zValidator("json", LobbyConfig), async (c) => {
+    const lobby = c.get("lobby");
+    if (!lobby) throw new HTTPException(400, { message: "user not in lobby" });
+
+    if (lobby.gameState)
+      throw new HTTPException(400, { message: "lobby already started" });
+
+    const user = c.get("user");
+    if (user.id !== lobby.hostUid)
+      throw new HTTPException(401, { message: "user not host of lobby." });
+
+    const { code } = lobby;
+    const config = c.req.valid("json");
+    updateLobbyConfig(code, config);
+
+    const supabase = c.get("supabase");
+    const channel = supabase.channel(`lobby-${code}`);
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
   })
@@ -100,6 +122,8 @@ const route = new Hono<MaybeLobbyEnv>()
 
     leaveLobby(user.id);
 
+    if (lobby.gameState) endGame(lobby.code);
+
     const channel = c.get("channel");
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
@@ -128,7 +152,6 @@ const route = new Hono<MaybeLobbyEnv>()
 
     // Initialize default game state for Auction Chess
     startGame(lobby.code);
-
 
     const payload = broadcastLobbyUpdate(channel, lobby);
 
