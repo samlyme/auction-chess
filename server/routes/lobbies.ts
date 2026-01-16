@@ -99,6 +99,8 @@ const route = new Hono<MaybeLobbyEnv>().use(getLobby, getProfile, validateProfil
 
     leaveLobby(user.id);
 
+    if (lobby.gameState) endGame(lobby.code);
+
     const channel = c.get("channel");
     const payload = broadcastLobbyUpdate(channel, lobby);
     return c.json(payload);
