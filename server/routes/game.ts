@@ -81,6 +81,8 @@ const timecheckRoute = new Hono()
   .post("/", async (c) => {
     const gameState = c.get("gameState");
     const timeUsed = c.get("timeUsed");
+    console.log("handler", {timeUsed});
+    
 
     const result = timecheck(gameState, timeUsed);
 
@@ -88,9 +90,6 @@ const timecheckRoute = new Hono()
       throw new HTTPException(500, { message: "timecheck failed." });
     }
 
-
-    // NOTE: for normal game moves, this comes after broadcasting, but for
-    // time checking logic, this is updated first to prevent weird race conditions.
     const lobby = c.get("lobby");
     updateGameState(lobby.code, result.value);
 

@@ -9,8 +9,16 @@ export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   if (!lobby.gameState) {
     throw new HTTPException(400, { message: "Game not started" });
   }
+  const { gameState } = lobby;
+  const receivedTime = c.get("receivedTime");
+  const timeUsed =
+    !gameState.timeState || gameState.timeState.prev === null
+      ? 0
+      : receivedTime - gameState.timeState.prev;
 
-  c.set("gameState", lobby.gameState);
+  c.set("timeUsed", timeUsed);
+
+  c.set("gameState", gameState);
   await next();
 };
 
@@ -57,15 +65,15 @@ export const recordReceivedTime: MiddlewareHandler<GameEnv> = async (
 // in the code that can also do the same, so the state must be managed very carefully.
 export const validateTime: MiddlewareHandler<GameEnv> = async (c, next) => {
   const gameState = c.get("gameState");
-  const receivedTime = c.get("receivedTime");
-  const timeUsed =
-    !gameState.timeState || gameState.timeState.prev === null
-      ? 0
-      : receivedTime - gameState.timeState.prev;
+  const timeUsed = c.get("timeUsed");
 
-  c.set("timeUsed", timeUsed);
 
-  if (gameState.timeState && timeUsed > gameState.timeState.time[gameState.turn]) {
+  if (
+    gameState.timeState &&
+    timeUsed > gameState.timeState.time[gameState.turn]
+  ) {
+    console.log({timeUsed, time: gameState.timeState.time});
+    
     throw new HTTPException(400, { message: "Move came after timeout." });
   }
 

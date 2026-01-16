@@ -36,12 +36,13 @@ export function createGame(config: GameConfig): AuctionChessState {
   }); // Cast to satisfy Immutable type
 }
 
+// TODO: factor out time logic from these
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
   usedTime: number,
 ): GameResult {
-  if (game.timeState && usedTime >= game.timeState.time[game.turn]) {
+  if (game.timeState && usedTime > game.timeState.time[game.turn]) {
     // This should genuinely never happen.
     return { ok: false, error: "Move came after timeout." };
   }
@@ -111,7 +112,7 @@ export function makeBid(
   bid: Bid,
   usedTime: number,
 ): GameResult {
-  if (game.timeState && usedTime >= game.timeState.time[game.turn]) {
+  if (game.timeState && usedTime > game.timeState.time[game.turn]) {
     // This should genuinely never happen.
     return { ok: false, error: "Move came after timeout." };
   }
@@ -185,13 +186,15 @@ export function makeBid(
 
 export function timecheck(
   gameState: AuctionChessState,
-  usedTime: number,
+  timeUsed: number,
 ): GameResult {
   if (!gameState.timeState) return { ok: false, error: "Time disabled." };
 
   const nextState = produce(gameState, (draft) => {
     // NOTE: draft.timeState should always be defined here.
-    if (draft.timeState && usedTime >= draft.timeState.time[draft.turn]) {
+    console.log("timecheck", { timeUsed });
+    
+    if (draft.timeState && timeUsed >= draft.timeState.time[draft.turn]) {
       // TODO: make a helper function for this
       draft.timeState.prev = null;
       draft.timeState.time[draft.turn] = 0;
