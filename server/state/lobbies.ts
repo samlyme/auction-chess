@@ -1,4 +1,4 @@
-import type { AuctionChessState, Lobby, LobbyConfig } from "shared";
+import type { AuctionChessState, Lobby, LobbyConfig } from "shared/types";
 import { randomUUIDv7 } from "bun";
 import { createGame } from "shared/game/auctionChess";
 
@@ -29,6 +29,11 @@ export function createLobby(userId: string, config: LobbyConfig): Lobby {
   userIdToLobbyCode[userId] = code;
   lobbies[code] = newLobby;
   return newLobby;
+}
+
+export function updateLobbyConfig(lobbyCode: string, config: LobbyConfig): void {
+  const lobby = lobbies[lobbyCode]!;
+  lobby.config = config;
 }
 
 export function joinLobby(userId: string, lobbyCode: string): void {

@@ -17,8 +17,10 @@ else
     git checkout -b "${DEPLOY_BRANCH}"
 fi
 
-# Squash merge from main
-git merge --squash -X theirs main || echo "No changes to merge"
+# Make working tree match main (avoids merge conflicts)
+git fetch origin "${DEPLOY_BRANCH}" || true
+git reset --hard origin/"${DEPLOY_BRANCH}" 2>/dev/null || true
+git read-tree -u --reset main
 
 # Commit (allow empty for redeploys)
 COMMIT_MSG="${1:-Deploy supabase $(date '+%Y-%m-%d %H:%M:%S')}"

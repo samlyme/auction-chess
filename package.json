@@ -32,7 +32,7 @@
     "deploy:sb": "./scripts/deploy-supabase.sh"
   },
   "workspaces": [
-    "shared",
+    "shared/types",
     "server",
     "clients/web"
   ],

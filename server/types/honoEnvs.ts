@@ -4,7 +4,7 @@ import {
   type User,
 } from "@supabase/supabase-js";
 import type { TimingVariables } from "hono/timing";
-import { AuctionChessState, Color, Lobby, Profile } from "shared";
+import { AuctionChessState, Color, Lobby, Profile } from "shared/types";
 
 export type BaseEnv = {
   Variables: TimingVariables & {
@@ -44,5 +44,6 @@ export type GameEnv = {
     gameState: AuctionChessState;
     playerColor: Color;
     receivedTime: number;
+    timeUsed: number;
   };
 };

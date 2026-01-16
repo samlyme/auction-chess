@@ -1,6 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/demo')({
+export const Route = createFileRoute("/demo")({
   component: Splash,
 });
 
@@ -367,8 +367,8 @@ function Splash() {
           </p>
 
           <div className="grid grid-cols-10 gap-2">
-            {['primary'].map((priority) =>
-              ['red', 'yellow', 'green', 'blue', 'purple'].map((color) =>
+            {["primary"].map((priority) =>
+              ["red", "yellow", "green", "blue", "purple"].map((color) =>
                 [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map(
                   (shade) => (
                     <div
@@ -392,7 +392,7 @@ function Splash() {
 
           <p className="text-l">Colored text should be on neutral background</p>
           <div className="grid grid-cols-10 gap-2">
-            {['red', 'yellow', 'green', 'blue', 'purple'].map((textColor) =>
+            {["red", "yellow", "green", "blue", "purple"].map((textColor) =>
               [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map(
                 (textShade) =>
                   [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map(
@@ -539,13 +539,13 @@ function Splash() {
               >
                 <div
                   className="mb-2 text-4xl"
-                  style={{ color: 'var(--color-blue-500)' }}
+                  style={{ color: "var(--color-blue-500)" }}
                 >
                   {num}
                 </div>
                 <div
                   className="text-sm"
-                  style={{ color: 'var(--color-text-secondary)' }}
+                  style={{ color: "var(--color-text-secondary)" }}
                 >
                   Grid Item
                 </div>

@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const DesiredRouteSearchParam = z.object({
-  redirect: z.string().optional().catch(''),
+  redirect: z.string().optional().catch(""),
 });
 export type DesiredRouteSearchParam = z.infer<typeof DesiredRouteSearchParam>;
 

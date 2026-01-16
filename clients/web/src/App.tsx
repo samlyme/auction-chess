@@ -1,20 +1,24 @@
-import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
-import AuthContextProvider from './components/providers/AuthContextProvider';
-import { useContext, type ReactElement } from 'react';
-import { AuthContext } from './contexts/Auth';
-import type { RouterContext } from './routes/__root';
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "@/routeTree.gen";
+import AuthContextProvider from "@/components/providers/AuthContextProvider";
+import { useContext, type ReactElement } from "react";
+import { AuthContext } from "@/contexts/Auth";
+import type { RouterContext } from "@/routes/__root";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 // Create router with context type
 const router = createRouter({
   routeTree,
   context: {
     auth: undefined!,
+    queryClient,
   } as RouterContext,
 });
 
 // Type registration
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
@@ -23,7 +27,9 @@ declare module '@tanstack/react-router' {
 function AspectRatioWrapper({ children }: { children: ReactElement }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
-      <div className="@container h-full w-full border flex justify-center items-center">{children}</div>
+      <div className="@container flex h-full w-full items-center justify-center border">
+        {children}
+      </div>
     </div>
   );
 }
@@ -41,11 +47,15 @@ function InnerApp() {
 
 function App() {
   return (
-    <AuthContextProvider>
-      <AspectRatioWrapper>
-        <InnerApp />
-      </AspectRatioWrapper>
-    </AuthContextProvider>
+    // Just use standard patterns, otherwise you are making a footgun
+    <QueryClientProvider client={queryClient}>
+      {/* Auth Context only really exists in the browser, don't need to use Query. */}
+      <AuthContextProvider>
+        <AspectRatioWrapper>
+          <InnerApp />
+        </AspectRatioWrapper>
+      </AuthContextProvider>
+    </QueryClientProvider>
   );
 }
 

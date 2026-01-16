@@ -1,17 +1,17 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @font-face {
-  font-family: 'BoldPixels';
-  src: url('./assets/fonts/BoldPixels.otf');
+  font-family: "BoldPixels";
+  src: url("./assets/fonts/BoldPixels.otf");
 }
 
 @font-face {
-  font-family: 'MisterPixel';
-  src: url('./assets/fonts/vtf-misterpixel.regular.otf');
+  font-family: "MisterPixel";
+  src: url("./assets/fonts/vtf-misterpixel.regular.otf");
 }
 
 @theme {
-  --default-font-family: 'MisterPixel';
+  --default-font-family: "MisterPixel";
 
   --spacing: 0.2cqw;
   /* ========================================
@@ -30,7 +30,6 @@
   --text-7xl: calc(var(--text-base) * 4.5);
   --text-8xl: calc(var(--text-base) * 6);
   --text-9xl: calc(var(--text-base) * 8);
-
 
   --color-red-50: oklch(0.97 0.02 30);
   --color-red-100: oklch(0.92 0.05 30);
@@ -82,7 +81,7 @@
   --color-purple-700: oklch(0.54 0.13 360);
   --color-purple-800: oklch(0.42 0.1 360);
   --color-purple-900: oklch(0.31 0.08 360);
-  
+
   /* Background & Surface */
   --color-neutral-50: #bcc3d3;
   --color-neutral-100: #a9b0be;
