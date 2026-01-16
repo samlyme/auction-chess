@@ -3,7 +3,7 @@ import { useState } from "react";
 import supabase from "@/supabase";
 import {
   useCreateProfileMutationOptions,
-  useProfileOptions,
+  useMyProfileOptions,
 } from "@/queries/profiles";
 import { useMutation } from "@tanstack/react-query";
 
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/auth/create-profile")({
   // TODO: redirect user off this page if profile is created.
   beforeLoad: async ({ context }) => {
     const { queryClient } = context;
-    const profile = await queryClient.ensureQueryData(useProfileOptions());
+    const profile = await queryClient.ensureQueryData(useMyProfileOptions());
     if (profile) throw redirect({ to: "/home" });
   },
   component: RouteComponent,

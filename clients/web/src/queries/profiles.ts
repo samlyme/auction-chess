@@ -5,16 +5,12 @@ import { api } from "./api";
 
 // TODO: Cache profiles!
 export function useProfileOptions(
-  query?: { username: string } | { id: string }
+  query: { username: string } | { id: string }
 ) {
   return queryOptions({
     queryKey: ["profile", query],
     queryFn: () => {
-      if (query) {
-        return parseResponse(api.profiles.$get({ query }));
-      } else {
-        return parseResponse(api.profiles.me.$get());
-      }
+      return parseResponse(api.profiles.$get({ query }));
     },
   });
 }
