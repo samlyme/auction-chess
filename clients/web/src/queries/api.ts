@@ -1,6 +1,14 @@
-import { hc } from "hono/client";
+import { DetailedError, hc } from "hono/client";
 import type { AppType } from "server/app";
 import supabase from "@/supabase";
+
+// This lets the query client know that all errors are DetailedErrors because
+// they come from `parseResponse` object
+declare module '@tanstack/react-query' {
+  interface Register {
+    defaultError: DetailedError;
+  }
+}
 
 export async function getAuthHeader() {
   const {

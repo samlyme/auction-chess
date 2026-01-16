@@ -12,10 +12,9 @@ export function useProfileOptions(
     queryFn: () => {
       return parseResponse(api.profiles.$get({ query }));
     },
-    staleTime: 5 * 60 * 1000 // Arbitrary. This is for the profiles of others.
+    staleTime: 5 * 60 * 1000, // Arbitrary. This is for the profiles of others.
   });
 }
-
 
 export function useMyProfileOptions() {
   return queryOptions({
@@ -28,8 +27,10 @@ export function useMyProfileOptions() {
 export function useCreateProfileMutationOptions() {
   return mutationOptions({
     mutationKey: ["profile", "me"],
-    mutationFn: (profile: ProfileCreate) =>
-      parseResponse(api.profiles.$post({ json: profile })),
+    mutationFn: (variables: ProfileCreate) => {
+      const req =  api.profiles.$post({ json: variables });
+      return parseResponse(req)
+    },
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["profile", "me"], data);
     },

@@ -45,9 +45,9 @@ function RouteComponent() {
   };
 
   return (
-    <div className="h-full w-full overflow-auto bg-(--color-background) p-8">
-      <div className="mx-auto max-w-md">
-        <h1 className="mb-6 text-4xl">Create Your Profile</h1>
+    <div className="flex h-full w-full items-center justify-center overflow-auto bg-(--color-background) p-8">
+      <div className="w-full max-w-md rounded-lg border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
+        <h1 className="mb-6 text-4xl">Pick a username</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="username" className="mb-2 block text-base">
@@ -59,12 +59,12 @@ function RouteComponent() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 text-base"
+              className="w-full rounded-lg border border-neutral-300 bg-neutral-400 px-4 py-3 text-base"
             />
           </div>
           {createProfileMutation.error && (
             <div className="mb-4 text-base text-red-600">
-              {createProfileMutation.error.message}
+              {createProfileMutation.error.detail.data.message}
             </div>
           )}
           <button
