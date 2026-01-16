@@ -154,6 +154,7 @@ function BidControls({
             {isBidPending ? "Folding..." : "FOLD"}
           </button>
         </div>
+        {/* Technically, this is slightly sub optimal but its fine. */}
         <button
           onClick={() => setBid(maxBid)}
           className="w-full flex-1 cursor-pointer rounded bg-yellow-400 px-4 py-2 text-xl hover:bg-yellow-300"

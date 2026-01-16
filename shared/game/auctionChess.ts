@@ -160,18 +160,20 @@ export function makeBid(
       return;
     }
 
+    draft.auctionState.minBid = bid.amount + currentBidStack.length + 1;
+
     // Handle bid that opponent can't beat
-    if (bid.amount >= draft.auctionState.balance[opposite(draft.turn)]) {
+    if (draft.auctionState.minBid > draft.auctionState.balance[opposite(draft.turn)]) {
       draft.auctionState.balance[draft.turn] -= bid.amount;
       currentBidStack.push(bid);
       draft.phase = "move";
+      draft.auctionState.minBid = 0; // placeholder because the makeMove function sets the starting bid.
       // turn stays the same
       return;
     }
 
     // Normal bid: continue bidding
     currentBidStack.push(bid);
-    draft.auctionState.minBid = bid.amount + currentBidStack.length; // TODO: implement increasing minBid
     draft.turn = opposite(draft.turn);
   });
 
