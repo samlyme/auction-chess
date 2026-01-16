@@ -74,8 +74,8 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                     !gameStarted ?
                   <button
                     onClick={handleStartLobby}
-                    disabled={startLobbyMutation.isPending}
-                    className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:bg-neutral-400"
+                    disabled={startLobbyMutation.isPending || !lobby.guestUid}
+                    className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:bg-neutral-400 disabled:cursor-not-allowed"
                   >
                     {startLobbyMutation.isPending
                       ? "Starting..."
