@@ -5,8 +5,7 @@
   "private": true,
   "exports": {
     "./types/*": "./types/*",
-    "./game/auctionChess": "./game/auctionChess.ts",
-    "./game/pseudoChess": "./game/pseudoChess.ts"
+    "./game/*": "./game/",
   },
   "devDependencies": {
     "@types/bun": "latest"
