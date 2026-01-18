@@ -17,7 +17,6 @@ import {
   type Piece,
   type Role,
 } from "chessops";
-import { makeFen, parseFen } from "chessops/fen";
 import { Square, type Result } from "../types";
 import { rookCastlesTo, squareFromCoords } from "chessops/util";
 import { produce } from "immer";
@@ -135,21 +134,12 @@ export function set(board: PureBoard, square: Square, piece: Piece): PureBoard {
 export interface PureSetup {
   board: PureBoard;
   // pockets: Material | undefined;
-  turn: Color;
+  // turn: Color;
   castlingRights: SquareSet;
   epSquare: Square | undefined;
   // remainingChecks: RemainingChecks | undefined;
   halfmoves: number;
   fullmoves: number;
-}
-
-export function pureParseFen(fen: string): PureSetup {
-  return parseFen(fen).unwrap();
-}
-
-export function pureToFen(setup: PureSetup): string {
-  // makeFen(setup)
-  return "";
 }
 
 export function pureDefaultSetup(): PureSetup {
@@ -265,9 +255,6 @@ export function movePiece(
   setup: PureSetup,
   move: NormalMove,
 ): Result<PureSetup> {
-  if (!setup.board[setup.turn].has(move.from)) {
-    return { ok: false, error: "Move not from valid square." };
-  }
   if (!legalDests(setup, move.from).has(move.to)) {
     return { ok: false, error: "Move no to valid square." };
   }
