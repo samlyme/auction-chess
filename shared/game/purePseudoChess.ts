@@ -1,7 +1,6 @@
 import {
   SquareSet,
   type Square,
-  defaultSetup,
   attacks,
   opposite,
   squareRank,
@@ -16,27 +15,28 @@ import {
   kingAttacks,
   pawnAttacks,
 } from "chessops";
-import { squareFromCoords, rookCastlesTo } from "chessops/util";
+import {
+  squareFromCoords,
+  rookCastlesTo,
+} from "chessops/util";
 import { produce } from "immer";
-import type { Result } from "../types";
-import { getPiece, set, take, type PureBoard } from "./pureBoard";
+import type { Result } from "../types/result";
+import {
+  defaultBoard,
+  getPiece,
+  set,
+  take,
+} from "./pureBoard";
 
-export interface PureSetup {
-  board: PureBoard;
-  // pockets: Material | undefined;
-  // turn: Color;
-  castlingRights: SquareSet;
-  epSquare: Square | undefined;
-  // remainingChecks: RemainingChecks | undefined;
-  // halfmoves: number;
-  // fullmoves: number;
-}
+import type { Board, Setup } from "../types/game";
 
-export function pureDefaultSetup(): PureSetup {
-  return defaultSetup();
-}
+export const pureDefaultSetup: Setup = {
+  board: defaultBoard,
+  castlingRights: SquareSet.corners(),
+  epSquare: undefined,
+};
 
-export function pawnMoves(setup: PureSetup, from: Square): SquareSet {
+export function pawnMoves(setup: Setup, from: Square): SquareSet {
   const piece = getPiece(setup.board, from);
   if (!piece || piece.role !== "pawn") throw new Error("not pawn square");
 
@@ -71,7 +71,7 @@ export function pawnMoves(setup: PureSetup, from: Square): SquareSet {
   return moves.union(potentialAttacks.intersect(opps));
 }
 
-export function kingMoves(setup: PureSetup, from: Square): SquareSet {
+export function kingMoves(setup: Setup, from: Square): SquareSet {
   const piece = getPiece(setup.board, from);
   if (!piece || piece.role !== "king") throw new Error("not king square");
 
@@ -94,7 +94,7 @@ export function kingMoves(setup: PureSetup, from: Square): SquareSet {
   return moves;
 }
 
-export function isCheck(board: PureBoard, color: Color): boolean {
+export function isCheck(board: Board, color: Color): boolean {
   const king = board.king.intersect(board[color]);
   if (king.isEmpty()) return true;
 
@@ -103,7 +103,7 @@ export function isCheck(board: PureBoard, color: Color): boolean {
   return !attacksTo(kingSquare, opposite(color), board).isEmpty();
 }
 
-export function legalDests(setup: PureSetup, from: Square): SquareSet {
+export function legalDests(setup: Setup, from: Square): SquareSet {
   const piece = getPiece(setup.board, from);
   if (!piece) return SquareSet.empty();
 
@@ -121,7 +121,7 @@ export function legalDests(setup: PureSetup, from: Square): SquareSet {
 }
 
 export function* legalMoves(
-  setup: PureSetup,
+  setup: Setup,
   color: Color,
 ): Generator<NormalMove> {
   for (const from of setup.board[color]) {
@@ -142,9 +142,9 @@ export function* legalMoves(
 }
 
 export function movePiece(
-  setup: PureSetup,
+  setup: Setup,
   move: NormalMove,
-): Result<PureSetup> {
+): Result<Setup> {
   if (!legalDests(setup, move.from).has(move.to)) {
     return { ok: false, error: "Move no to valid square." };
   }
@@ -209,7 +209,7 @@ export function movePiece(
 function attacksTo(
   square: Square,
   attacker: Color,
-  board: PureBoard,
+  board: Board,
 ): SquareSet {
   const occupied = board.occupied;
   return board[attacker].intersect(

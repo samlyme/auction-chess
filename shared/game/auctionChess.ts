@@ -1,16 +1,15 @@
 import { opposite } from "chessops";
 import { castImmutable, produce } from "immer";
-import { PseudoChess } from "./pseudoChess";
 import {
   Bid,
-  type AuctionChessState,
   type NormalMove,
-  type Result,
   type GameConfig,
-  type Outcome,
-} from "../types/index";
+  AuctionChessState,
+} from "../types/game";
+import type { Result } from "../types/result";
 
-const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+import * as PseudoChess from "./purePseudoChess";
+
 const STARTING_BALANCE = 100;
 
 export type GameResult = Result<AuctionChessState, string>;
@@ -24,7 +23,7 @@ export function createGame(config: GameConfig): AuctionChessState {
     : undefined;
 
   return castImmutable({
-    chessState: { fen: STARTING_FEN },
+    chessState: PseudoChess.pureDefaultSetup,
     timeState,
     auctionState: {
       balance: { white: STARTING_BALANCE, black: STARTING_BALANCE },
@@ -41,99 +40,40 @@ export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
 ): GameResult {
+  // TODO: optimize the number of serializations and deserializations.
   if (game.outcome) return { ok: false, error: "Game already over." };
 
   if (game.phase !== "move") return { ok: false, error: "Not in move phase" };
 
-  // NOTE: Source of potential perf bottleneck. This code here can "thrash" in
-  // high move volume situations. Ie. allocate and deallocate a lot of PseudoChess
-  // objects.
-  const chess = new PseudoChess(game.chessState.fen);
-  if (!chess.movePiece(move, game.turn)) {
-    return { ok: false, error: "Invalid move" };
+  try {
+    game = produce(game, (draft) => {
+      const setup = draft.chessState;
+      // const newSetup = PseudoChess.movePiece(setup, move)
+      const newSetup = PseudoChess.movePiece(setup, move);
+      if (!newSetup.ok) throw new Error("invalid move.");
+
+      draft.chessState = newSetup.value;
+    });
+  } catch (e) {
+    return { ok: false, error: "invalid move." };
   }
-
-  const nextState = produce(game, (draft) => {
-    const newFen = chess.toFen();
-    const chessOutcome = chess.outcome();
-    const outcome: Outcome | undefined = chessOutcome.winner
-      ? {
-          winner: chessOutcome.winner,
-          message: "mate",
-        }
-      : undefined;
-
-    draft.chessState.fen = newFen;
-
-    const opponent = opposite(draft.turn);
-    const currentBidStack =
-      draft.auctionState.bidHistory[draft.auctionState.bidHistory.length - 1]!;
-
-    // Check if opponent is broke - they automatically fold
-    if (draft.auctionState.balance[opponent] === 0) {
-      draft.auctionState.balance[draft.turn] -= draft.auctionState.minBid;
-      // Push a fold for the broke player
-      currentBidStack.push({ fold: true });
-      draft.auctionState.bidHistory.push([]);
-
-      draft.auctionState.minBid = 1;
-      draft.phase = "move";
-      // turn stays the same
-    } else if (draft.auctionState.balance[draft.turn] === 0) {
-      // Check if the player just went for broke. If they did, just automatically
-      // give the move to opponent.
-
-      // For now keep 1 as the defacto minBid.
-      const foldBidStack = [
-        { fold: false as const, amount: 1 },
-        { fold: true as const },
-      ];
-      draft.auctionState.bidHistory.push(foldBidStack);
-      draft.auctionState.balance[opponent] -= 1;
-
-      draft.auctionState.minBid = 1;
-      draft.turn = opponent;
-      draft.phase = "move";
-    } else {
-      // Normal flow: switch to bid phase
-      draft.auctionState.bidHistory.push([]);
-      draft.turn = opponent;
-      draft.auctionState.minBid = 1; // TODO: define a function for starting minBid based on gameState.
-      draft.phase = "bid";
-    }
-
-    if (outcome) {
-      draft.outcome = outcome;
-    } else if (
-      draft.auctionState.balance.white <= 0 &&
-      draft.auctionState.balance.black <= 0
-    ) {
-      // egregious code.
-      // TODO: This actually gives the opposite player one less move than it should. There is more complex state here.
-      draft.auctionState.balance.white = 0;
-      draft.auctionState.balance.black = 0;
-      draft.outcome = { winner: null, message: "draw" };
-    }
-  });
-
-  return {
-    ok: true,
-    value: nextState,
-  };
+  return { ok: true, value: game };
 }
 
 function recordBid(game: AuctionChessState, bid: Bid) {
   return produce(game, (draft) => {
-    const bidStack =
-      draft.auctionState.bidHistory.at(-1)!;
+    const bidStack = draft.auctionState.bidHistory.at(-1)!;
     const lastBid = bidStack.at(-1);
     const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 
     bidStack.push(bid);
     draft.turn = opposite(draft.turn);
 
-    console.log({lastBidAmount, len: bidStack.length, minBid: draft.auctionState.minBid});
-
+    console.log({
+      lastBidAmount,
+      len: bidStack.length,
+      minBid: draft.auctionState.minBid,
+    });
 
     if (bid.fold) {
       draft.auctionState.balance[draft.turn] -= lastBidAmount;
@@ -145,14 +85,13 @@ function recordBid(game: AuctionChessState, bid: Bid) {
 }
 
 function updateMinBid(game: AuctionChessState) {
-  return produce(game, draft => {
-    const bidStack =
-      draft.auctionState.bidHistory.at(-1)!;
+  return produce(game, (draft) => {
+    const bidStack = draft.auctionState.bidHistory.at(-1)!;
     const lastBid = bidStack.at(-1);
     const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 
     draft.auctionState.minBid = lastBidAmount + bidStack.length + 1;
-  })
+  });
 }
 
 export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
@@ -161,8 +100,7 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
   if (game.phase !== "bid") {
     return { ok: false, error: "Not in bid phase" };
   }
-  const bidStack =
-    game.auctionState.bidHistory.at(-1)!;
+  const bidStack = game.auctionState.bidHistory.at(-1)!;
   const lastBid = bidStack.at(-1);
   const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
 

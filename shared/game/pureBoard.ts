@@ -1,25 +1,5 @@
 import { ROLES, SquareSet, type Color, type Piece, type Role } from "chessops";
-import { Square } from "../types";
-
-export interface PureBoard {
-  /**
-   * All occupied squares.
-   */
-  readonly occupied: SquareSet;
-  /**
-   * All squares occupied by pieces known to be promoted. This information is
-   * relevant in chess variants like Crazyhouse.
-   */
-  readonly promoted: SquareSet;
-  readonly white: SquareSet;
-  readonly black: SquareSet;
-  readonly pawn: SquareSet;
-  readonly knight: SquareSet;
-  readonly bishop: SquareSet;
-  readonly rook: SquareSet;
-  readonly queen: SquareSet;
-  readonly king: SquareSet;
-}
+import type { Square, Board } from "../types/game";
 
 export function serializeSquareSet(squareSet: SquareSet) {
   return {
@@ -28,7 +8,7 @@ export function serializeSquareSet(squareSet: SquareSet) {
   };
 }
 
-export const defaultPureBoard: PureBoard = {
+export const defaultBoard: Board = {
   occupied: new SquareSet(0xffff, 0xffff_0000),
   promoted: new SquareSet(0, 0),
   white: new SquareSet(0xffff, 0),
@@ -41,20 +21,20 @@ export const defaultPureBoard: PureBoard = {
   king: new SquareSet(0x10, 0x1000_0000),
 };
 
-export function getColor(board: PureBoard, square: Square): Color | undefined {
+export function getColor(board: Board, square: Square): Color | undefined {
   if (board.white.has(square)) return "white";
   if (board.black.has(square)) return "black";
   return undefined;
 }
 
-export function getRole(board: PureBoard, square: Square): Role | undefined {
+export function getRole(board: Board, square: Square): Role | undefined {
   for (const role of ROLES) {
     if (board[role].has(square)) return role;
   }
   return undefined;
 }
 
-export function getPiece(board: PureBoard, square: Square): Piece | undefined {
+export function getPiece(board: Board, square: Square): Piece | undefined {
   const color = getColor(board, square);
   if (!color) return;
   const role = getRole(board, square)!;
@@ -62,7 +42,7 @@ export function getPiece(board: PureBoard, square: Square): Piece | undefined {
   return { color, role, promoted };
 }
 
-export function take(board: PureBoard, square: Square): PureBoard {
+export function take(board: Board, square: Square): Board {
   const {
     occupied,
     promoted,
@@ -89,7 +69,7 @@ export function take(board: PureBoard, square: Square): PureBoard {
   };
 }
 
-export function set(board: PureBoard, square: Square, piece: Piece): PureBoard {
+export function set(board: Board, square: Square, piece: Piece): Board {
   const {
     occupied,
     promoted,

@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./types": "./types/index.ts",
+    "./types/*": "./types/*",
     "./game/auctionChess": "./game/auctionChess.ts",
     "./game/pseudoChess": "./game/pseudoChess.ts"
   },
