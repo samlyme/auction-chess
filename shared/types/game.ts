@@ -103,21 +103,22 @@ export type Board = Immutable<z.infer<typeof Board>>;
 export const SerializedBoard = createBoardSchema(SerializedSquareSet);
 export type SerializedBoard = z.infer<typeof SerializedBoard>;
 
-const createSetupSchema = <T extends z.ZodType>(squareSetType: T) => {
+const createChessStateSchema = <T extends z.ZodType>(squareSetType: T) => {
   return z.object({
     board: createBoardSchema(squareSetType),
     castlingRights: squareSetType,
     epSquare: Square.optional(),
   })
 }
-export const Setup = createSetupSchema(z.instanceof(SquareSet));
-export type Setup = Immutable<z.infer<typeof Setup>>;
-export const SerializedSetup = createSetupSchema(SerializedSquareSet);
-export type SerializedSetup = Immutable<z.infer<typeof SerializedSetup>>;
+// ChessState is roughly equivalent to Setup from chessops
+export const ChessState = createChessStateSchema(z.instanceof(SquareSet));
+export type ChessState = Immutable<z.infer<typeof ChessState>>;
+export const SerializedChessState = createChessStateSchema(SerializedSquareSet);
+export type SerializedChessState = Immutable<z.infer<typeof SerializedChessState>>;
 
 const createAuctionChessStateSchema = <T extends z.ZodType>(squareSetType: T) => {
   return z.object({
-    chessState: createSetupSchema(squareSetType),
+    chessState: createChessStateSchema(squareSetType),
     auctionState: AuctionState,
     timeState: TimeState.optional(),
     turn: Color,

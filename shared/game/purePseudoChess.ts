@@ -28,15 +28,15 @@ import {
   take,
 } from "./pureBoard";
 
-import type { Board, Setup } from "../types/game";
+import type { Board, ChessState } from "../types/game";
 
-export const pureDefaultSetup: Setup = {
+export const pureDefaultSetup: ChessState = {
   board: defaultBoard,
   castlingRights: SquareSet.corners(),
   epSquare: undefined,
 };
 
-export function pawnMoves(setup: Setup, from: Square): SquareSet {
+export function pawnMoves(setup: ChessState, from: Square): SquareSet {
   const piece = getPiece(setup.board, from);
   if (!piece || piece.role !== "pawn") throw new Error("not pawn square");
 
@@ -71,7 +71,7 @@ export function pawnMoves(setup: Setup, from: Square): SquareSet {
   return moves.union(potentialAttacks.intersect(opps));
 }
 
-export function kingMoves(setup: Setup, from: Square): SquareSet {
+export function kingMoves(setup: ChessState, from: Square): SquareSet {
   const piece = getPiece(setup.board, from);
   if (!piece || piece.role !== "king") throw new Error("not king square");
 
@@ -103,7 +103,7 @@ export function isCheck(board: Board, color: Color): boolean {
   return !attacksTo(kingSquare, opposite(color), board).isEmpty();
 }
 
-export function legalDests(setup: Setup, from: Square): SquareSet {
+export function legalDests(setup: ChessState, from: Square): SquareSet {
   const piece = getPiece(setup.board, from);
   if (!piece) return SquareSet.empty();
 
@@ -121,7 +121,7 @@ export function legalDests(setup: Setup, from: Square): SquareSet {
 }
 
 export function* legalMoves(
-  setup: Setup,
+  setup: ChessState,
   color: Color,
 ): Generator<NormalMove> {
   for (const from of setup.board[color]) {
@@ -142,9 +142,9 @@ export function* legalMoves(
 }
 
 export function movePiece(
-  setup: Setup,
+  setup: ChessState,
   move: NormalMove,
-): Result<Setup> {
+): Result<ChessState> {
   if (!legalDests(setup, move.from).has(move.to)) {
     return { ok: false, error: "Move no to valid square." };
   }
