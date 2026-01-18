@@ -17,7 +17,7 @@ import {
   type Piece,
   type Role,
 } from "chessops";
-import { parseFen } from "chessops/fen";
+import { makeBoardFen, makeFen, parseFen } from "chessops/fen";
 import { Square, type Result } from "../types";
 import { rookCastlesTo, squareFromCoords } from "chessops/util";
 import { produce } from "immer";
@@ -144,9 +144,14 @@ export interface PureSetup {
 }
 
 export function pureParseFen(fen: string): PureSetup {
-  const res = parseFen(fen).unwrap();
-  return res;
+  return parseFen(fen).unwrap();
 }
+
+// export function pureToFen(setup: PureSetup): string {
+//   makeFen(setup)
+//   makeBoardFen(setup.board)
+//   return "";
+// }
 
 export function pureDefaultSetup(): PureSetup {
   return defaultSetup();
