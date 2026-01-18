@@ -216,7 +216,8 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
               gameState.phase === "bid" ? undefined : onSquareClick,
             squareStyles,
             boardOrientation: playerColor,
-            alphaNotationStyle: { fontSize: "var(--text-base)" }
+            alphaNotationStyle: { fontSize: "var(--text-base)" },
+            numericNotationStyle: { fontSize: "var(--text-base)" }
           }}
         />
       </div>
