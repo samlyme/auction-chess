@@ -149,7 +149,6 @@ export function movePiece(
     return { ok: false, error: "Move no to valid square." };
   }
 
-
   try {
     const out = produce(setup, (draft) => {
       const piece = getPiece(draft.board, move.from)!;

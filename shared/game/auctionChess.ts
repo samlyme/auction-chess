@@ -67,7 +67,17 @@ export function movePiece(
   try {
     game = recordMove(game, move);
 
-    if (game.auctionState.balance[game.turn] < game.auctionState.minBid) {
+    if (!game.chessState.board.king.moreThanOne()) {
+      game = produce(game, (draft) => {
+        const board = draft.chessState.board;
+        const winner = board.king.intersect(board.black).isEmpty()
+          ? "white"
+          : "black";
+        draft.outcome = { winner, message: "mate" };
+      });
+    } else if (
+      game.auctionState.balance[game.turn] < game.auctionState.minBid
+    ) {
       game = recordBid(game, { fold: true });
     }
   } catch (e) {
