@@ -36,6 +36,21 @@ export function createGame(config: GameConfig): AuctionChessState {
   };
 }
 
+function recordMove(game: AuctionChessState, move: NormalMove) {
+  return produce(game, (draft) => {
+    const setup = draft.chessState;
+    // const newSetup = PseudoChess.movePiece(setup, move)
+    const newSetup = PseudoChess.movePiece(setup, move);
+    if (!newSetup.ok) {
+      throw new Error("invalid move.");
+    }
+    draft.chessState = newSetup.value;
+
+    draft.turn = opposite(draft.turn);
+    draft.phase = "bid";
+  });
+}
+
 // TODO: factor out time logic from these
 export function movePiece(
   game: AuctionChessState,
@@ -46,29 +61,17 @@ export function movePiece(
 
   if (game.phase !== "move") return { ok: false, error: "Not in move phase" };
 
-  if (game.turn !== getPiece(game.chessState.board, move.from)?.color) return { ok: false, error: "Can't move opponent's peices." };
+  if (game.turn !== getPiece(game.chessState.board, move.from)?.color)
+    return { ok: false, error: "Can't move opponent's peices." };
 
   try {
-    game = produce(game, (draft) => {
-      const setup = draft.chessState;
-      // const newSetup = PseudoChess.movePiece(setup, move)
-      const newSetup = PseudoChess.movePiece(setup, move);
-      if (!newSetup.ok) {
-        throw new Error("invalid move.");
-      }
-      draft.chessState = newSetup.value;
-
-      draft.turn = opposite(draft.turn);
-      draft.phase = "bid";
-    });
+    game = recordMove(game, move);
 
     if (game.auctionState.balance[game.turn] < game.auctionState.minBid) {
       game = recordBid(game, { fold: true });
     }
-
   } catch (e) {
     console.error(e);
-
     return { ok: false, error: "invalid move." };
   }
   return { ok: true, value: game };
@@ -137,12 +140,8 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
   const newMinBid = game.auctionState.minBid;
 
   // If new player can't bid then autofold for them.
-  console.log({newTurnBalance, newMinBid});
-
   if (newTurnBalance < newMinBid || newTurnBalance === 0) {
-    console.log("autofold", game.auctionState);
     game = recordBid(game, { fold: true });
-    console.log(game.auctionState);
   }
 
   return {
