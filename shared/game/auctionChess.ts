@@ -1,4 +1,4 @@
-import { opposite } from "chessops";
+import { opposite, type Piece } from "chessops";
 import { produce } from "immer";
 import {
   Bid,
@@ -22,7 +22,7 @@ export const defaultPieceValue: Record<Role, number> = {
   "bishop": 3,
   "rook": 5,
   "queen": 9,
-  "king": 20
+  "king": 20,
 }
 
 export const nonePieceValue: Record<Role, number> = {
@@ -49,8 +49,9 @@ export function createGame(config: GameConfig): AuctionChessState {
       bidHistory: [[]],
       minBid: 1,
       interestRate: config.interestConfig.enabled ? config.interestConfig.rate : 0,
-      pieceIncome: config.pieceIncomeConfig.enabled ? config.pieceIncomeConfig.pieceIncome : nonePieceValue,
     },
+    pieceIncome: config.pieceIncomeConfig.enabled ? config.pieceIncomeConfig.pieceIncome : nonePieceValue,
+    pieceFee: config.pieceFeeConfig.enabled ? config.pieceFeeConfig.pieceFee : nonePieceValue,
     turn: "white",
     phase: "bid",
   };
@@ -70,6 +71,12 @@ function recordMove(game: AuctionChessState, move: NormalMove) {
     draft.phase = "bid";
   });
 }
+function deductPieceFee(game: AuctionChessState, piece: Piece) {
+  return produce(game, draft => {
+    const color = piece.color;
+    draft.auctionState.balance[color] -= game.pieceFee[piece.role];
+  })
+}
 function earnInterest(game: AuctionChessState) {
   return produce(game, draft => {
     const interestRate = draft.auctionState.interestRate;
@@ -79,7 +86,7 @@ function earnInterest(game: AuctionChessState) {
 }
 function earnPieceIncome(game: AuctionChessState) {
   return produce(game, draft => {
-    const value = draft.auctionState.pieceIncome;
+    const value = draft.pieceIncome;
 
     for (const square of draft.chessState.board.occupied) {
       const piece = getPiece(draft.chessState.board, square)!;
@@ -95,7 +102,9 @@ export function movePiece(
 
   if (game.phase !== "move") return { ok: false, error: "Not in move phase" };
 
-  if (game.turn !== getPiece(game.chessState.board, move.from)?.color)
+  const piece = getPiece(game.chessState.board, move.from);
+  if (!piece) return {ok: false, error: "Move from empty square."}
+  if (game.turn !== piece.color)
     return { ok: false, error: "Can't move opponent's peices." };
 
   try {
@@ -110,6 +119,8 @@ export function movePiece(
         draft.outcome = { winner, message: "mate" };
       });
     } else {
+      game = deductPieceFee(game, piece); // TODO: make castling cost extra.
+
       game = earnPieceIncome(game);
       game = earnInterest(game);
       if (game.auctionState.balance[game.turn] < game.auctionState.minBid) {

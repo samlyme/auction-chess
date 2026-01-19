@@ -48,12 +48,14 @@ export const Bid = z.discriminatedUnion("fold", [
 ]);
 export type Bid = z.infer<typeof Bid>;
 
+export const PieceValue = z.record(Role, z.number());
+export type PieceValue = z.infer<typeof PieceValue>;
+
 export const AuctionState = z.object({
   balance: z.record(Color, z.number()),
   bidHistory: z.array(z.array(Bid)),
   minBid: z.number(),
   interestRate: z.number(),
-  pieceIncome: z.record(Role, z.number()),
 });
 export type AuctionState = z.infer<typeof AuctionState>;
 
@@ -116,6 +118,8 @@ export type SerializedChessState = z.input<typeof ChessStateSchema>;
 export const AuctionChessStateSchema = z.object({
     chessState: ChessStateSchema,
     auctionState: AuctionState,
+    pieceIncome: PieceValue,
+    pieceFee: PieceValue,
     timeState: TimeState.optional(),
     turn: Color,
     phase: Phase,
@@ -139,14 +143,21 @@ export type InterestConfig = z.infer<typeof InterestConfig>;
 
 export const PieceIncomeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
-  z.object({ enabled: z.literal(true), pieceIncome: z.record(Role, z.number()) }),
+  z.object({ enabled: z.literal(true), pieceIncome: PieceValue }),
 ]);
 export type PieceIncomeConfig = z.infer<typeof PieceIncomeConfig>;
+
+export const PieceFeeConfig = z.discriminatedUnion("enabled", [
+  z.object({ enabled: z.literal(false) }),
+  z.object({ enabled: z.literal(true), pieceFee: PieceValue }),
+]);
+export type PieceFeeConfig = z.infer<typeof PieceFeeConfig>;
 
 export const GameConfig = z.object({
   hostColor: Color,
   timeConfig: TimeConfig,
   interestConfig: InterestConfig,
   pieceIncomeConfig: PieceIncomeConfig,
+  pieceFeeConfig: PieceFeeConfig,
 });
 export type GameConfig = z.infer<typeof GameConfig>;

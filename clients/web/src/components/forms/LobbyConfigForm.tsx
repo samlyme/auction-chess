@@ -66,6 +66,28 @@ export default function LobbyConfigForm({
 
   const [pieceIncome, setPieceIncome] = useState(initPieceIncome);
 
+  const [pieceFeeEnabled, setPieceFeeEnabled] = useState(
+    initConfig ? initConfig.gameConfig.pieceFeeConfig.enabled : false
+  );
+
+  // Requires balancing.
+  const defaultPieceFee = {
+    pawn: 0,
+    knight: 2,
+    bishop: 2,
+    rook: 3,
+    queen: 6,
+    king: 10,
+  };
+
+  const initPieceFee = initConfig
+    ? initConfig.gameConfig.pieceFeeConfig.enabled
+      ? initConfig.gameConfig.pieceFeeConfig.pieceFee
+      : defaultPieceFee
+    : defaultPieceFee;
+
+  const [pieceFee, setPieceFee] = useState(initPieceFee);
+
   const [isModified, setIsModified] = useState(isCreate);
 
   const navigate = useNavigate();
@@ -103,6 +125,12 @@ export default function LobbyConfigForm({
               pieceIncome,
             }
           : { enabled: false },
+        pieceFeeConfig: pieceFeeEnabled
+          ? {
+              enabled: true,
+              pieceFee,
+            }
+          : { enabled: false },
       },
     });
 
@@ -130,6 +158,10 @@ export default function LobbyConfigForm({
       setPieceIncomeEnabled(initConfig.gameConfig.pieceIncomeConfig.enabled);
       if (initConfig.gameConfig.pieceIncomeConfig.enabled) {
         setPieceIncome(initConfig.gameConfig.pieceIncomeConfig.pieceIncome);
+      }
+      setPieceFeeEnabled(initConfig.gameConfig.pieceFeeConfig.enabled);
+      if (initConfig.gameConfig.pieceFeeConfig.enabled) {
+        setPieceFee(initConfig.gameConfig.pieceFeeConfig.pieceFee);
       }
     }
     setIsModified(false);
@@ -266,6 +298,51 @@ export default function LobbyConfigForm({
                   onChange={(e) =>
                     setPieceIncome({
                       ...pieceIncome,
+                      [piece]: Number(e.target.value),
+                    })
+                  }
+                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-base text-neutral-900"
+                />
+              </div>
+            )
+          )}
+        </div>
+      )}
+      <div>
+        <label
+          htmlFor="pieceFeeEnabled"
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <input
+            id="pieceFeeEnabled"
+            type="checkbox"
+            checked={pieceFeeEnabled}
+            onChange={(e) => setPieceFeeEnabled(e.target.checked)}
+            className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm">Enable Piece Fee</span>
+        </label>
+      </div>
+      {pieceFeeEnabled && (
+        <div className="grid grid-cols-2 gap-3">
+          {(["pawn", "knight", "bishop", "rook", "queen", "king"] as const).map(
+            (piece) => (
+              <div key={piece}>
+                <label
+                  htmlFor={`pieceFee-${piece}`}
+                  className="mb-1 block text-sm capitalize"
+                >
+                  {piece}
+                </label>
+                <input
+                  id={`pieceFee-${piece}`}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={pieceFee[piece]}
+                  onChange={(e) =>
+                    setPieceFee({
+                      ...pieceFee,
                       [piece]: Number(e.target.value),
                     })
                   }
