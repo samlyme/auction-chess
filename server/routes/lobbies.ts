@@ -1,15 +1,15 @@
 import { type Context, Hono } from "hono";
-import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared/types";
-import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
-import { getProfile, validateProfile } from "../middleware/profiles.ts";
-import { getLobby, validateLobby } from "../middleware/lobbies.ts";
+import { LobbyConfig, LobbyJoinQuery, LobbyToPayload } from "shared/types/lobbies";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs";
+import { getProfile, validateProfile } from "../middleware/profiles";
+import { getLobby, validateLobby } from "../middleware/lobbies";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
 import {
   broadcastGameUpdate,
   broadcastLobbyDelete,
   broadcastLobbyUpdate,
-} from "../utils/realtime.ts";
+} from "../utils/realtime";
 import {
   createLobby,
   deleteLobby,
@@ -19,7 +19,7 @@ import {
   leaveLobby,
   startGame,
   updateLobbyConfig,
-} from "../state/lobbies.ts";
+} from "../state/lobbies";
 
 // could be a perf bottleneck since we are getting their profile on each req.
 const route = new Hono<MaybeLobbyEnv>()

@@ -5,7 +5,8 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import type { Color, LobbyConfig } from "shared/types";
+import type { Color } from "shared/types/game";
+import type { LobbyConfig } from "shared/types/lobbies";
 
 // NOTE: this is currently tightly coupled to my mutations
 // TODO: decouple this from page logic LOL!!

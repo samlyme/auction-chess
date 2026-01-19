@@ -2,7 +2,7 @@ import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import type { AuctionChessState, Color } from "shared/types";
+import type { AuctionChessState, Color } from "shared/types/game";
 
 interface PlayerInfoCardProps {
   username: string;

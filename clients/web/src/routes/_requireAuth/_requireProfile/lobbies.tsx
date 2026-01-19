@@ -10,15 +10,14 @@ import useRealtime from "@/hooks/useRealtime";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { type AuctionChessState, type Color } from "shared/types";
+import { type AuctionChessState, type Color } from "shared/types/game";
 import { useProfileOptions } from "@/queries/profiles";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
+import { pureDefaultSetup } from "shared/game/purePseudoChess";
 
-const defaultGameState = {
-  chessState: {
-    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  },
+const defaultGameState: AuctionChessState = {
+  chessState: pureDefaultSetup,
   auctionState: {
     balance: {
       white: 0,
@@ -36,7 +35,7 @@ const defaultGameState = {
   },
   turn: "white",
   phase: "bid",
-} as AuctionChessState;
+};
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
   loader: async ({ context }) => {

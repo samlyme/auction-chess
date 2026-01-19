@@ -1,5 +1,4 @@
-import { SquareSet } from "chessops";
-import type { Immutable } from "immer";
+import * as chessops from "chessops";
 import { z } from "zod";
 
 // ============================================================================
@@ -80,56 +79,49 @@ export type Outcome = z.infer<typeof Outcome>;
 // ============================================================================
 // Auction Chess Game Logic types
 // ============================================================================
+export const SquareSetSchema = z.object({
+  lo: z.number().int(), // Use int() for safety
+  hi: z.number().int(),
+}).transform((data) => new chessops.SquareSet(data.lo, data.hi));
 
-export const SerializedSquareSet = z.uint64();
-export type SerializedSquareSet = z.infer<typeof SerializedSquareSet>;
+export type SquareSet = chessops.SquareSet;
+export type SerializedSquareSet = z.input<typeof SquareSetSchema>;
 
-const createBoardSchema = <T extends z.ZodType>(squareSetType: T) => {
-  return z.object({
-    occupied: squareSetType,
-    promoted: squareSetType,
-    white: squareSetType,
-    black: squareSetType,
-    pawn: squareSetType,
-    knight: squareSetType,
-    bishop: squareSetType,
-    rook: squareSetType,
-    queen: squareSetType,
-    king: squareSetType,
-  });
-};
-export const Board = createBoardSchema(z.instanceof(SquareSet));
-export type Board = Immutable<z.infer<typeof Board>>;
-export const SerializedBoard = createBoardSchema(SerializedSquareSet);
-export type SerializedBoard = z.infer<typeof SerializedBoard>;
+export const BoardSchema = z.object({
+    occupied: SquareSetSchema,
+    promoted: SquareSetSchema,
+    white: SquareSetSchema,
+    black: SquareSetSchema,
+    pawn: SquareSetSchema,
+    knight: SquareSetSchema,
+    bishop: SquareSetSchema,
+    rook: SquareSetSchema,
+    queen: SquareSetSchema,
+    king: SquareSetSchema,
+});
+export type Board = z.output<typeof BoardSchema>;
+export type SerializedBoard = z.input<typeof BoardSchema>;
 
-const createChessStateSchema = <T extends z.ZodType>(squareSetType: T) => {
-  return z.object({
-    board: createBoardSchema(squareSetType),
-    castlingRights: squareSetType,
-    epSquare: Square.optional(),
-  })
-}
 // ChessState is roughly equivalent to Setup from chessops
-export const ChessState = createChessStateSchema(z.instanceof(SquareSet));
-export type ChessState = Immutable<z.infer<typeof ChessState>>;
-export const SerializedChessState = createChessStateSchema(SerializedSquareSet);
-export type SerializedChessState = Immutable<z.infer<typeof SerializedChessState>>;
+export const ChessStateSchema = z.object({
+  board: BoardSchema,
+  castlingRights: SquareSetSchema,
+  epSquare: Square.optional(),
+});
+export type ChessState = z.output<typeof ChessStateSchema>;
+export type SerializedChessState = z.input<typeof ChessStateSchema>;
 
-const createAuctionChessStateSchema = <T extends z.ZodType>(squareSetType: T) => {
-  return z.object({
-    chessState: createChessStateSchema(squareSetType),
+export const AuctionChessStateSchema = z.object({
+    chessState: ChessStateSchema,
     auctionState: AuctionState,
     timeState: TimeState.optional(),
     turn: Color,
     phase: Phase,
     outcome: Outcome.optional(),
-  })
-}
-export const AuctionChessState = createAuctionChessStateSchema(z.instanceof(SquareSet));
-export type AuctionChessState = Immutable<z.infer<typeof AuctionChessState>>;
-export const SerialziedAuctionChessState = createAuctionChessStateSchema(SerializedSquareSet);
-export type SerialziedAuctionChessState = Immutable<z.infer<typeof SerialziedAuctionChessState>>;
+})
+
+export type AuctionChessState = z.output<typeof AuctionChessStateSchema>;
+export type SerialziedAuctionChessState = z.input<typeof AuctionChessStateSchema>;
 
 export const TimeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),

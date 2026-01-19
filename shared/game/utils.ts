@@ -1,6 +1,6 @@
 import { makePiece } from "chessops/fen";
 import {getPiece,} from "./pureBoard"
-import {  type Board } from "../types/game";
+import type { Board } from "../types/game";
 
 // Need to copy code here because of type mismatch. Board !== PureBoard.
 export const makeBoardFen = (board: Board): string => {

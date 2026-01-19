@@ -4,8 +4,15 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./types/*": "./types/*",
-    "./game/*": "./game/",
+    "./types/game": "./types/game.ts",
+    "./types/lobbies": "./types/lobbies.ts",
+    "./types/profiles": "./types/profiles.ts",
+    "./types/result": "./types/result.ts",
+
+    "./game/auctionChess":"./game/auctionChess.ts",
+    "./game/pureBoard" : "./game/pureBoard.ts",
+    "./game/purePseudoChess" : "./game/purePseudoChess.ts",
+    "./game/utils" : "./game/utils.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

@@ -1,6 +1,6 @@
 
 import { z } from "zod";
-import { AuctionChessState, GameConfig } from "./game";
+import { AuctionChessStateSchema, GameConfig } from "./game";
 
 // ============================================================================
 // Lobby types
@@ -15,9 +15,9 @@ export const Lobby = z.object({
   code: z.string(),
   config: LobbyConfig,
   createdAt: z.string(),
-  gameState: AuctionChessState.nullable(),
+  gameState: AuctionChessStateSchema.nullable(),
   // TODO: implement game history.
-  // gameStateHistory: z.array(AuctionChessState),
+  // gameStateHistory: z.array(AuctionChessStateSchema),
   guestUid: z.string().nullable(),
   hostUid: z.string(),
   id: z.string(),

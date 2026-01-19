@@ -149,10 +149,12 @@ export function movePiece(
     return { ok: false, error: "Move no to valid square." };
   }
 
-  const piece = getPiece(setup.board, move.from)!;
 
   try {
     const out = produce(setup, (draft) => {
+      const piece = getPiece(draft.board, move.from)!;
+      draft.board = take(draft.board, move.from);
+
       if (piece.role === "king") {
         const isCastling = Math.abs(move.to - move.from) == 2;
         const castlingSide: "a" | "h" = move.to - move.from > 0 ? "h" : "a";
@@ -165,6 +167,7 @@ export function movePiece(
 
           const rook = getPiece(draft.board, rookFrom)!;
           draft.board = take(draft.board, move.from);
+
           draft.board = set(draft.board, rookTo, rook);
         }
 
@@ -192,6 +195,7 @@ export function movePiece(
         draft.epSquare = (move.to + move.from) / 2; // evil average trick.
       }
 
+      draft.board = set(draft.board, move.to, piece);
       // Castling only happens when rook is there!
       draft.castlingRights = draft.castlingRights.intersect(draft.board.rook);
 

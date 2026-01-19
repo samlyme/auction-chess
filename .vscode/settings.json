@@ -2,6 +2,10 @@
   "[typescript]": {
     // "editor.defaultFormatter": "denoland.vscode-deno"
   },
+  "[typescriptreact]": {},
+  // Use "minimal" to omit file extensions and let Vite/bundler resolve them
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "javascript.preferences.importModuleSpecifierEnding": "minimal",
   "eslint.enable": false,
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true

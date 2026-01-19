@@ -1,14 +1,15 @@
 import { opposite } from "chessops";
-import { castImmutable, produce } from "immer";
+import { produce } from "immer";
 import {
   Bid,
   type NormalMove,
   type GameConfig,
-  AuctionChessState,
+  type AuctionChessState,
 } from "../types/game";
 import type { Result } from "../types/result";
 
 import * as PseudoChess from "./purePseudoChess";
+import { getPiece } from "./pureBoard";
 
 const STARTING_BALANCE = 100;
 
@@ -22,7 +23,7 @@ export function createGame(config: GameConfig): AuctionChessState {
       }
     : undefined;
 
-  return castImmutable({
+  return {
     chessState: PseudoChess.pureDefaultSetup,
     timeState,
     auctionState: {
@@ -32,7 +33,7 @@ export function createGame(config: GameConfig): AuctionChessState {
     },
     turn: "white",
     phase: "bid",
-  }); // Cast to satisfy Immutable type
+  };
 }
 
 // TODO: factor out time logic from these
@@ -45,16 +46,29 @@ export function movePiece(
 
   if (game.phase !== "move") return { ok: false, error: "Not in move phase" };
 
+  if (game.turn !== getPiece(game.chessState.board, move.from)?.color) return { ok: false, error: "Can't move opponent's peices." };
+
   try {
     game = produce(game, (draft) => {
       const setup = draft.chessState;
       // const newSetup = PseudoChess.movePiece(setup, move)
       const newSetup = PseudoChess.movePiece(setup, move);
-      if (!newSetup.ok) throw new Error("invalid move.");
-
+      if (!newSetup.ok) {
+        throw new Error("invalid move.");
+      }
       draft.chessState = newSetup.value;
+
+      draft.turn = opposite(draft.turn);
+      draft.phase = "bid";
     });
+
+    if (game.auctionState.balance[game.turn] < game.auctionState.minBid) {
+      game = recordBid(game, { fold: true });
+    }
+
   } catch (e) {
+    console.error(e);
+
     return { ok: false, error: "invalid move." };
   }
   return { ok: true, value: game };
@@ -117,14 +131,18 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
     }
   }
 
-  game = recordBid(game, bid);
+  game = updateMinBid(recordBid(game, bid));
 
   const newTurnBalance = game.auctionState.balance[game.turn];
   const newMinBid = game.auctionState.minBid;
 
   // If new player can't bid then autofold for them.
+  console.log({newTurnBalance, newMinBid});
+
   if (newTurnBalance < newMinBid || newTurnBalance === 0) {
+    console.log("autofold", game.auctionState);
     game = recordBid(game, { fold: true });
+    console.log(game.auctionState);
   }
 
   return {

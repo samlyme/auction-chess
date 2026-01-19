@@ -1,4 +1,4 @@
-import type { Outcome } from "shared/types";
+import type { Outcome } from "shared/types/game";
 
 export function OutcomeModal({ outcome }: { outcome: Outcome }) {
   const winnerText = outcome.winner

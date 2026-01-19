@@ -5,8 +5,8 @@ import {
   useStartLobbyMutationOptions,
 } from "@/queries/lobbies";
 import { useMutation } from "@tanstack/react-query";
-import type { LobbyPayload } from "shared/types";
 import LobbyConfigForm from "../forms/LobbyConfigForm";
+import type { LobbyPayload } from "shared/types/lobbies";
 
 interface LobbyPanelProps {
   isHost: boolean;

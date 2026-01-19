@@ -1,7 +1,7 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { ProfileCreate, ProfileUpdate } from "shared/types";
 import { parseResponse } from "hono/client";
 import { api } from "./api";
+import type { ProfileCreate, ProfileUpdate } from "shared/types/profiles";
 
 // For getting other people's profiles.
 export function useProfileOptions(

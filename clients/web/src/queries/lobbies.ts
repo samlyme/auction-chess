@@ -1,7 +1,7 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import { LobbyConfig, type LobbyPayload } from "shared/types";
 import { parseResponse } from "hono/client";
 import { api } from "./api";
+import type { LobbyConfig, LobbyPayload } from "shared/types/lobbies";
 
 export function useLobbyOptions(initLobby?: LobbyPayload) {
   return queryOptions({
