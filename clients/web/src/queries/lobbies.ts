@@ -37,6 +37,7 @@ export function useJoinLobbyMutationOptions() {
       parseResponse(api.lobbies.join.$post({ query: { code } })),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"] });
     },
   });
 }
@@ -46,6 +47,7 @@ export function useLeaveLobbyMutationOptions() {
     mutationFn: () => parseResponse(api.lobbies.leave.$post()),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"] });
     },
   });
 }
