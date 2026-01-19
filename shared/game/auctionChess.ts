@@ -30,6 +30,7 @@ export function createGame(config: GameConfig): AuctionChessState {
       balance: { white: STARTING_BALANCE, black: STARTING_BALANCE },
       bidHistory: [[]],
       minBid: 1,
+      interestRate: config.interestConfig.enabled ? config.interestConfig.rate : 0,
     },
     turn: "white",
     phase: "bid",
@@ -50,13 +51,17 @@ function recordMove(game: AuctionChessState, move: NormalMove) {
     draft.phase = "bid";
   });
 }
-
-// TODO: factor out time logic from these
+function earnInterest(game: AuctionChessState) {
+  return produce(game, draft => {
+    const interestRate = draft.auctionState.interestRate;
+    draft.auctionState.balance.white += Math.floor(draft.auctionState.balance.white * interestRate);
+    draft.auctionState.balance.black += Math.floor(draft.auctionState.balance.black * interestRate);
+  })
+}
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
 ): GameResult {
-  // TODO: optimize the number of serializations and deserializations.
   if (game.outcome) return { ok: false, error: "Game already over." };
 
   if (game.phase !== "move") return { ok: false, error: "Not in move phase" };
@@ -75,10 +80,11 @@ export function movePiece(
           : "black";
         draft.outcome = { winner, message: "mate" };
       });
-    } else if (
-      game.auctionState.balance[game.turn] < game.auctionState.minBid
-    ) {
-      game = recordBid(game, { fold: true });
+    } else {
+      game = earnInterest(game);
+      if (game.auctionState.balance[game.turn] < game.auctionState.minBid) {
+        game = recordBid(game, { fold: true });
+      }
     }
   } catch (e) {
     console.error(e);

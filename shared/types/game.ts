@@ -52,6 +52,7 @@ export const AuctionState = z.object({
   balance: z.record(Color, z.number()),
   bidHistory: z.array(z.array(Bid)),
   minBid: z.number(),
+  interestRate: z.number(),
 });
 export type AuctionState = z.infer<typeof AuctionState>;
 
@@ -129,8 +130,15 @@ export const TimeConfig = z.discriminatedUnion("enabled", [
 ]);
 export type TimeConfig = z.infer<typeof TimeConfig>;
 
+export const InterestConfig  = z.discriminatedUnion("enabled", [
+  z.object({ enabled: z.literal(false) }),
+  z.object({ enabled: z.literal(true), rate: z.number() }),
+]);
+export type InterestConfig = z.infer<typeof InterestConfig>;
+
 export const GameConfig = z.object({
   hostColor: Color,
   timeConfig: TimeConfig,
+  interestConfig: InterestConfig,
 });
 export type GameConfig = z.infer<typeof GameConfig>;

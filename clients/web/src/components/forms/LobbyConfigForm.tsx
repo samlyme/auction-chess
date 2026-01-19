@@ -34,6 +34,17 @@ export default function LobbyConfigForm({
     : 5;
   const [timeMinutes, setTimeMinutes] = useState(initTime);
 
+  const [interestEnabled, setInterestEnabled] = useState(
+    initConfig ? initConfig.gameConfig.interestConfig.enabled : false
+  );
+
+  const initRate = initConfig
+    ? initConfig.gameConfig.interestConfig.enabled
+      ? initConfig.gameConfig.interestConfig.rate
+      : 0.05
+    : 0.05;
+  const [interestRate, setInterestRate] = useState(initRate);
+
   const [isModified, setIsModified] = useState(isCreate);
 
   const navigate = useNavigate();
@@ -59,6 +70,12 @@ export default function LobbyConfigForm({
               },
             }
           : { enabled: false },
+        interestConfig: interestEnabled
+          ? {
+              enabled: true,
+              rate: interestRate,
+            }
+          : { enabled: false },
       },
     });
 
@@ -78,6 +95,10 @@ export default function LobbyConfigForm({
       if (initConfig.gameConfig.timeConfig.enabled) {
         const timeMs = initConfig.gameConfig.timeConfig.initTime.white;
         setTimeMinutes(Math.floor(timeMs / (1000 * 60)));
+      }
+      setInterestEnabled(initConfig.gameConfig.interestConfig.enabled);
+      if (initConfig.gameConfig.interestConfig.enabled) {
+        setInterestRate(initConfig.gameConfig.interestConfig.rate);
       }
     }
     setIsModified(false);
@@ -143,6 +164,38 @@ export default function LobbyConfigForm({
             max="60"
             value={timeMinutes}
             onChange={(e) => setTimeMinutes(Number(e.target.value))}
+            className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
+          />
+        </div>
+      )}
+      <div>
+        <label
+          htmlFor="interestEnabled"
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <input
+            id="interestEnabled"
+            type="checkbox"
+            checked={interestEnabled}
+            onChange={(e) => setInterestEnabled(e.target.checked)}
+            className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm">Enable Interest</span>
+        </label>
+      </div>
+      {interestEnabled && (
+        <div>
+          <label htmlFor="interestRate" className="mb-2 block text-sm">
+            Interest Rate
+          </label>
+          <input
+            id="interestRate"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={interestRate}
+            onChange={(e) => setInterestRate(Number(e.target.value))}
             className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
           />
         </div>
