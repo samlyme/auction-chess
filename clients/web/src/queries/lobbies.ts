@@ -1,7 +1,7 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import { LobbyConfig, type LobbyPayload } from "shared/types";
 import { parseResponse } from "hono/client";
 import { api } from "./api";
+import type { LobbyConfig, LobbyPayload } from "shared/types/lobbies";
 
 export function useLobbyOptions(initLobby?: LobbyPayload) {
   return queryOptions({
@@ -37,6 +37,7 @@ export function useJoinLobbyMutationOptions() {
       parseResponse(api.lobbies.join.$post({ query: { code } })),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"] });
     },
   });
 }
@@ -46,6 +47,7 @@ export function useLeaveLobbyMutationOptions() {
     mutationFn: () => parseResponse(api.lobbies.leave.$post()),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"] });
     },
   });
 }

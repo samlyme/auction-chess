@@ -1,7 +1,7 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { Bid, NormalMove } from "shared/types";
 import { api } from "@/queries/api";
 import { parseResponse } from "hono/client";
+import { AuctionChessStateSchema, type Bid, type NormalMove } from "shared/types/game";
 
 export function useGameOptions() {
   return queryOptions({
@@ -9,7 +9,13 @@ export function useGameOptions() {
     // NOTE: the get request is routed to the lobbies route for a reason.
     // It is so that the get request can actually go through the lobby validation,
     // which is less performant than the regular game functionality.
-    queryFn: () => parseResponse(api.lobbies.game.$get()),
+    queryFn: async () => {
+      const res = await parseResponse(api.lobbies.game.$get());
+      console.log("get game!", res);
+      const chessState = AuctionChessStateSchema.parse(res);
+      console.log("parse game!", chessState);
+      return chessState;
+    },
   });
 }
 
@@ -19,7 +25,7 @@ export function useMakeBidMutationOptions() {
     mutationFn: (bid: Bid) =>
       parseResponse(api.game.play.bid.$post({ json: bid })),
     onSuccess: (data, _variables, _onMutateResult, context) => {
-      context.client.setQueryData(["game"], data);
+      context.client.setQueryData(["game"], AuctionChessStateSchema.parse(data));
     },
   });
 }
@@ -29,7 +35,7 @@ export function useMakeMoveMutationOptions() {
     mutationFn: (move: NormalMove) =>
       parseResponse(api.game.play.move.$post({ json: move })),
     onSuccess: (data, _variables, _onMutateResult, context) => {
-      context.client.setQueryData(["game"], data);
+      context.client.setQueryData(["game"], AuctionChessStateSchema.parse(data));
     },
   });
 }

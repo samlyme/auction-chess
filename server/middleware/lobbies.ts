@@ -1,10 +1,10 @@
 import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
-import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs.ts";
+import type { LobbyEnv, MaybeLobbyEnv } from "../types/honoEnvs";
 import { endTime, startTime } from "hono/timing";
 
-import * as Lobbies from "../state/lobbies.ts";
+import * as Lobbies from "../state/lobbies";
 
 export const getLobby: MiddlewareHandler<MaybeLobbyEnv> = async (c, next) => {
   startTime(c, "getLobby");
