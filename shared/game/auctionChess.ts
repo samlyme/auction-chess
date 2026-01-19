@@ -5,6 +5,7 @@ import {
   type NormalMove,
   type GameConfig,
   type AuctionChessState,
+  Role,
 } from "../types/game";
 import type { Result } from "../types/result";
 
@@ -15,6 +16,23 @@ const STARTING_BALANCE = 100;
 
 export type GameResult = Result<AuctionChessState, string>;
 
+export const defaultPieceValue: Record<Role, number> = {
+  "pawn": 1,
+  "knight": 3,
+  "bishop": 3,
+  "rook": 5,
+  "queen": 9,
+  "king": 20
+}
+
+export const nonePieceValue: Record<Role, number> = {
+  "pawn": 0,
+  "knight": 0,
+  "bishop": 0,
+  "rook": 0,
+  "queen": 0,
+  "king": 0
+}
 export function createGame(config: GameConfig): AuctionChessState {
   const timeState = config.timeConfig.enabled
     ? {
@@ -31,6 +49,7 @@ export function createGame(config: GameConfig): AuctionChessState {
       bidHistory: [[]],
       minBid: 1,
       interestRate: config.interestConfig.enabled ? config.interestConfig.rate : 0,
+      pieceIncome: config.pieceIncomeConfig.enabled ? config.pieceIncomeConfig.pieceIncome : nonePieceValue,
     },
     turn: "white",
     phase: "bid",
@@ -58,6 +77,16 @@ function earnInterest(game: AuctionChessState) {
     draft.auctionState.balance.black += Math.floor(draft.auctionState.balance.black * interestRate);
   })
 }
+function earnPieceIncome(game: AuctionChessState) {
+  return produce(game, draft => {
+    const value = draft.auctionState.pieceIncome;
+
+    for (const square of draft.chessState.board.occupied) {
+      const piece = getPiece(draft.chessState.board, square)!;
+      draft.auctionState.balance[piece.color] += value[piece.role];
+    }
+  })
+}
 export function movePiece(
   game: AuctionChessState,
   move: NormalMove,
@@ -81,6 +110,7 @@ export function movePiece(
         draft.outcome = { winner, message: "mate" };
       });
     } else {
+      game = earnPieceIncome(game);
       game = earnInterest(game);
       if (game.auctionState.balance[game.turn] < game.auctionState.minBid) {
         game = recordBid(game, { fold: true });
@@ -88,6 +118,7 @@ export function movePiece(
     }
   } catch (e) {
     console.error(e);
+
     return { ok: false, error: "invalid move." };
   }
   return { ok: true, value: game };

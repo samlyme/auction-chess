@@ -45,6 +45,27 @@ export default function LobbyConfigForm({
     : 0.05;
   const [interestRate, setInterestRate] = useState(initRate);
 
+  const [pieceIncomeEnabled, setPieceIncomeEnabled] = useState(
+    initConfig ? initConfig.gameConfig.pieceIncomeConfig.enabled : false
+  );
+
+  const defaultPieceIncome = {
+    pawn: 1,
+    knight: 3,
+    bishop: 3,
+    rook: 5,
+    queen: 9,
+    king: 0,
+  };
+
+  const initPieceIncome = initConfig
+    ? initConfig.gameConfig.pieceIncomeConfig.enabled
+      ? initConfig.gameConfig.pieceIncomeConfig.pieceIncome
+      : defaultPieceIncome
+    : defaultPieceIncome;
+
+  const [pieceIncome, setPieceIncome] = useState(initPieceIncome);
+
   const [isModified, setIsModified] = useState(isCreate);
 
   const navigate = useNavigate();
@@ -76,6 +97,12 @@ export default function LobbyConfigForm({
               rate: interestRate,
             }
           : { enabled: false },
+        pieceIncomeConfig: pieceIncomeEnabled
+          ? {
+              enabled: true,
+              pieceIncome,
+            }
+          : { enabled: false },
       },
     });
 
@@ -99,6 +126,10 @@ export default function LobbyConfigForm({
       setInterestEnabled(initConfig.gameConfig.interestConfig.enabled);
       if (initConfig.gameConfig.interestConfig.enabled) {
         setInterestRate(initConfig.gameConfig.interestConfig.rate);
+      }
+      setPieceIncomeEnabled(initConfig.gameConfig.pieceIncomeConfig.enabled);
+      if (initConfig.gameConfig.pieceIncomeConfig.enabled) {
+        setPieceIncome(initConfig.gameConfig.pieceIncomeConfig.pieceIncome);
       }
     }
     setIsModified(false);
@@ -198,6 +229,51 @@ export default function LobbyConfigForm({
             onChange={(e) => setInterestRate(Number(e.target.value))}
             className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
           />
+        </div>
+      )}
+      <div>
+        <label
+          htmlFor="pieceIncomeEnabled"
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <input
+            id="pieceIncomeEnabled"
+            type="checkbox"
+            checked={pieceIncomeEnabled}
+            onChange={(e) => setPieceIncomeEnabled(e.target.checked)}
+            className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm">Enable Piece Income</span>
+        </label>
+      </div>
+      {pieceIncomeEnabled && (
+        <div className="grid grid-cols-2 gap-3">
+          {(["pawn", "knight", "bishop", "rook", "queen", "king"] as const).map(
+            (piece) => (
+              <div key={piece}>
+                <label
+                  htmlFor={`pieceIncome-${piece}`}
+                  className="mb-1 block text-sm capitalize"
+                >
+                  {piece}
+                </label>
+                <input
+                  id={`pieceIncome-${piece}`}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={pieceIncome[piece]}
+                  onChange={(e) =>
+                    setPieceIncome({
+                      ...pieceIncome,
+                      [piece]: Number(e.target.value),
+                    })
+                  }
+                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-base text-neutral-900"
+                />
+              </div>
+            )
+          )}
         </div>
       )}
 
