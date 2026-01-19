@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { type MaybeProfileEnv } from "../types/honoEnvs.ts";
-import { Profile, ProfileCreate } from "shared/types";
-import { ProfileUpdate } from "shared/types";
-import { getProfile, validateProfile } from "../middleware/profiles.ts";
+import { type MaybeProfileEnv } from "../types/honoEnvs";
+import { Profile, ProfileCreate, ProfileUpdate } from "shared/types/profiles";
+import { getProfile, validateProfile } from "../middleware/profiles";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { HTTPException } from "hono/http-exception";

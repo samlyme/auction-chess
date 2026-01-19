@@ -2,6 +2,7 @@
   "name": "auction-chess",
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/node": "^25.0.9",
     "prettier": "^3.6.2"
   },
   "peerDependencies": {

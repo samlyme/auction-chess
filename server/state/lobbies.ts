@@ -1,6 +1,7 @@
-import type { AuctionChessState, Lobby, LobbyConfig } from "shared/types";
 import { randomUUIDv7 } from "bun";
-import { createGame } from "shared/game/auctionChess";
+import type { AuctionChessState } from "shared/types/game";
+import type { Lobby, LobbyConfig } from "shared/types/lobbies";
+import {createGame} from "shared/game/auctionChess"
 
 const lobbies: Record<string, Lobby> = {};
 const userIdToLobbyCode: Record<string, string> = {};
@@ -72,7 +73,6 @@ export function updateGameState(
 ): void {
   const lobby = lobbies[lobbyCode]!;
   lobby.gameState = gameState;
-  console.log("new game state", gameState);
 }
 
 function generateUniqueCode(): string {

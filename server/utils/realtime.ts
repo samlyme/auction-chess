@@ -1,10 +1,10 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { type AuctionChessState } from "shared/types/game";
 import {
-  AuctionChessState,
   LobbyEventType,
   LobbyToPayload,
   type Lobby,
-} from "shared/types";
+} from "shared/types/lobbies";
 
 export function broadcastLobbyDelete(channel: RealtimeChannel) {
   channel.httpSend(LobbyEventType.LobbyDelete, {});
@@ -24,6 +24,5 @@ export function broadcastGameUpdate(
   gameState: AuctionChessState,
 ) {
   // Supabase's httpSend mutates the payload, so we clone via Zod parse
-  const payload = AuctionChessState.parse(gameState);
-  return channel.httpSend(LobbyEventType.GameUpdate, payload);
+  return channel.httpSend(LobbyEventType.GameUpdate, gameState);
 }

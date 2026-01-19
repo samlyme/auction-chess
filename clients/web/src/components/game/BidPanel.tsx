@@ -2,16 +2,17 @@ import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import type { AuctionChessState, Color } from "shared/types";
+import type { AuctionChessState, Color } from "shared/types/game";
 
 interface PlayerInfoCardProps {
   username: string;
   balance: number;
   timer: UseCountdownTimerResult;
   enableTimer: boolean;
+  isTurn: boolean
 }
 
-function PlayerInfoCard({ username, balance, timer, enableTimer }: PlayerInfoCardProps) {
+function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: PlayerInfoCardProps) {
   const { remainingMs } = timer;
 
   const totalSeconds = remainingMs / 1000;
@@ -21,7 +22,7 @@ function PlayerInfoCard({ username, balance, timer, enableTimer }: PlayerInfoCar
 
 
   return (
-    <div className="rounded-lg bg-neutral-800 p-4">
+    <div className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}>
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
@@ -309,6 +310,8 @@ export default function BidPanel({
   const lastBid = bidStack.at(-1) ?? { amount: 0 };
   const secondLastBid = bidStack.at(-2) ?? { amount: 0 };
 
+  const isPlayerTurn = gameState.turn === playerColor;
+
   // Extract bid amounts from the last two bids
   let prevPlayerBidAmount = 0;
   let prevOppBidAmount = 0;
@@ -328,6 +331,7 @@ export default function BidPanel({
           balance={gameState.auctionState.balance[opponentColor]}
           timer={timers[opponentColor]}
           enableTimer={enableTimers}
+          isTurn={!isPlayerTurn}
         />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
@@ -363,6 +367,7 @@ export default function BidPanel({
           balance={gameState.auctionState.balance[playerColor]}
           timer={timers[playerColor]}
           enableTimer={enableTimers}
+          isTurn={isPlayerTurn}
         />
       </div>
     </div>
