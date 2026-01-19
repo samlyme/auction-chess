@@ -79,7 +79,7 @@ export function kingMoves(setup: ChessState, from: Square): SquareSet {
     setup.board[piece.color],
   );
 
-  if (isCheck(setup.board, piece.color)) {
+  if (!isCheck(setup.board, piece.color)) {
     const legalRooks = setup.castlingRights.intersect(
       SquareSet.backrank(piece.color),
     );
@@ -165,7 +165,7 @@ export function movePiece(
           const rookTo = rookCastlesTo(piece.color, castlingSide);
 
           const rook = getPiece(draft.board, rookFrom)!;
-          draft.board = take(draft.board, move.from);
+          draft.board = take(draft.board, rookFrom);
 
           draft.board = set(draft.board, rookTo, rook);
         }
@@ -194,6 +194,7 @@ export function movePiece(
         draft.epSquare = (move.to + move.from) / 2; // evil average trick.
       }
 
+      draft.board = take(draft.board, move.to); // Remove captured piece if any
       draft.board = set(draft.board, move.to, piece);
       // Castling only happens when rook is there!
       draft.castlingRights = draft.castlingRights.intersect(draft.board.rook);
