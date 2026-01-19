@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { Color } from "shared/types";
-import type { GameEnv } from "../types/honoEnvs.ts";
+import type { Color } from "shared/types/game";
+import type { GameEnv } from "../types/honoEnvs";
 
 export const validateGame: MiddlewareHandler<GameEnv> = async (c, next) => {
   const lobby = c.get("lobby");
@@ -73,7 +73,7 @@ export const validateTime: MiddlewareHandler<GameEnv> = async (c, next) => {
     timeUsed > gameState.timeState.time[gameState.turn]
   ) {
     console.log({timeUsed, time: gameState.timeState.time});
-    
+
     throw new HTTPException(400, { message: "Move came after timeout." });
   }
 

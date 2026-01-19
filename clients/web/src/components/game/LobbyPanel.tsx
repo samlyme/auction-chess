@@ -5,8 +5,8 @@ import {
   useStartLobbyMutationOptions,
 } from "@/queries/lobbies";
 import { useMutation } from "@tanstack/react-query";
-import type { LobbyPayload } from "shared/types";
 import LobbyConfigForm from "../forms/LobbyConfigForm";
+import type { LobbyPayload } from "shared/types/lobbies";
 
 interface LobbyPanelProps {
   isHost: boolean;
@@ -69,7 +69,7 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                 <div className="flex flex-col gap-3">
                   {!gameStarted ? (
                     <>
-                      <div className={`rounded bg-neutral-600 p-4`}>
+                      <div className={`max-h-110 overflow-y-auto rounded bg-neutral-600 p-4`}>
                         <LobbyConfigForm
                           isCreate={false}
                           initConfig={lobby.config}

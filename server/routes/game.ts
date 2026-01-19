@@ -1,25 +1,25 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { Bid, NormalMove } from "shared/types";
+import { Bid, NormalMove } from "shared/types/game";
 import {
   deductTime,
   makeBid as makeBidLogic,
   movePiece as movePieceLogic,
   timecheck,
 } from "shared/game/auctionChess";
-import type { GameEnv } from "../types/honoEnvs.ts";
+import type { GameEnv } from "../types/honoEnvs";
 import {
   recordReceivedTime,
   validateGame,
   validatePlayer,
   validateTime,
   validateTurn,
-} from "../middleware/game.ts";
-import { getLobby, validateLobby } from "../middleware/lobbies.ts";
-import { broadcastGameUpdate } from "../utils/realtime.ts";
+} from "../middleware/game";
+import { getLobby, validateLobby } from "../middleware/lobbies";
+import { broadcastGameUpdate } from "../utils/realtime";
 import { wrapTime } from "hono/timing";
-import { updateGameState } from "../state/lobbies.ts";
+import { updateGameState } from "../state/lobbies";
 
 const gameplay = new Hono<GameEnv>()
   .use(

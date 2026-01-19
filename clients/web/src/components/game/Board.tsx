@@ -1,4 +1,3 @@
-import { PseudoChess } from "shared/game/pseudoChess";
 import {
   makeSquare,
   parseSquare,
@@ -22,9 +21,13 @@ import {
   availableMove,
   selectedSquare,
 } from "@/components/game/BoardStyle";
-import type { AuctionChessState } from "shared/types";
 import { useMutation } from "@tanstack/react-query";
 import { useMakeMoveMutationOptions } from "@/queries/game";
+import type { AuctionChessState } from "shared/types/game";
+
+import { makeBoardFen } from "shared/game/utils"
+import * as BoardOps from "shared/game/pureBoard"
+import * as PseudoChess from "shared/game/purePseudoChess"
 
 function PromotionMenu({
   color,
@@ -106,23 +109,22 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
   const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
-  const chessLogic = new PseudoChess(gameState.chessState.fen);
 
   const moveOptions = moveFrom
-    ? chessLogic.legalDests(parseSquare(moveFrom)!)
+    ? PseudoChess.legalDests(gameState.chessState, parseSquare(moveFrom)!)
     : [];
   const squareStyles: Record<string, React.CSSProperties> = {};
   if (moveFrom) {
     squareStyles[moveFrom] = selectedSquare;
   }
   for (const moveOption of moveOptions) {
-    squareStyles[makeSquare(moveOption)] = chessLogic.get(moveOption)
+    squareStyles[makeSquare(moveOption)] = BoardOps.getPiece(gameState.chessState.board, moveOption)
       ? availableCapture
       : availableMove;
   }
 
   function shouldPromote(move: NormalMove): boolean {
-    if (chessLogic.get(move.from)?.role !== "pawn") return false;
+    if (BoardOps.getPiece(gameState.chessState.board, move.from)?.role !== "pawn") return false;
     return SquareSet.backranks().has(move.to);
   }
 
@@ -149,12 +151,12 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
       to: parseSquare(targetSquare)!,
     };
 
-    if (chessLogic.isLegalDest(move) && shouldPromote(move)) {
+    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) && shouldPromote(move)) {
       setPromotionMove(move);
       return false;
     }
 
-    if (chessLogic.isLegalDest(move)) {
+    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
       setPromotionMove(null);
@@ -184,9 +186,9 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
     }
 
     const move = { from: parseSquare(moveFrom)!, to: parseSquare(square)! };
-    if (chessLogic.isLegalDest(move, playerColor) && shouldPromote(move)) {
+    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) && shouldPromote(move)) {
       setPromotionMove(move);
-    } else if (chessLogic.isLegalDest(move, playerColor)) {
+    } else if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
     } else {
@@ -209,14 +211,15 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
       >
         <Chessboard
           options={{
-            position: gameState.chessState.fen,
+            position: makeBoardFen(gameState.chessState.board),
             onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
             onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
             onSquareClick:
               gameState.phase === "bid" ? undefined : onSquareClick,
             squareStyles,
             boardOrientation: playerColor,
-            alphaNotationStyle: { fontSize: "var(--text-base)" }
+            alphaNotationStyle: { fontSize: "var(--text-base)" },
+            numericNotationStyle: { fontSize: "var(--text-base)" }
           }}
         />
       </div>

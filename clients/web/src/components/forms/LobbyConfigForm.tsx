@@ -5,7 +5,8 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import type { Color, LobbyConfig } from "shared/types";
+import type { Color } from "shared/types/game";
+import type { LobbyConfig } from "shared/types/lobbies";
 
 // NOTE: this is currently tightly coupled to my mutations
 // TODO: decouple this from page logic LOL!!
@@ -33,6 +34,60 @@ export default function LobbyConfigForm({
     : 5;
   const [timeMinutes, setTimeMinutes] = useState(initTime);
 
+  const [interestEnabled, setInterestEnabled] = useState(
+    initConfig ? initConfig.gameConfig.interestConfig.enabled : false
+  );
+
+  const initRate = initConfig
+    ? initConfig.gameConfig.interestConfig.enabled
+      ? initConfig.gameConfig.interestConfig.rate
+      : 0.05
+    : 0.05;
+  const [interestRate, setInterestRate] = useState(initRate);
+
+  const [pieceIncomeEnabled, setPieceIncomeEnabled] = useState(
+    initConfig ? initConfig.gameConfig.pieceIncomeConfig.enabled : false
+  );
+
+  const defaultPieceIncome = {
+    pawn: 1,
+    knight: 3,
+    bishop: 3,
+    rook: 5,
+    queen: 9,
+    king: 0,
+  };
+
+  const initPieceIncome = initConfig
+    ? initConfig.gameConfig.pieceIncomeConfig.enabled
+      ? initConfig.gameConfig.pieceIncomeConfig.pieceIncome
+      : defaultPieceIncome
+    : defaultPieceIncome;
+
+  const [pieceIncome, setPieceIncome] = useState(initPieceIncome);
+
+  const [pieceFeeEnabled, setPieceFeeEnabled] = useState(
+    initConfig ? initConfig.gameConfig.pieceFeeConfig.enabled : false
+  );
+
+  // Requires balancing.
+  const defaultPieceFee = {
+    pawn: 0,
+    knight: 2,
+    bishop: 2,
+    rook: 3,
+    queen: 6,
+    king: 10,
+  };
+
+  const initPieceFee = initConfig
+    ? initConfig.gameConfig.pieceFeeConfig.enabled
+      ? initConfig.gameConfig.pieceFeeConfig.pieceFee
+      : defaultPieceFee
+    : defaultPieceFee;
+
+  const [pieceFee, setPieceFee] = useState(initPieceFee);
+
   const [isModified, setIsModified] = useState(isCreate);
 
   const navigate = useNavigate();
@@ -58,6 +113,24 @@ export default function LobbyConfigForm({
               },
             }
           : { enabled: false },
+        interestConfig: interestEnabled
+          ? {
+              enabled: true,
+              rate: interestRate,
+            }
+          : { enabled: false },
+        pieceIncomeConfig: pieceIncomeEnabled
+          ? {
+              enabled: true,
+              pieceIncome,
+            }
+          : { enabled: false },
+        pieceFeeConfig: pieceFeeEnabled
+          ? {
+              enabled: true,
+              pieceFee,
+            }
+          : { enabled: false },
       },
     });
 
@@ -77,6 +150,18 @@ export default function LobbyConfigForm({
       if (initConfig.gameConfig.timeConfig.enabled) {
         const timeMs = initConfig.gameConfig.timeConfig.initTime.white;
         setTimeMinutes(Math.floor(timeMs / (1000 * 60)));
+      }
+      setInterestEnabled(initConfig.gameConfig.interestConfig.enabled);
+      if (initConfig.gameConfig.interestConfig.enabled) {
+        setInterestRate(initConfig.gameConfig.interestConfig.rate);
+      }
+      setPieceIncomeEnabled(initConfig.gameConfig.pieceIncomeConfig.enabled);
+      if (initConfig.gameConfig.pieceIncomeConfig.enabled) {
+        setPieceIncome(initConfig.gameConfig.pieceIncomeConfig.pieceIncome);
+      }
+      setPieceFeeEnabled(initConfig.gameConfig.pieceFeeConfig.enabled);
+      if (initConfig.gameConfig.pieceFeeConfig.enabled) {
+        setPieceFee(initConfig.gameConfig.pieceFeeConfig.pieceFee);
       }
     }
     setIsModified(false);
@@ -144,6 +229,128 @@ export default function LobbyConfigForm({
             onChange={(e) => setTimeMinutes(Number(e.target.value))}
             className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
           />
+        </div>
+      )}
+      <div>
+        <label
+          htmlFor="interestEnabled"
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <input
+            id="interestEnabled"
+            type="checkbox"
+            checked={interestEnabled}
+            onChange={(e) => setInterestEnabled(e.target.checked)}
+            className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm">Enable Interest</span>
+        </label>
+      </div>
+      {interestEnabled && (
+        <div>
+          <label htmlFor="interestRate" className="mb-2 block text-sm">
+            Interest Rate
+          </label>
+          <input
+            id="interestRate"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={interestRate}
+            onChange={(e) => setInterestRate(Number(e.target.value))}
+            className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
+          />
+        </div>
+      )}
+      <div>
+        <label
+          htmlFor="pieceIncomeEnabled"
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <input
+            id="pieceIncomeEnabled"
+            type="checkbox"
+            checked={pieceIncomeEnabled}
+            onChange={(e) => setPieceIncomeEnabled(e.target.checked)}
+            className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm">Enable Piece Income</span>
+        </label>
+      </div>
+      {pieceIncomeEnabled && (
+        <div className="grid grid-cols-2 gap-3">
+          {(["pawn", "knight", "bishop", "rook", "queen", "king"] as const).map(
+            (piece) => (
+              <div key={piece}>
+                <label
+                  htmlFor={`pieceIncome-${piece}`}
+                  className="mb-1 block text-sm capitalize"
+                >
+                  {piece}
+                </label>
+                <input
+                  id={`pieceIncome-${piece}`}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={pieceIncome[piece]}
+                  onChange={(e) =>
+                    setPieceIncome({
+                      ...pieceIncome,
+                      [piece]: Number(e.target.value),
+                    })
+                  }
+                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-base text-neutral-900"
+                />
+              </div>
+            )
+          )}
+        </div>
+      )}
+      <div>
+        <label
+          htmlFor="pieceFeeEnabled"
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <input
+            id="pieceFeeEnabled"
+            type="checkbox"
+            checked={pieceFeeEnabled}
+            onChange={(e) => setPieceFeeEnabled(e.target.checked)}
+            className="h-5 w-5 rounded border-neutral-300 bg-neutral-50 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm">Enable Piece Fee</span>
+        </label>
+      </div>
+      {pieceFeeEnabled && (
+        <div className="grid grid-cols-2 gap-3">
+          {(["pawn", "knight", "bishop", "rook", "queen", "king"] as const).map(
+            (piece) => (
+              <div key={piece}>
+                <label
+                  htmlFor={`pieceFee-${piece}`}
+                  className="mb-1 block text-sm capitalize"
+                >
+                  {piece}
+                </label>
+                <input
+                  id={`pieceFee-${piece}`}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={pieceFee[piece]}
+                  onChange={(e) =>
+                    setPieceFee({
+                      ...pieceFee,
+                      [piece]: Number(e.target.value),
+                    })
+                  }
+                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-base text-neutral-900"
+                />
+              </div>
+            )
+          )}
         </div>
       )}
 

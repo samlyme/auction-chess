@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { AuctionChessState, LobbyEventType, LobbyPayload } from "shared/types";
 import supabase from "@/supabase";
 import { useQueryClient } from "@tanstack/react-query";
+import { LobbyEventType, LobbyPayload } from "shared/types/lobbies";
+import { AuctionChessStateSchema } from "shared/types/game";
 
 // provide all initial values. Thus, this hook's only responsibility is to
 // list for updates. However, that means it still does the logic for fetching
@@ -42,7 +43,7 @@ export default function useRealtime(userId: string, lobbyCode: string) {
             break;
 
           case LobbyEventType.GameUpdate: {
-            const newGameState = AuctionChessState.parse(update.payload);
+            const newGameState = AuctionChessStateSchema.parse(update.payload);
             queryClient.setQueryData(["game"], newGameState);
             break;
           }
