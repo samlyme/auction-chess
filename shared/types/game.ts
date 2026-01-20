@@ -118,8 +118,8 @@ export type SerializedChessState = z.input<typeof ChessStateSchema>;
 export const AuctionChessStateSchema = z.object({
     chessState: ChessStateSchema,
     auctionState: AuctionState,
-    pieceIncome: PieceValue,
-    pieceFee: PieceValue,
+    pieceIncome: PieceValue.optional(),
+    pieceFee: PieceValue.optional(),
     timeState: TimeState.optional(),
     turn: Color,
     phase: Phase,

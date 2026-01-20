@@ -73,8 +73,10 @@ function recordMove(game: AuctionChessState, move: NormalMove) {
 }
 function deductPieceFee(game: AuctionChessState, piece: Piece) {
   return produce(game, draft => {
+    if (!draft.pieceFee) return;
+
     const color = piece.color;
-    draft.auctionState.balance[color] -= game.pieceFee[piece.role];
+    draft.auctionState.balance[color] -= draft.pieceFee[piece.role];
   })
 }
 function earnInterest(game: AuctionChessState) {
@@ -87,6 +89,7 @@ function earnInterest(game: AuctionChessState) {
 function earnPieceIncome(game: AuctionChessState) {
   return produce(game, draft => {
     const value = draft.pieceIncome;
+    if (!value) return;
 
     for (const square of draft.chessState.board.occupied) {
       const piece = getPiece(draft.chessState.board, square)!;

@@ -17,10 +17,11 @@ import {
   type Piece,
   type Role,
 } from "chessops";
-import { makeBoardFen, makeFen, parseFen } from "chessops/fen";
-import { Square, type Result } from "../types";
+import { parseFen } from "chessops/fen";
 import { rookCastlesTo, squareFromCoords } from "chessops/util";
 import { produce } from "immer";
+import type { Square } from "../types/game";
+import type { Result } from "../types/result";
 
 export interface PureBoard {
   /**
