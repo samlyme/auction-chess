@@ -23,7 +23,7 @@ import {
 } from "@/components/game/BoardStyle";
 import { useMutation } from "@tanstack/react-query";
 import { useMakeMoveMutationOptions } from "@/queries/game";
-import type { Board, AuctionChessState, ChessState } from "shared/types/game";
+import type { AuctionChessState } from "shared/types/game";
 
 import { makeBoardFen } from "shared/game/utils";
 import * as BoardOps from "shared/game/pureBoard";
