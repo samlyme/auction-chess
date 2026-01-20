@@ -145,8 +145,7 @@ function BidControls({
             onClick={() => onBid(bid)}
             disabled={!canBid || isBidPending}
             variant="green"
-            size="xl"
-            className="flex-1"
+            className="flex-1 px-4 py-2 text-xl"
             loading={isBidPending}
             loadingText="Bidding..."
           >
@@ -156,8 +155,7 @@ function BidControls({
             onClick={onFold}
             disabled={isBidPending}
             variant="red"
-            size="xl"
-            className="flex-1"
+            className="flex-1 px-4 py-2 text-xl"
             loading={isBidPending}
             loadingText="Folding..."
           >
@@ -168,8 +166,7 @@ function BidControls({
         <Button
           onClick={() => setBid(maxBid)}
           variant="yellow"
-          size="xl"
-          className="flex-1"
+          className="flex-1 px-4 py-2 text-xl"
           fullWidth
         >
           Max
@@ -232,7 +229,7 @@ function BidAdjustmentControls({
           onClick={incScale}
           disabled={!canIncScale}
           variant="purple"
-          className="flex w-full flex-1 items-center justify-center text-purple-700"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0 text-purple-700"
         >
           <span className="rotate-270">»</span>
         </Button>
@@ -241,7 +238,7 @@ function BidAdjustmentControls({
           onClick={incLarge}
           disabled={!canInc}
           variant="green"
-          className="flex w-full flex-1 items-center justify-center"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           +{stepLarge * scale}
         </Button>
@@ -250,7 +247,7 @@ function BidAdjustmentControls({
           onClick={incSmall}
           disabled={!canInc}
           variant="green"
-          className="flex w-full flex-1 items-center justify-center"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           +{stepSmall * scale}
         </Button>
@@ -258,7 +255,7 @@ function BidAdjustmentControls({
         <Button
           onClick={onReset}
           variant="yellow"
-          className="flex w-full flex-1 items-center justify-center border border-yellow-500 bg-yellow-300 text-yellow-700 hover:bg-yellow-200"
+          className="flex w-full flex-1 items-center justify-center rounded-md border border-yellow-500 bg-yellow-300 p-0 text-yellow-700 hover:bg-yellow-200"
         >
           Reset
         </Button>
@@ -267,7 +264,7 @@ function BidAdjustmentControls({
           onClick={decSmall}
           disabled={!canDec}
           variant="red"
-          className="flex w-full flex-1 items-center justify-center"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           -{stepSmall * scale}
         </Button>
@@ -275,7 +272,7 @@ function BidAdjustmentControls({
           onClick={decLarge}
           disabled={!canDec}
           variant="red"
-          className="flex w-full flex-1 items-center justify-center"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           -{stepLarge * scale}
         </Button>
@@ -284,7 +281,7 @@ function BidAdjustmentControls({
           onClick={decScale}
           disabled={!canDecScale}
           variant="purple"
-          className="flex w-full flex-1 items-center justify-center text-purple-700"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0 text-purple-700"
         >
           <span className="rotate-90">»</span>
         </Button>
@@ -370,12 +367,12 @@ export default function BidPanel({
                   onFold={handleFold}
                   isBidPending={makeBidMutation.isPending}
                 />
-                <BidAdjustmentControls
+                {/* <BidAdjustmentControls
                   bid={bid}
                   setBid={setBid}
                   minBid={gameState.auctionState.minBid}
                   maxBid={gameState.auctionState.balance[playerColor]}
-                />
+                /> */}
               </div>
             </div>
           </div>
