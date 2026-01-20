@@ -109,3 +109,10 @@
   background-color: var(--color-neutral-900);
   color: var(--color-text-primary);
 }
+
+/* Ensure placeholder text uses cqw-based sizing */
+::placeholder {
+  font-size: inherit;
+  color: var(--color-text-tertiary);
+  opacity: 1;
+}

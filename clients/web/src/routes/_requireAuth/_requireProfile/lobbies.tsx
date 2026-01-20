@@ -145,7 +145,7 @@ function RouteComponent() {
   if (!lobby) return <Navigate to={"/home"} />;
 
   return (
-    <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
+    <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
         <div className="col-span-3">
           <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby} />

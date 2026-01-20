@@ -3,6 +3,7 @@ import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { AuctionChessState, Color } from "shared/types/game";
+import { Button } from "@/components/ui";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -134,34 +135,45 @@ function BidControls({
                 setIsValidInput(true);
               }
             }}
-            className={`placeholder:text-color-tertiary w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? "text-red-500" : "text-white"}`}
+            className={`w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? "text-red-500" : "text-white"}`}
           />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-2 gap-2">
-          <button
+          <Button
             onClick={() => onBid(bid)}
             disabled={!canBid || isBidPending}
-            className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="green"
+            size="xl"
+            className="flex-1"
+            loading={isBidPending}
+            loadingText="Bidding..."
           >
-            {isBidPending ? "Bidding..." : "BID"}
-          </button>
-          <button
+            BID
+          </Button>
+          <Button
             onClick={onFold}
             disabled={isBidPending}
-            className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="red"
+            size="xl"
+            className="flex-1"
+            loading={isBidPending}
+            loadingText="Folding..."
           >
-            {isBidPending ? "Folding..." : "FOLD"}
-          </button>
+            FOLD
+          </Button>
         </div>
         {/* Technically, this is slightly sub optimal but its fine. */}
-        <button
+        <Button
           onClick={() => setBid(maxBid)}
-          className="w-full flex-1 cursor-pointer rounded bg-yellow-400 px-4 py-2 text-xl hover:bg-yellow-300"
+          variant="yellow"
+          size="xl"
+          className="flex-1"
+          fullWidth
         >
           Max
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -216,59 +228,66 @@ function BidAdjustmentControls({
   return (
     <div className="flex flex-1">
       <div className="flex h-full w-full flex-col items-center gap-1">
-        <button
+        <Button
           onClick={incScale}
           disabled={!canIncScale}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 text-purple-700 hover:bg-purple-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="purple"
+          className="flex w-full flex-1 items-center justify-center text-purple-700"
         >
           <span className="rotate-270">»</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={incLarge}
           disabled={!canInc}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="green"
+          className="flex w-full flex-1 items-center justify-center"
         >
           +{stepLarge * scale}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={incSmall}
           disabled={!canInc}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="green"
+          className="flex w-full flex-1 items-center justify-center"
         >
           +{stepSmall * scale}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={onReset}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md border border-yellow-500 bg-yellow-300 text-yellow-700 hover:bg-yellow-200"
+          variant="yellow"
+          className="flex w-full flex-1 items-center justify-center border border-yellow-500 bg-yellow-300 text-yellow-700 hover:bg-yellow-200"
         >
           Reset
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={decSmall}
           disabled={!canDec}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="red"
+          className="flex w-full flex-1 items-center justify-center"
         >
           -{stepSmall * scale}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={decLarge}
           disabled={!canDec}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="red"
+          className="flex w-full flex-1 items-center justify-center"
         >
           -{stepLarge * scale}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={decScale}
           disabled={!canDecScale}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 text-purple-700 hover:bg-purple-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="purple"
+          className="flex w-full flex-1 items-center justify-center text-purple-700"
         >
           <span className="rotate-90">»</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

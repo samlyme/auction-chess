@@ -1,5 +1,6 @@
 import supabase from "@/supabase";
 import { createFileRoute } from "@tanstack/react-router";
+import { Button, FormInput, Card } from "@/components/ui";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/settings")({
   component: RouteComponent,
@@ -22,7 +23,7 @@ function RouteComponent() {
       <div className="mx-auto max-w-2xl px-6 py-12">
         <h1 className="mb-8 text-4xl font-bold">Settings</h1>
 
-        <div className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
+        <Card className="shadow-lg">
           <h2 className="mb-6 text-2xl font-semibold">Profile</h2>
 
           <form
@@ -31,38 +32,38 @@ function RouteComponent() {
             }}
             className="flex flex-col gap-6"
           >
-            <div>
-              <label htmlFor="username" className="mb-2 block text-sm">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                value={profile.username}
-                disabled
-                className="w-full cursor-not-allowed rounded-lg border border-neutral-300 bg-neutral-600 px-4 py-2 text-base text-neutral-400"
-              />
-            </div>
+            <FormInput
+              id="username"
+              label="Username"
+              type="text"
+              value={profile.username}
+              disabled
+              className="cursor-not-allowed border-neutral-300 bg-neutral-600 px-4 py-2 text-neutral-400"
+            />
 
-            <button
+            <Button
               type="submit"
+              variant="blue"
+              size="lg"
+              fullWidth
               disabled={true}
-              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
             >
               "Update Profile"
-            </button>
+            </Button>
           </form>
-        </div>
+        </Card>
 
-        <div className="mt-8 rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
+        <Card className="mt-8 shadow-lg">
           <h2 className="mb-4 text-2xl font-semibold">Account</h2>
-          <button
+          <Button
             onClick={handleSignOut}
-            className="w-full rounded-lg bg-red-600 px-6 py-3 text-base text-white transition-colors hover:bg-red-400"
+            variant="red"
+            size="lg"
+            fullWidth
           >
             Sign Out
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import LobbyConfigForm from "../forms/LobbyConfigForm";
 import type { LobbyPayload } from "shared/types/lobbies";
+import { Button } from "@/components/ui";
 
 interface LobbyPanelProps {
   isHost: boolean;
@@ -57,12 +58,13 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                     {lobby.code}
                   </p>
                 </div>
-                <button
+                <Button
                   onClick={handleCopyCode}
-                  className="w-full cursor-pointer rounded bg-purple-400 px-4 py-2 text-base hover:bg-purple-300"
+                  variant="purple"
+                  fullWidth
                 >
                   Copy Code
-                </button>
+                </Button>
               </div>
 
               {isHost ? (
@@ -75,48 +77,53 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                           initConfig={lobby.config}
                         />
                       </div>
-                      <button
+                      <Button
                         onClick={handleStartLobby}
-                        disabled={
-                          startLobbyMutation.isPending || !lobby.guestUid
-                        }
-                        className="w-full cursor-pointer rounded bg-green-400 px-4 py-3 text-xl hover:bg-green-300 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                        disabled={!lobby.guestUid}
+                        variant="green"
+                        size="xl"
+                        fullWidth
+                        loading={startLobbyMutation.isPending}
+                        loadingText="Starting..."
                       >
-                        {startLobbyMutation.isPending
-                          ? "Starting..."
-                          : "Start Game"}
-                      </button>
+                        Start Game
+                      </Button>
                     </>
                   ) : (
-                    <button
+                    <Button
                       onClick={handleEndLobby}
-                      disabled={endLobbyMutation.isPending}
-                      className="w-full cursor-pointer rounded bg-yellow-400 px-4 py-3 text-xl hover:bg-yellow-300 disabled:bg-neutral-400"
+                      variant="yellow"
+                      size="xl"
+                      fullWidth
+                      loading={endLobbyMutation.isPending}
+                      loadingText="Ending..."
                     >
-                      {endLobbyMutation.isPending ? "Ending..." : "End Game"}
-                    </button>
+                      End Game
+                    </Button>
                   )}
-                  <button
+                  <Button
                     onClick={handleDeleteLobby}
-                    disabled={deleteLobbyMutation.isPending}
-                    className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300 disabled:bg-neutral-400"
+                    variant="red"
+                    size="xl"
+                    fullWidth
+                    loading={deleteLobbyMutation.isPending}
+                    loadingText="Deleting..."
                   >
-                    {deleteLobbyMutation.isPending
-                      ? "Deleting..."
-                      : "Delete Lobby"}
-                  </button>
+                    Delete Lobby
+                  </Button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  <button
+                  <Button
                     onClick={handleLeaveLobby}
-                    disabled={leaveLobbyMutation.isPending}
-                    className="w-full cursor-pointer rounded bg-red-400 px-4 py-3 text-xl hover:bg-red-300 disabled:bg-neutral-400"
+                    variant="red"
+                    size="xl"
+                    fullWidth
+                    loading={leaveLobbyMutation.isPending}
+                    loadingText="Leaving..."
                   >
-                    {leaveLobbyMutation.isPending
-                      ? "Leaving..."
-                      : "Leave Lobby"}
-                  </button>
+                    Leave Lobby
+                  </Button>
                 </div>
               )}
             </div>

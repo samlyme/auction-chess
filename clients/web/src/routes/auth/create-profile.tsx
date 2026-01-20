@@ -6,6 +6,7 @@ import {
   useMyProfileOptions,
 } from "@/queries/profiles";
 import { useMutation } from "@tanstack/react-query";
+import { Button, FormInput, Card } from "@/components/ui";
 
 export const Route = createFileRoute("/auth/create-profile")({
   // TODO: redirect user off this page if profile is created.
@@ -46,36 +47,34 @@ function RouteComponent() {
 
   return (
     <div className="flex h-full w-full items-center justify-center overflow-auto bg-(--color-background) p-8">
-      <div className="w-full max-w-md rounded-lg border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
+      <Card className="w-full max-w-md shadow-lg">
         <h1 className="mb-6 text-4xl">Pick a username</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label htmlFor="username" className="mb-2 block text-base">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="w-full rounded-lg border border-neutral-300 bg-neutral-400 px-4 py-3 text-base"
-            />
-          </div>
+          <FormInput
+            id="username"
+            label="Username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="border-neutral-300 bg-neutral-400 px-4 py-3"
+          />
           {createProfileMutation.error && (
             <div className="mb-4 text-base text-red-600">
               {createProfileMutation.error.detail.data.message}
             </div>
           )}
-          <button
+          <Button
             type="submit"
-            disabled={createProfileMutation.isPending}
-            className="rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
+            variant="blue"
+            size="lg"
+            loading={createProfileMutation.isPending}
+            loadingText="Creating..."
           >
-            {createProfileMutation.isPending ? "Creating..." : "Create Profile"}
-          </button>
+            Create Profile
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
