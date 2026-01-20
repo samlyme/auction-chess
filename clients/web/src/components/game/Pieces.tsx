@@ -29,12 +29,12 @@ const createWrappedObject = (
     acc[key] = (props) => (
       <div className="relative">
         {income !== 0 && (
-          <div className="absolute top-0 left-2 text-base text-green-500">
+          <div className="absolute top-0 left-2 text-base text-green-500 [text-shadow:0_1px_1px_rgba(0,0,0,0.8)]">
             +${income}
           </div>
         )}
         {fee !== 0 && (
-          <div className="absolute top-0 right-2 text-base text-red-500">
+          <div className="absolute top-0 right-2 text-base text-red-500 [text-shadow:0_1px_1px_rgba(0,0,0,0.8)]">
             -${fee}
           </div>
         )}

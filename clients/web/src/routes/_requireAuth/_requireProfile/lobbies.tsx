@@ -15,30 +15,7 @@ import { useProfileOptions } from "@/queries/profiles";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
 import { pureDefaultSetup } from "shared/game/purePseudoChess";
-
-const defaultGameState: AuctionChessState = {
-  chessState: pureDefaultSetup,
-  auctionState: {
-    balance: {
-      white: 0,
-      black: 0,
-    },
-    bidHistory: [],
-    minBid: 0,
-    interestRate: 0.05
-  },
-  timeState: {
-    time: {
-      white: 0,
-      black: 0,
-    },
-    prev: null,
-  },
-  // pieceIncome: defaultPieceIncome,
-  // pieceFee: defaultPieceIncome,
-  turn: "white",
-  phase: "bid",
-};
+import { createGame } from "shared/game/auctionChess";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
   loader: async ({ context }) => {
@@ -144,6 +121,7 @@ function RouteComponent() {
   // NOW we can do the early return, after all hooks have been called
   if (!lobby) return <Navigate to={"/home"} />;
 
+  const defaultGameState = createGame(lobby.config.gameConfig);
   return (
     <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
