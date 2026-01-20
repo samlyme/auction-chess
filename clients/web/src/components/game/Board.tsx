@@ -30,6 +30,7 @@ import * as BoardOps from "shared/game/pureBoard";
 import * as PseudoChess from "shared/game/purePseudoChess";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
+import { createPieces } from "./Pieces";
 
 function PromotionMenu({
   color,
@@ -268,6 +269,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
         <Chessboard
           options={{
             position: boardFen,
+            pieces: createPieces(gameState.pieceIncome, gameState.pieceFee),
             onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
             onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
             onSquareClick:
