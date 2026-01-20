@@ -16,14 +16,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
 import { pureDefaultSetup } from "shared/game/purePseudoChess";
 
-  const defaultPieceIncome = {
-    pawn: 1,
-    knight: 3,
-    bishop: 3,
-    rook: 5,
-    queen: 9,
-    king: 0,
-  };
 const defaultGameState: AuctionChessState = {
   chessState: pureDefaultSetup,
   auctionState: {
@@ -42,8 +34,8 @@ const defaultGameState: AuctionChessState = {
     },
     prev: null,
   },
-  pieceIncome: defaultPieceIncome,
-  pieceFee: defaultPieceIncome,
+  // pieceIncome: defaultPieceIncome,
+  // pieceFee: defaultPieceIncome,
   turn: "white",
   phase: "bid",
 };
