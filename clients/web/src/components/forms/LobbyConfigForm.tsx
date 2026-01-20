@@ -56,7 +56,7 @@ export default function LobbyConfigForm({
     bishop: 3,
     rook: 5,
     queen: 9,
-    king: 0,
+    king: 11,
   };
 
   const initPieceIncome = initConfig
@@ -73,12 +73,12 @@ export default function LobbyConfigForm({
 
   // Requires balancing.
   const defaultPieceFee = {
-    pawn: 0,
-    knight: 2,
-    bishop: 2,
-    rook: 3,
-    queen: 6,
-    king: 10,
+    pawn: 1,
+    knight: 9,
+    bishop: 9,
+    rook: 25,
+    queen: 81,
+    king: 100,
   };
 
   const initPieceFee = initConfig
@@ -281,7 +281,6 @@ export default function LobbyConfigForm({
                 label={piece}
                 type="number"
                 min={0}
-                step={0.1}
                 value={pieceIncome[piece]}
                 onChange={(e) =>
                   setPieceIncome({
@@ -320,7 +319,6 @@ export default function LobbyConfigForm({
                 label={piece}
                 type="number"
                 min={0}
-                step={0.1}
                 value={pieceFee[piece]}
                 onChange={(e) =>
                   setPieceFee({
