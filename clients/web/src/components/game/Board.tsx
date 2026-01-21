@@ -15,7 +15,7 @@ import {
   type PieceHandlerArgs,
   type SquareHandlerArgs,
 } from "react-chessboard";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   availableCapture,
   availableMove,
@@ -32,6 +32,7 @@ import * as AuctionChess from "shared/game/auctionChess";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
+import { GameContext } from "@/contexts/Game";
 
 function PromotionMenu({
   color,
@@ -103,57 +104,21 @@ function PromotionMenu({
   );
 }
 
-interface BoardProps {
-  gameState: AuctionChessState;
-  playerColor: Color;
-}
+export function AuctionChessBoard() {
 
-export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
+  const {gameState: game, defaultGameState, playerColor} = useContext(GameContext);
+  const gameState = game || defaultGameState;
+
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
   const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
-  const prevChessStateRef = useRef<AuctionChessState | null>(null);
-  const sounds = useGameSounds();
   const [boardFen, setBoardFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
   );
   useEffect(() => {
-    setBoardFen(makeBoardFen(gameState.chessState.board));
-  }, [gameState.chessState.board]);
-  useEffect(() => {
-    // There are various sounds for various situations. If a piece is captured,
-    // a different sound plays. How can I get access to the previous gameState?
-    const currGameState = gameState;
-    const prevGameState = prevChessStateRef.current;
-    if (PseudoChess.isCheck(currGameState.chessState.board, playerColor)) {
-      console.log("in check!");
-
-      // sounds.playCheck();
-      sounds.playLowTime();
-    }
-    else if (currGameState.outcome) {
-      // These sounds are "fake". The files are actually symlinks LOL
-      // if (currGameState.outcome.winner === null) {
-      //   sounds.playDraw();
-      // }
-      // else if (currGameState.outcome.winner === playerColor) {
-      //   sounds.playVictory();
-      // }
-      // else {
-      //   sounds.playDefeat();
-      // }
-      sounds.playNotify();
-    }
-    else if (prevGameState && !prevGameState.chessState.board.occupied.xor(currGameState.chessState.board.occupied).moreThanOne()) {
-      sounds.playCapture();
-    }
-    else {
-      sounds.playMove();
-    }
-    prevChessStateRef.current = gameState;
-  }, [boardFen]);
-
+    setBoardFen(makeBoardFen((gameState || defaultGameState).chessState.board));
+  }, [gameState]);
   const moveOptions = moveFrom
     ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
     : [];

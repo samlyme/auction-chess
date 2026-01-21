@@ -1,36 +1,25 @@
-import BidPanel from "@/components/game/BidPanel";
-import { AuctionChessBoard } from "@/components/game/Board";
-import LobbyPanel from "@/components/game/LobbyPanel";
-import { OutcomeModal } from "@/components/game/OutcomeModal";
+import { getRouteApi, Navigate } from "@tanstack/react-router";
+import { GameContext } from "./Game";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLobbyOptions } from "@/queries/lobbies";
+import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
+import useRealtime from "@/hooks/useRealtime";
+import type { Color } from "shared/types/game";
+import { useProfileOptions } from "@/queries/profiles";
 import {
   useCountdownTimer,
   type UseCountdownTimerResult,
 } from "@/hooks/useCountdownTimer";
-import useRealtime from "@/hooks/useRealtime";
-import { useLobbyOptions } from "@/queries/lobbies";
-import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { type AuctionChessState, type Color } from "shared/types/game";
-import { useProfileOptions } from "@/queries/profiles";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
-import { pureDefaultSetup } from "shared/game/purePseudoChess";
 import { createGame } from "shared/game/auctionChess";
-import GameContextProvider from "@/contexts/GameContextProvider";
 
-export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
-  loader: async ({ context }) => {
-    const { queryClient } = context;
+const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");
 
-    const lobby = await queryClient.ensureQueryData(useLobbyOptions());
-    if (!lobby) throw redirect({ to: "/home" });
-
-    return { lobby };
-  },
-  component: RouteComponent,
-});
-
-function RouteComponent() {
+export default function GameContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const userId = Route.useRouteContext().auth.session.user.id;
   const userProfile = Route.useRouteContext().profile;
 
@@ -112,48 +101,27 @@ function RouteComponent() {
     }
   }, [game, lobby]);
 
+  if (!lobby) return <Navigate to={"/home"} />;
+
+  const defaultGameState = createGame(lobby.config.gameConfig);
+
   const timers: Record<Color, UseCountdownTimerResult> =
     playerColor === "white"
       ? { white: playerTimer, black: oppTimer }
       : { white: oppTimer, black: playerTimer };
 
-  // NOW we can do the early return, after all hooks have been called
-  if (!lobby) return <Navigate to={"/home"} />;
-
-  const defaultGameState = createGame(lobby.config.gameConfig);
   return (
-    <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
-      <div className="grid grid-cols-12 gap-4 p-16">
-        <div className="col-span-3">
-          <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby} />
-        </div>
-
-        <GameContextProvider>
-          <div className={`col-span-6 flex items-center justify-center`}>
-            <div
-              className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
-            >
-              <AuctionChessBoard/>
-            </div>
-          </div>
-          <div className={`col-span-3`}>
-            <div
-              className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
-            >
-              <BidPanel
-                username={userProfile.username}
-                oppUsername={oppProfile?.username}
-                showTurn={!!game}
-                playerColor={playerColor}
-                gameState={game || defaultGameState}
-                timers={timers}
-                enableTimers={!!game?.timeState}
-              />
-            </div>
-          </div>
-        </GameContextProvider>
-      </div>
-      {game?.outcome && <OutcomeModal outcome={game.outcome} />}
-    </div>
+    <GameContext
+      value={{
+        gameState: game,
+        defaultGameState: defaultGameState,
+        timers,
+        playerColor,
+        oppProfile,
+        userProfile,
+      }}
+    >
+      {children}
+    </GameContext>
   );
 }

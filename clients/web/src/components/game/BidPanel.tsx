@@ -1,9 +1,10 @@
 import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import type { AuctionChessState, Color } from "shared/types/game";
 import { Button } from "@/components/ui";
+import { GameContext } from "@/contexts/Game";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -305,13 +306,13 @@ function BidAdjustmentControls({
 }
 
 export default function BidPanel({
-  showTurn,
-  username,
-  oppUsername,
-  playerColor,
-  gameState,
-  timers,
-  enableTimers,
+  // showTurn,
+  // username,
+  // oppUsername,
+  // playerColor,
+  // gameState,
+  // timers,
+  // enableTimers,
 }: {
   showTurn: boolean;
   username: string;
@@ -321,6 +322,11 @@ export default function BidPanel({
   timers: Record<Color, UseCountdownTimerResult>;
   enableTimers: boolean;
 }) {
+  const {gameState: game, defaultGameState, timers, playerColor, userProfile, oppProfile} = useContext(GameContext);
+  const gameState = game || defaultGameState;
+
+  const showTurn = !!game
+
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
     setBid(gameState.auctionState.minBid);
@@ -348,10 +354,10 @@ export default function BidPanel({
     <>
       <div className="flex h-full w-full flex-col gap-4">
         <PlayerInfoCard
-          username={oppUsername || "waiting..."}
+          username={oppProfile?.username || "waiting..."}
           balance={gameState.auctionState.balance[opponentColor]}
           timer={timers[opponentColor]}
-          enableTimer={enableTimers}
+          enableTimer={!!game?.timeState}
           isTurn={showTurn && !isPlayerTurn}
           setBid={setBid}
         />
@@ -386,10 +392,10 @@ export default function BidPanel({
         </div>
 
         <PlayerInfoCard
-          username={username}
+          username={userProfile.username}
           balance={gameState.auctionState.balance[playerColor]}
           timer={timers[playerColor]}
-          enableTimer={enableTimers}
+          enableTimer={!!gameState?.timeState}
           isTurn={showTurn && isPlayerTurn}
         />
       </div>
