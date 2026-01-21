@@ -129,25 +129,30 @@ function RouteComponent() {
           <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby} />
         </div>
 
-        <div
-          className={`${!gameStarted || phase !== "move" ? "opacity-50" : ""} col-span-6 flex items-center justify-center`}
-        >
-          <AuctionChessBoard
-            gameState={game || defaultGameState}
-            playerColor={playerColor}
-          />
+        <div className={`col-span-6 flex items-center justify-center`}>
+          <div
+            className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
+          >
+            <AuctionChessBoard
+              gameState={game || defaultGameState}
+              playerColor={playerColor}
+            />
+          </div>
         </div>
-        <div
-          className={`${!gameStarted || phase !== "bid" ? "opacity-50" : ""} col-span-3`}
-        >
-          <BidPanel
-            username={userProfile.username}
-            oppUsername={oppProfile?.username}
-            playerColor={playerColor}
-            gameState={game || defaultGameState}
-            timers={timers}
-            enableTimers={!!game?.timeState}
-          />
+        <div className={`col-span-3`}>
+          <div
+            className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
+          >
+            <BidPanel
+              username={userProfile.username}
+              oppUsername={oppProfile?.username}
+              showTurn={!!game}
+              playerColor={playerColor}
+              gameState={game || defaultGameState}
+              timers={timers}
+              enableTimers={!!game?.timeState}
+            />
+          </div>
         </div>
       </div>
       {game?.outcome && <OutcomeModal outcome={game.outcome} />}

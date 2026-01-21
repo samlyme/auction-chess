@@ -254,7 +254,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   }
 
   return (
-    <div>
+    <>
       {promotionMove && (
         <PromotionMenu
           color={playerColor}
@@ -281,6 +281,6 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
           }}
         />
       </div>
-    </div>
+    </>
   );
 }

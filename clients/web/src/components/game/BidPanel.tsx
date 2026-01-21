@@ -291,6 +291,7 @@ function BidAdjustmentControls({
 }
 
 export default function BidPanel({
+  showTurn,
   username,
   oppUsername,
   playerColor,
@@ -298,6 +299,7 @@ export default function BidPanel({
   timers,
   enableTimers,
 }: {
+  showTurn: boolean;
   username: string;
   oppUsername: string | undefined;
   playerColor: Color;
@@ -307,7 +309,7 @@ export default function BidPanel({
 }) {
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
-    if (gameState.turn === playerColor) setBid(gameState.auctionState.minBid);
+    setBid(gameState.auctionState.minBid);
   }, [gameState.auctionState.minBid]);
   const makeBidMutation = useMutation(useMakeBidMutationOptions());
 
@@ -340,14 +342,14 @@ export default function BidPanel({
   }
 
   return (
-    <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
+    < >
       <div className="flex h-full w-full flex-col gap-4">
         <PlayerInfoCard
           username={oppUsername || "waiting..."}
           balance={gameState.auctionState.balance[opponentColor]}
           timer={timers[opponentColor]}
           enableTimer={enableTimers}
-          isTurn={!isPlayerTurn}
+          isTurn={showTurn && !isPlayerTurn}
         />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
@@ -383,9 +385,9 @@ export default function BidPanel({
           balance={gameState.auctionState.balance[playerColor]}
           timer={timers[playerColor]}
           enableTimer={enableTimers}
-          isTurn={isPlayerTurn}
+          isTurn={showTurn && isPlayerTurn}
         />
       </div>
-    </div>
+    </>
   );
 }
