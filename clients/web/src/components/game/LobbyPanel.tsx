@@ -6,6 +6,7 @@ import {
 } from "@/queries/lobbies";
 import { useMutation } from "@tanstack/react-query";
 import LobbyConfigForm from "../forms/LobbyConfigForm";
+import LobbyConfigDisplay from "./LobbyConfigDisplay";
 import type { LobbyPayload } from "shared/types/lobbies";
 import { Button } from "@/components/ui";
 
@@ -90,16 +91,21 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                       </Button>
                     </>
                   ) : (
-                    <Button
-                      onClick={handleEndLobby}
-                      variant="yellow"
-                      size="xl"
-                      fullWidth
-                      loading={endLobbyMutation.isPending}
-                      loadingText="Ending..."
-                    >
-                      End Game
-                    </Button>
+                    <>
+                      <div className="max-h-110 overflow-y-auto rounded bg-neutral-600 p-4">
+                        <LobbyConfigDisplay config={lobby.config} />
+                      </div>
+                      <Button
+                        onClick={handleEndLobby}
+                        variant="yellow"
+                        size="xl"
+                        fullWidth
+                        loading={endLobbyMutation.isPending}
+                        loadingText="Ending..."
+                      >
+                        End Game
+                      </Button>
+                    </>
                   )}
                   <Button
                     onClick={handleDeleteLobby}
@@ -114,6 +120,9 @@ export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
+                  <div className="max-h-110 overflow-y-auto rounded bg-neutral-600 p-4">
+                    <LobbyConfigDisplay config={lobby.config} />
+                  </div>
                   <Button
                     onClick={handleLeaveLobby}
                     variant="red"
