@@ -31,7 +31,8 @@
     "react-timer-hook": "^4.0.5",
     "server": "workspace:*",
     "shared": "workspace:*",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "use-sound": "^5.0.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.19.0",
