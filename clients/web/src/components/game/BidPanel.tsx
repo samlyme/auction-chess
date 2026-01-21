@@ -33,6 +33,8 @@ function PlayerInfoCard({
 
 const prevBalance = usePrevious(balance);
 const controls = useAnimation();
+const [fallingNumber, setFallingNumber] = useState<{amount: number, key: number, xOffset: number, rotation: number} | null>(null);
+
 useEffect(() => {
     // Prevent flashing on the very first render
     if (prevBalance === null) return;
@@ -51,12 +53,19 @@ useEffect(() => {
         backgroundColor: [flashColor, "#404040"],
         transition: { duration: 0.5, ease: "easeOut" },
       });
+
+      // Trigger falling number animation with random trajectory
+      const diff = balance - prevBalance;
+      const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
+      const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
+      setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
+      setTimeout(() => setFallingNumber(null), 1200);
     }
   }, [balance, prevBalance, controls]);
 
   return (
     <div
-      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}
+      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4 relative ${fallingNumber ? "z-50" : ""}`}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
@@ -69,13 +78,34 @@ useEffect(() => {
               </p>
             </div>
             <div className="m-2 bg-neutral-600 p-2">
-              <p className="text-2xl">{username}</p>
+              <p className="text-lg">{username}</p>
             </div>
           </div>
         </div>
         <motion.div animate={controls} onClick={() => {if(setBid) setBid(balance)}}
-        className="flex-1 rounded bg-neutral-700">
+        className="relative flex-1 rounded bg-neutral-700">
           <p className="mt-3 text-center text-7xl">${balance}</p>
+          {fallingNumber && (
+            <motion.div
+              key={fallingNumber.key}
+              initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
+              animate={{
+                y: 120,
+                x: fallingNumber.xOffset,
+                opacity: 0,
+                rotate: fallingNumber.rotation
+              }}
+              transition={{
+                duration: .6,
+                ease: "easeIn"
+              }}
+              className={`absolute left-3/4 top-1/2 -translate-x-1/2 text-3xl font-bold pointer-events-none ${
+                fallingNumber.amount > 0 ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {fallingNumber.amount > 0 ? "+" : "-"}${fallingNumber.amount}
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </div>

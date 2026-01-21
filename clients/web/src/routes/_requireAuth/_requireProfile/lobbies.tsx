@@ -10,11 +10,10 @@ import useRealtime from "@/hooks/useRealtime";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { type AuctionChessState, type Color } from "shared/types/game";
+import { type Color } from "shared/types/game";
 import { useProfileOptions } from "@/queries/profiles";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
-import { pureDefaultSetup } from "shared/game/purePseudoChess";
 import { createGame } from "shared/game/auctionChess";
 import GameContextProvider from "@/contexts/GameContextProvider";
 
@@ -140,15 +139,7 @@ function RouteComponent() {
             <div
               className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
             >
-              <BidPanel
-                username={userProfile.username}
-                oppUsername={oppProfile?.username}
-                showTurn={!!game}
-                playerColor={playerColor}
-                gameState={game || defaultGameState}
-                timers={timers}
-                enableTimers={!!game?.timeState}
-              />
+              <BidPanel/>
             </div>
           </div>
         </GameContextProvider>
