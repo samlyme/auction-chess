@@ -4,13 +4,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
 import useRealtime from "@/hooks/useRealtime";
-import type { Color } from "shared/types/game";
+import type { AuctionChessState, Color } from "shared/types/game";
 import { useProfileOptions } from "@/queries/profiles";
 import {
   useCountdownTimer,
   type UseCountdownTimerResult,
 } from "@/hooks/useCountdownTimer";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createGame } from "shared/game/auctionChess";
 
 const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");

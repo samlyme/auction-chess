@@ -2,9 +2,10 @@ import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
-import type { AuctionChessState, Color } from "shared/types/game";
+import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { GameContext } from "@/contexts/Game";
+import usePrevious from "@/hooks/usePrevious";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -30,6 +31,29 @@ function PlayerInfoCard({
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
+const prevBalance = usePrevious(balance);
+const controls = useAnimation();
+useEffect(() => {
+    // Prevent flashing on the very first render
+    if (prevBalance === null) return;
+
+    const isIncrease = balance > prevBalance;
+    const isDecrease = balance < prevBalance;
+
+    // 2. Define colors (Green for up, Red for down)
+    const flashColor = isIncrease
+      ? "#4ade80" // Emerald green
+      : "#f87171"; // Red
+
+    if (isIncrease || isDecrease) {
+      // 3. Trigger the animation sequence
+      controls.start({
+        backgroundColor: [flashColor, "#404040"],
+        transition: { duration: 0.5, ease: "easeOut" },
+      });
+    }
+  }, [balance, prevBalance, controls]);
+
   return (
     <div
       className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}
@@ -49,10 +73,10 @@ function PlayerInfoCard({
             </div>
           </div>
         </div>
-        <div onClick={() => {if(setBid) setBid(balance)}}
+        <motion.div animate={controls} onClick={() => {if(setBid) setBid(balance)}}
         className="flex-1 rounded bg-neutral-700">
           <p className="mt-3 text-center text-7xl">${balance}</p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
@@ -305,23 +329,7 @@ function BidAdjustmentControls({
   );
 }
 
-export default function BidPanel({
-  // showTurn,
-  // username,
-  // oppUsername,
-  // playerColor,
-  // gameState,
-  // timers,
-  // enableTimers,
-}: {
-  showTurn: boolean;
-  username: string;
-  oppUsername: string | undefined;
-  playerColor: Color;
-  gameState: AuctionChessState;
-  timers: Record<Color, UseCountdownTimerResult>;
-  enableTimers: boolean;
-}) {
+export default function BidPanel() {
   const {gameState: game, defaultGameState, timers, playerColor, userProfile, oppProfile} = useContext(GameContext);
   const gameState = game || defaultGameState;
 
