@@ -89,6 +89,16 @@ export default function LobbyConfigForm({
 
   const [pieceFee, setPieceFee] = useState(initPieceFee);
 
+  const initBalanceWhite = initConfig
+    ? initConfig.gameConfig.auctionConfig.initBalance.white
+    : 300;
+  const initBalanceBlack = initConfig
+    ? initConfig.gameConfig.auctionConfig.initBalance.black
+    : 300;
+
+  const [balanceWhite, setBalanceWhite] = useState(initBalanceWhite);
+  const [balanceBlack, setBalanceBlack] = useState(initBalanceBlack);
+
   const [isModified, setIsModified] = useState(isCreate);
 
   const navigate = useNavigate();
@@ -105,6 +115,12 @@ export default function LobbyConfigForm({
     await configureLobbyMutation.mutateAsync({
       gameConfig: {
         hostColor,
+        auctionConfig: {
+          initBalance: {
+            white: balanceWhite,
+            black: balanceBlack,
+          },
+        },
         timeConfig: timeEnabled
           ? {
               enabled: true,
@@ -147,6 +163,8 @@ export default function LobbyConfigForm({
 
     if (initConfig) {
       setHostColor(initConfig.gameConfig.hostColor);
+      setBalanceWhite(initConfig.gameConfig.auctionConfig.initBalance.white);
+      setBalanceBlack(initConfig.gameConfig.auctionConfig.initBalance.black);
       setTimeEnabled(initConfig.gameConfig.timeConfig.enabled);
       if (initConfig.gameConfig.timeConfig.enabled) {
         const timeMs = initConfig.gameConfig.timeConfig.initTime.white;
@@ -179,6 +197,7 @@ export default function LobbyConfigForm({
 
         {isCreate || (
           <button
+            type="button"
             disabled={!isModified}
             className={`h-8 w-8 rounded border p-1 opacity-50 enabled:hover:bg-neutral-400 disabled:opacity-20`}
             onClick={handleReset}
@@ -200,6 +219,26 @@ export default function LobbyConfigForm({
           <option value="white">White</option>
           <option value="black">Black</option>
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <FormInput
+          id="balanceWhite"
+          label="White Initial Balance"
+          type="number"
+          min={0}
+          value={balanceWhite}
+          onChange={(e) => setBalanceWhite(Number(e.target.value))}
+          className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900"
+        />
+        <FormInput
+          id="balanceBlack"
+          label="Black Initial Balance"
+          type="number"
+          min={0}
+          value={balanceBlack}
+          onChange={(e) => setBalanceBlack(Number(e.target.value))}
+          className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900"
+        />
       </div>
       <div>
         <label

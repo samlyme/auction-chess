@@ -83,25 +83,27 @@ export type Outcome = z.infer<typeof Outcome>;
 // ============================================================================
 // Auction Chess Game Logic types
 // ============================================================================
-export const SquareSetSchema = z.object({
-  lo: z.number().int(), // Use int() for safety
-  hi: z.number().int(),
-}).transform((data) => new chessops.SquareSet(data.lo, data.hi));
+export const SquareSetSchema = z
+  .object({
+    lo: z.number().int(), // Use int() for safety
+    hi: z.number().int(),
+  })
+  .transform((data) => new chessops.SquareSet(data.lo, data.hi));
 
 export type SquareSet = chessops.SquareSet;
 export type SerializedSquareSet = z.input<typeof SquareSetSchema>;
 
 export const BoardSchema = z.object({
-    occupied: SquareSetSchema,
-    promoted: SquareSetSchema,
-    white: SquareSetSchema,
-    black: SquareSetSchema,
-    pawn: SquareSetSchema,
-    knight: SquareSetSchema,
-    bishop: SquareSetSchema,
-    rook: SquareSetSchema,
-    queen: SquareSetSchema,
-    king: SquareSetSchema,
+  occupied: SquareSetSchema,
+  promoted: SquareSetSchema,
+  white: SquareSetSchema,
+  black: SquareSetSchema,
+  pawn: SquareSetSchema,
+  knight: SquareSetSchema,
+  bishop: SquareSetSchema,
+  rook: SquareSetSchema,
+  queen: SquareSetSchema,
+  king: SquareSetSchema,
 });
 export type Board = z.output<typeof BoardSchema>;
 export type SerializedBoard = z.input<typeof BoardSchema>;
@@ -116,18 +118,20 @@ export type ChessState = z.output<typeof ChessStateSchema>;
 export type SerializedChessState = z.input<typeof ChessStateSchema>;
 
 export const AuctionChessStateSchema = z.object({
-    chessState: ChessStateSchema,
-    auctionState: AuctionState,
-    pieceIncome: PieceValue.optional(),
-    pieceFee: PieceValue.optional(),
-    timeState: TimeState.optional(),
-    turn: Color,
-    phase: Phase,
-    outcome: Outcome.optional(),
-})
+  chessState: ChessStateSchema,
+  auctionState: AuctionState,
+  pieceIncome: PieceValue.optional(),
+  pieceFee: PieceValue.optional(),
+  timeState: TimeState.optional(),
+  turn: Color,
+  phase: Phase,
+  outcome: Outcome.optional(),
+});
 
 export type AuctionChessState = z.output<typeof AuctionChessStateSchema>;
-export type SerialziedAuctionChessState = z.input<typeof AuctionChessStateSchema>;
+export type SerialziedAuctionChessState = z.input<
+  typeof AuctionChessStateSchema
+>;
 
 export const TimeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
@@ -135,11 +139,16 @@ export const TimeConfig = z.discriminatedUnion("enabled", [
 ]);
 export type TimeConfig = z.infer<typeof TimeConfig>;
 
-export const InterestConfig  = z.discriminatedUnion("enabled", [
+export const InterestConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
   z.object({ enabled: z.literal(true), rate: z.number() }),
 ]);
 export type InterestConfig = z.infer<typeof InterestConfig>;
+
+export const AuctionConfig = z.object({
+  initBalance: z.record(Color, z.int()),
+});
+export type AuctionConfig = z.infer<typeof AuctionConfig>;
 
 export const PieceIncomeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
@@ -156,6 +165,7 @@ export type PieceFeeConfig = z.infer<typeof PieceFeeConfig>;
 export const GameConfig = z.object({
   hostColor: Color,
   timeConfig: TimeConfig,
+  auctionConfig: AuctionConfig,
   interestConfig: InterestConfig,
   pieceIncomeConfig: PieceIncomeConfig,
   pieceFeeConfig: PieceFeeConfig,

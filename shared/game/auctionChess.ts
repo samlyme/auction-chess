@@ -14,8 +14,6 @@ import type { Result } from "../types/result";
 import * as PseudoChess from "./purePseudoChess";
 import { getPiece } from "./pureBoard";
 
-const STARTING_BALANCE = 100;
-
 export type GameResult = Result<AuctionChessState, string>;
 
 export const defaultPieceValue: Record<Role, number> = {
@@ -47,7 +45,7 @@ export function createGame(config: GameConfig): AuctionChessState {
     chessState: PseudoChess.pureDefaultSetup,
     timeState,
     auctionState: {
-      balance: { white: STARTING_BALANCE, black: STARTING_BALANCE },
+      balance: {...config.auctionConfig.initBalance},
       bidHistory: [[]],
       minBid: 1,
       interestRate: config.interestConfig.enabled ? config.interestConfig.rate : 0,

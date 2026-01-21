@@ -1,6 +1,7 @@
 import type { LobbyConfig } from "shared/types/lobbies";
 import type {
   TimeConfig,
+  AuctionConfig,
   InterestConfig,
   PieceIncomeConfig,
   PieceFeeConfig,
@@ -16,6 +17,32 @@ function HostColorSection({ hostColor }: { hostColor: string }) {
     <div className="rounded bg-neutral-700 p-3">
       <p className="text-sm text-neutral-400">Host Color</p>
       <p className="text-xl font-semibold capitalize">{hostColor}</p>
+    </div>
+  );
+}
+
+function AuctionConfigSection({
+  auctionConfig,
+}: {
+  auctionConfig: AuctionConfig;
+}) {
+  return (
+    <div className="rounded bg-neutral-700 p-3">
+      <p className="mb-3 text-sm text-neutral-400">Initial Balance</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded bg-neutral-600 p-3">
+          <p className="text-sm text-neutral-400">White</p>
+          <p className="text-xl font-semibold">
+            {auctionConfig.initBalance.white}
+          </p>
+        </div>
+        <div className="rounded bg-neutral-600 p-3">
+          <p className="text-sm text-neutral-400">Black</p>
+          <p className="text-xl font-semibold">
+            {auctionConfig.initBalance.black}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -138,6 +165,7 @@ export default function LobbyConfigDisplay({
       <h3 className="text-lg font-semibold">Game Configuration</h3>
 
       <HostColorSection hostColor={gameConfig.hostColor} />
+      <AuctionConfigSection auctionConfig={gameConfig.auctionConfig} />
       <TimeConfigSection timeConfig={gameConfig.timeConfig} />
       <InterestConfigSection interestConfig={gameConfig.interestConfig} />
       <PieceConfigSection
