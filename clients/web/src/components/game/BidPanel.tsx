@@ -11,6 +11,7 @@ interface PlayerInfoCardProps {
   timer: UseCountdownTimerResult;
   enableTimer: boolean;
   isTurn: boolean;
+  setBid?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 function PlayerInfoCard({
@@ -19,6 +20,7 @@ function PlayerInfoCard({
   timer,
   enableTimer,
   isTurn,
+  setBid,
 }: PlayerInfoCardProps) {
   const { remainingMs } = timer;
 
@@ -46,7 +48,8 @@ function PlayerInfoCard({
             </div>
           </div>
         </div>
-        <div className="flex-1 rounded bg-neutral-700">
+        <div onClick={() => {if(setBid) setBid(balance)}}
+        className="flex-1 rounded bg-neutral-700">
           <p className="mt-3 text-center text-7xl">${balance}</p>
         </div>
       </div>
@@ -350,6 +353,7 @@ export default function BidPanel({
           timer={timers[opponentColor]}
           enableTimer={enableTimers}
           isTurn={showTurn && !isPlayerTurn}
+          setBid={setBid}
         />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
