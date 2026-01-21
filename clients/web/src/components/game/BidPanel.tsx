@@ -10,10 +10,16 @@ interface PlayerInfoCardProps {
   balance: number;
   timer: UseCountdownTimerResult;
   enableTimer: boolean;
-  isTurn: boolean
+  isTurn: boolean;
 }
 
-function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: PlayerInfoCardProps) {
+function PlayerInfoCard({
+  username,
+  balance,
+  timer,
+  enableTimer,
+  isTurn,
+}: PlayerInfoCardProps) {
   const { remainingMs } = timer;
 
   const totalSeconds = remainingMs / 1000;
@@ -21,14 +27,15 @@ function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: Playe
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
-
   return (
-    <div className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}>
+    <div
+      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}
+    >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
             <div
-              className={`w-22 m-2 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
+              className={`m-2 w-22 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
             >
               <p className="text-2xl">
                 {minutes}:{seconds}
@@ -48,21 +55,25 @@ function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: Playe
 }
 
 interface BidComparisonProps {
-  opponentBid: number;
-  yourBid: number;
+  prevBid: number;
+  minBid: number;
+  setBid: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function BidComparison({ opponentBid, yourBid }: BidComparisonProps) {
+function BidInfo({ prevBid, minBid, setBid }: BidComparisonProps) {
   return (
     <div className="rounded-md bg-neutral-700 p-4">
       <div className="grid grid-cols-2 gap-2">
-        <div className="flex-1 rounded-sm bg-red-500 p-2">
-          <h3 className="text-center text-sm">Opponent Bid</h3>
-          <h2 className="text-center text-4xl">${opponentBid}</h2>
-        </div>
         <div className="flex-1 rounded-sm bg-blue-500 p-2">
-          <h3 className="text-center text-sm">Your Bid</h3>
-          <h2 className="text-center text-4xl">${yourBid}</h2>
+          <h3 className="text-center text-sm">Previous Bid</h3>
+          <h2 className="text-center text-4xl">${prevBid}</h2>
+        </div>
+        <div
+          onClick={() => setBid(minBid)}
+          className="flex-1 rounded-sm bg-neutral-500 p-2"
+        >
+          <h3 className="text-center text-sm">Min Raise</h3>
+          <h2 className="text-center text-4xl">+${minBid - prevBid}</h2>
         </div>
       </div>
     </div>
@@ -305,7 +316,7 @@ export default function BidPanel({
   playerColor: Color;
   gameState: AuctionChessState;
   timers: Record<Color, UseCountdownTimerResult>;
-  enableTimers: boolean
+  enableTimers: boolean;
 }) {
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
@@ -325,24 +336,13 @@ export default function BidPanel({
 
   // TODO: fix this jank
   const bidStack = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.at(-1) ?? { amount: 0 };
-  const secondLastBid = bidStack.at(-2) ?? { amount: 0 };
+  const lastBid = bidStack.at(-1) || { fold: true };
+  const prevBidAmount = lastBid.fold ? 0 : lastBid.amount;
 
   const isPlayerTurn = gameState.turn === playerColor;
 
-  // Extract bid amounts from the last two bids
-  let prevPlayerBidAmount = 0;
-  let prevOppBidAmount = 0;
-  if (gameState.turn !== playerColor) {
-    prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
-  } else {
-    prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
-  }
-
   return (
-    < >
+    <>
       <div className="flex h-full w-full flex-col gap-4">
         <PlayerInfoCard
           username={oppUsername || "waiting..."}
@@ -354,9 +354,10 @@ export default function BidPanel({
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
-            <BidComparison
-              opponentBid={prevOppBidAmount}
-              yourBid={prevPlayerBidAmount}
+            <BidInfo
+              setBid={setBid}
+              prevBid={prevBidAmount}
+              minBid={gameState.auctionState.minBid}
             />
             <div className="flex-1 rounded-md bg-neutral-700 p-4">
               <div className="flex h-full gap-2">
