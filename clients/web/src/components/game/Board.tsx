@@ -28,6 +28,7 @@ import type { AuctionChessState } from "shared/types/game";
 import { makeBoardFen } from "shared/game/utils";
 import * as BoardOps from "shared/game/pureBoard";
 import * as PseudoChess from "shared/game/purePseudoChess";
+import * as AuctionChess from "shared/game/auctionChess";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
@@ -154,7 +155,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   }, [boardFen]);
 
   const moveOptions = moveFrom
-    ? PseudoChess.legalDests(gameState.chessState, parseSquare(moveFrom)!)
+    ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
     : [];
   const squareStyles: Record<string, React.CSSProperties> = {};
   if (moveFrom) {

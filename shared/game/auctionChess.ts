@@ -1,4 +1,4 @@
-import { opposite, type Piece } from "chessops";
+import { opposite, SquareSet, type Piece } from "chessops";
 import { produce } from "immer";
 import {
   Bid,
@@ -6,6 +6,8 @@ import {
   type GameConfig,
   type AuctionChessState,
   Role,
+  Square,
+  Color,
 } from "../types/game";
 import type { Result } from "../types/result";
 
@@ -110,6 +112,10 @@ export function movePiece(
   if (game.turn !== piece.color)
     return { ok: false, error: "Can't move opponent's peices." };
 
+  if (game.pieceFee && game.auctionState.balance[game.turn] < game.pieceFee[piece.role]) {
+    return { ok: false, error: "Piece too expensive to move." };
+  }
+
   try {
     game = recordMove(game, move);
 
@@ -136,6 +142,31 @@ export function movePiece(
     return { ok: false, error: "invalid move." };
   }
   return { ok: true, value: game };
+}
+
+export function legalDests(game: AuctionChessState, from: Square, color: Color) {
+  if (game.turn !== color) return SquareSet.empty();
+
+  const piece = getPiece(game.chessState.board, from);
+  if (!piece) return SquareSet.empty();
+
+  if (!game.pieceFee) return PseudoChess.legalDests(game.chessState, from);
+
+  if (game.auctionState.balance[color] < game.pieceFee[piece.role]) return SquareSet.empty();
+
+  return PseudoChess.legalDests(game.chessState, from);
+}
+export function* legalMoves(game: AuctionChessState) {
+  if (!game.pieceFee) return PseudoChess.legalMoves(game.chessState, game.turn);
+
+  const {pieceFee, turn, chessState} = game;
+  const balance = game.auctionState.balance;
+
+  for (const move of PseudoChess.legalMoves(chessState, turn)) {
+    if (pieceFee[getPiece(chessState.board, move.from)!.role] <= balance[game.turn]) {
+      yield move;
+    }
+  }
 }
 
 function recordBid(game: AuctionChessState, bid: Bid) {
