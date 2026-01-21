@@ -37,14 +37,7 @@ function RouteComponent() {
   };
 
   const handleAnonymousSignIn = async () => {
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      console.error("Error signing in Anonymously:", error);
-      alert(`Error: ${error.message}`);
-    }
-    else {
-      navigate({ to: "/home" })
-    }
+    navigate({ to: "/auth/guest-signin" });
   }
 
   const handleGoogleSignIn = async () => {
