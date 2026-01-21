@@ -43,7 +43,7 @@ function RouteComponent() {
       alert(`Error: ${error.message}`);
     }
     else {
-      navigate({ to: "/home" })
+      navigate({ to: "/auth/create-guest-profile" });
     }
   }
 

@@ -14,6 +14,7 @@ import { Route as RequireAuthRouteRouteImport } from './routes/_requireAuth/rout
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthCreateProfileRouteImport } from './routes/auth/create-profile'
+import { Route as AuthCreateGuestProfileRouteImport } from './routes/auth/create-guest-profile'
 import { Route as RequireAuthRequireProfileRouteRouteImport } from './routes/_requireAuth/_requireProfile/route'
 import { Route as RequireAuthRequireProfileSettingsRouteImport } from './routes/_requireAuth/_requireProfile/settings'
 import { Route as RequireAuthRequireProfileLobbiesRouteImport } from './routes/_requireAuth/_requireProfile/lobbies'
@@ -43,6 +44,11 @@ const AuthCreateProfileRoute = AuthCreateProfileRouteImport.update({
   path: '/auth/create-profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCreateGuestProfileRoute = AuthCreateGuestProfileRouteImport.update({
+  id: '/auth/create-guest-profile',
+  path: '/auth/create-guest-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RequireAuthRequireProfileRouteRoute =
   RequireAuthRequireProfileRouteRouteImport.update({
     id: '/_requireProfile',
@@ -70,6 +76,7 @@ const RequireAuthRequireProfileHomeRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth/create-guest-profile': typeof AuthCreateGuestProfileRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof RequireAuthRequireProfileHomeRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo': typeof DemoRoute
+  '/auth/create-guest-profile': typeof AuthCreateGuestProfileRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof RequireAuthRequireProfileHomeRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/_requireAuth': typeof RequireAuthRouteRouteWithChildren
   '/demo': typeof DemoRoute
   '/_requireAuth/_requireProfile': typeof RequireAuthRequireProfileRouteRouteWithChildren
+  '/auth/create-guest-profile': typeof AuthCreateGuestProfileRoute
   '/auth/create-profile': typeof AuthCreateProfileRoute
   '/auth/': typeof AuthIndexRoute
   '/_requireAuth/_requireProfile/home': typeof RequireAuthRequireProfileHomeRoute
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/demo'
+    | '/auth/create-guest-profile'
     | '/auth/create-profile'
     | '/auth'
     | '/home'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/demo'
+    | '/auth/create-guest-profile'
     | '/auth/create-profile'
     | '/auth'
     | '/home'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/_requireAuth'
     | '/demo'
     | '/_requireAuth/_requireProfile'
+    | '/auth/create-guest-profile'
     | '/auth/create-profile'
     | '/auth/'
     | '/_requireAuth/_requireProfile/home'
@@ -133,6 +145,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RequireAuthRouteRoute: typeof RequireAuthRouteRouteWithChildren
   DemoRoute: typeof DemoRoute
+  AuthCreateGuestProfileRoute: typeof AuthCreateGuestProfileRoute
   AuthCreateProfileRoute: typeof AuthCreateProfileRoute
   AuthIndexRoute: typeof AuthIndexRoute
 }
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/create-profile'
       fullPath: '/auth/create-profile'
       preLoaderRoute: typeof AuthCreateProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/create-guest-profile': {
+      id: '/auth/create-guest-profile'
+      path: '/auth/create-guest-profile'
+      fullPath: '/auth/create-guest-profile'
+      preLoaderRoute: typeof AuthCreateGuestProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_requireAuth/_requireProfile': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RequireAuthRouteRoute: RequireAuthRouteRouteWithChildren,
   DemoRoute: DemoRoute,
+  AuthCreateGuestProfileRoute: AuthCreateGuestProfileRoute,
   AuthCreateProfileRoute: AuthCreateProfileRoute,
   AuthIndexRoute: AuthIndexRoute,
 }
