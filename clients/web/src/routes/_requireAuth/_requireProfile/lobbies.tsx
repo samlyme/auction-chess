@@ -15,38 +15,7 @@ import { useProfileOptions } from "@/queries/profiles";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
 import { pureDefaultSetup } from "shared/game/purePseudoChess";
-
-  const defaultPieceIncome = {
-    pawn: 1,
-    knight: 3,
-    bishop: 3,
-    rook: 5,
-    queen: 9,
-    king: 0,
-  };
-const defaultGameState: AuctionChessState = {
-  chessState: pureDefaultSetup,
-  auctionState: {
-    balance: {
-      white: 0,
-      black: 0,
-    },
-    bidHistory: [],
-    minBid: 0,
-    interestRate: 0.05
-  },
-  timeState: {
-    time: {
-      white: 0,
-      black: 0,
-    },
-    prev: null,
-  },
-  pieceIncome: defaultPieceIncome,
-  pieceFee: defaultPieceIncome,
-  turn: "white",
-  phase: "bid",
-};
+import { createGame } from "shared/game/auctionChess";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
   loader: async ({ context }) => {
@@ -152,32 +121,38 @@ function RouteComponent() {
   // NOW we can do the early return, after all hooks have been called
   if (!lobby) return <Navigate to={"/home"} />;
 
+  const defaultGameState = createGame(lobby.config.gameConfig);
   return (
-    <div className="flex aspect-video w-full justify-center overflow-auto border bg-(--color-background) p-8">
+    <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
       <div className="grid grid-cols-12 gap-4 p-16">
         <div className="col-span-3">
           <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby} />
         </div>
 
-        <div
-          className={`${!gameStarted || phase !== "move" ? "opacity-50" : ""} col-span-6 flex items-center justify-center`}
-        >
-          <AuctionChessBoard
-            gameState={game || defaultGameState}
-            playerColor={playerColor}
-          />
+        <div className={`col-span-6 flex items-center justify-center`}>
+          <div
+            className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
+          >
+            <AuctionChessBoard
+              gameState={game || defaultGameState}
+              playerColor={playerColor}
+            />
+          </div>
         </div>
-        <div
-          className={`${!gameStarted || phase !== "bid" ? "opacity-50" : ""} col-span-3`}
-        >
-          <BidPanel
-            username={userProfile.username}
-            oppUsername={oppProfile?.username}
-            playerColor={playerColor}
-            gameState={game || defaultGameState}
-            timers={timers}
-            enableTimers={!!game?.timeState}
-          />
+        <div className={`col-span-3`}>
+          <div
+            className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
+          >
+            <BidPanel
+              username={userProfile.username}
+              oppUsername={oppProfile?.username}
+              showTurn={!!game}
+              playerColor={playerColor}
+              gameState={game || defaultGameState}
+              timers={timers}
+              enableTimers={!!game?.timeState}
+            />
+          </div>
         </div>
       </div>
       {game?.outcome && <OutcomeModal outcome={game.outcome} />}

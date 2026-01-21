@@ -202,6 +202,7 @@ export function movePiece(
       if (move.promotion) {
         draft.board[piece.role] = draft.board[piece.role].without(move.to);
         draft.board[move.promotion] = draft.board[move.promotion].with(move.to);
+        draft.board.promoted = draft.board.promoted.with(move.to);
       }
     });
     return { ok: true, value: out };

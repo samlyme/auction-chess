@@ -15,7 +15,7 @@ import {
   type PieceHandlerArgs,
   type SquareHandlerArgs,
 } from "react-chessboard";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   availableCapture,
   availableMove,
@@ -25,9 +25,13 @@ import { useMutation } from "@tanstack/react-query";
 import { useMakeMoveMutationOptions } from "@/queries/game";
 import type { AuctionChessState } from "shared/types/game";
 
-import { makeBoardFen } from "shared/game/utils"
-import * as BoardOps from "shared/game/pureBoard"
-import * as PseudoChess from "shared/game/purePseudoChess"
+import { makeBoardFen } from "shared/game/utils";
+import * as BoardOps from "shared/game/pureBoard";
+import * as PseudoChess from "shared/game/purePseudoChess";
+import * as AuctionChess from "shared/game/auctionChess";
+
+import { useGameSounds } from "@/hooks/useGameSounds";
+import { createPieces } from "./Pieces";
 
 function PromotionMenu({
   color,
@@ -109,22 +113,68 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
   const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
+  const prevChessStateRef = useRef<AuctionChessState | null>(null);
+  const sounds = useGameSounds();
+  const [boardFen, setBoardFen] = useState(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+  );
+  useEffect(() => {
+    setBoardFen(makeBoardFen(gameState.chessState.board));
+  }, [gameState.chessState.board]);
+  useEffect(() => {
+    // There are various sounds for various situations. If a piece is captured,
+    // a different sound plays. How can I get access to the previous gameState?
+    const currGameState = gameState;
+    const prevGameState = prevChessStateRef.current;
+    if (PseudoChess.isCheck(currGameState.chessState.board, playerColor)) {
+      console.log("in check!");
+
+      // sounds.playCheck();
+      sounds.playLowTime();
+    }
+    else if (currGameState.outcome) {
+      // These sounds are "fake". The files are actually symlinks LOL
+      // if (currGameState.outcome.winner === null) {
+      //   sounds.playDraw();
+      // }
+      // else if (currGameState.outcome.winner === playerColor) {
+      //   sounds.playVictory();
+      // }
+      // else {
+      //   sounds.playDefeat();
+      // }
+      sounds.playNotify();
+    }
+    else if (prevGameState && !prevGameState.chessState.board.occupied.xor(currGameState.chessState.board.occupied).moreThanOne()) {
+      sounds.playCapture();
+    }
+    else {
+      sounds.playMove();
+    }
+    prevChessStateRef.current = gameState;
+  }, [boardFen]);
 
   const moveOptions = moveFrom
-    ? PseudoChess.legalDests(gameState.chessState, parseSquare(moveFrom)!)
+    ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
     : [];
   const squareStyles: Record<string, React.CSSProperties> = {};
   if (moveFrom) {
     squareStyles[moveFrom] = selectedSquare;
   }
   for (const moveOption of moveOptions) {
-    squareStyles[makeSquare(moveOption)] = BoardOps.getPiece(gameState.chessState.board, moveOption)
+    squareStyles[makeSquare(moveOption)] = BoardOps.getPiece(
+      gameState.chessState.board,
+      moveOption
+    )
       ? availableCapture
       : availableMove;
   }
 
   function shouldPromote(move: NormalMove): boolean {
-    if (BoardOps.getPiece(gameState.chessState.board, move.from)?.role !== "pawn") return false;
+    if (
+      BoardOps.getPiece(gameState.chessState.board, move.from)?.role !== "pawn"
+    )
+      return false;
     return SquareSet.backranks().has(move.to);
   }
 
@@ -151,7 +201,10 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
       to: parseSquare(targetSquare)!,
     };
 
-    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) && shouldPromote(move)) {
+    if (
+      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) &&
+      shouldPromote(move)
+    ) {
       setPromotionMove(move);
       return false;
     }
@@ -186,9 +239,14 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
     }
 
     const move = { from: parseSquare(moveFrom)!, to: parseSquare(square)! };
-    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) && shouldPromote(move)) {
+    if (
+      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) &&
+      shouldPromote(move)
+    ) {
       setPromotionMove(move);
-    } else if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)) {
+    } else if (
+      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)
+    ) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
     } else {
@@ -197,7 +255,7 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   }
 
   return (
-    <div>
+    <>
       {promotionMove && (
         <PromotionMenu
           color={playerColor}
@@ -211,7 +269,8 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
       >
         <Chessboard
           options={{
-            position: makeBoardFen(gameState.chessState.board),
+            position: boardFen,
+            pieces: createPieces(gameState.pieceIncome, gameState.pieceFee),
             onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
             onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
             onSquareClick:
@@ -219,10 +278,10 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
             squareStyles,
             boardOrientation: playerColor,
             alphaNotationStyle: { fontSize: "var(--text-base)" },
-            numericNotationStyle: { fontSize: "var(--text-base)" }
+            numericNotationStyle: { fontSize: "var(--text-base)" },
           }}
         />
       </div>
-    </div>
+    </>
   );
 }

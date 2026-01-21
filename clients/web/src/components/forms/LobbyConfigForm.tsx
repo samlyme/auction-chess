@@ -7,6 +7,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { Color } from "shared/types/game";
 import type { LobbyConfig } from "shared/types/lobbies";
+import { Button, FormInput } from "@/components/ui";
 
 // NOTE: this is currently tightly coupled to my mutations
 // TODO: decouple this from page logic LOL!!
@@ -55,7 +56,7 @@ export default function LobbyConfigForm({
     bishop: 3,
     rook: 5,
     queen: 9,
-    king: 0,
+    king: 11,
   };
 
   const initPieceIncome = initConfig
@@ -72,12 +73,12 @@ export default function LobbyConfigForm({
 
   // Requires balancing.
   const defaultPieceFee = {
-    pawn: 0,
-    knight: 2,
-    bishop: 2,
-    rook: 3,
-    queen: 6,
-    king: 10,
+    pawn: 1,
+    knight: 9,
+    bishop: 9,
+    rook: 25,
+    queen: 81,
+    king: 100,
   };
 
   const initPieceFee = initConfig
@@ -87,6 +88,16 @@ export default function LobbyConfigForm({
     : defaultPieceFee;
 
   const [pieceFee, setPieceFee] = useState(initPieceFee);
+
+  const initBalanceWhite = initConfig
+    ? initConfig.gameConfig.auctionConfig.initBalance.white
+    : 300;
+  const initBalanceBlack = initConfig
+    ? initConfig.gameConfig.auctionConfig.initBalance.black
+    : 300;
+
+  const [balanceWhite, setBalanceWhite] = useState(initBalanceWhite);
+  const [balanceBlack, setBalanceBlack] = useState(initBalanceBlack);
 
   const [isModified, setIsModified] = useState(isCreate);
 
@@ -104,6 +115,12 @@ export default function LobbyConfigForm({
     await configureLobbyMutation.mutateAsync({
       gameConfig: {
         hostColor,
+        auctionConfig: {
+          initBalance: {
+            white: balanceWhite,
+            black: balanceBlack,
+          },
+        },
         timeConfig: timeEnabled
           ? {
               enabled: true,
@@ -146,6 +163,8 @@ export default function LobbyConfigForm({
 
     if (initConfig) {
       setHostColor(initConfig.gameConfig.hostColor);
+      setBalanceWhite(initConfig.gameConfig.auctionConfig.initBalance.white);
+      setBalanceBlack(initConfig.gameConfig.auctionConfig.initBalance.black);
       setTimeEnabled(initConfig.gameConfig.timeConfig.enabled);
       if (initConfig.gameConfig.timeConfig.enabled) {
         const timeMs = initConfig.gameConfig.timeConfig.initTime.white;
@@ -178,6 +197,7 @@ export default function LobbyConfigForm({
 
         {isCreate || (
           <button
+            type="button"
             disabled={!isModified}
             className={`h-8 w-8 rounded border p-1 opacity-50 enabled:hover:bg-neutral-400 disabled:opacity-20`}
             onClick={handleReset}
@@ -200,6 +220,26 @@ export default function LobbyConfigForm({
           <option value="black">Black</option>
         </select>
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <FormInput
+          id="balanceWhite"
+          label="White Initial Balance"
+          type="number"
+          min={0}
+          value={balanceWhite}
+          onChange={(e) => setBalanceWhite(Number(e.target.value))}
+          className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900"
+        />
+        <FormInput
+          id="balanceBlack"
+          label="Black Initial Balance"
+          type="number"
+          min={0}
+          value={balanceBlack}
+          onChange={(e) => setBalanceBlack(Number(e.target.value))}
+          className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900"
+        />
+      </div>
       <div>
         <label
           htmlFor="timeEnabled"
@@ -216,20 +256,16 @@ export default function LobbyConfigForm({
         </label>
       </div>
       {timeEnabled && (
-        <div>
-          <label htmlFor="timeMinutes" className="mb-2 block text-sm">
-            Time (minutes)
-          </label>
-          <input
-            id="timeMinutes"
-            type="number"
-            min="1"
-            max="60"
-            value={timeMinutes}
-            onChange={(e) => setTimeMinutes(Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
-          />
-        </div>
+        <FormInput
+          id="timeMinutes"
+          label="Time (minutes)"
+          type="number"
+          min={1}
+          max={60}
+          value={timeMinutes}
+          onChange={(e) => setTimeMinutes(Number(e.target.value))}
+          className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900"
+        />
       )}
       <div>
         <label
@@ -247,21 +283,17 @@ export default function LobbyConfigForm({
         </label>
       </div>
       {interestEnabled && (
-        <div>
-          <label htmlFor="interestRate" className="mb-2 block text-sm">
-            Interest Rate
-          </label>
-          <input
-            id="interestRate"
-            type="number"
-            min="0"
-            max="1"
-            step="0.01"
-            value={interestRate}
-            onChange={(e) => setInterestRate(Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900"
-          />
-        </div>
+        <FormInput
+          id="interestRate"
+          label="Interest Rate"
+          type="number"
+          min={0}
+          max={1}
+          step={0.01}
+          value={interestRate}
+          onChange={(e) => setInterestRate(Number(e.target.value))}
+          className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900"
+        />
       )}
       <div>
         <label
@@ -282,28 +314,21 @@ export default function LobbyConfigForm({
         <div className="grid grid-cols-2 gap-3">
           {(["pawn", "knight", "bishop", "rook", "queen", "king"] as const).map(
             (piece) => (
-              <div key={piece}>
-                <label
-                  htmlFor={`pieceIncome-${piece}`}
-                  className="mb-1 block text-sm capitalize"
-                >
-                  {piece}
-                </label>
-                <input
-                  id={`pieceIncome-${piece}`}
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={pieceIncome[piece]}
-                  onChange={(e) =>
-                    setPieceIncome({
-                      ...pieceIncome,
-                      [piece]: Number(e.target.value),
-                    })
-                  }
-                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-base text-neutral-900"
-                />
-              </div>
+              <FormInput
+                key={piece}
+                id={`pieceIncome-${piece}`}
+                label={piece}
+                type="number"
+                min={0}
+                value={pieceIncome[piece]}
+                onChange={(e) =>
+                  setPieceIncome({
+                    ...pieceIncome,
+                    [piece]: Number(e.target.value),
+                  })
+                }
+                className="border-neutral-300 bg-neutral-50 px-3 py-2 text-neutral-900 capitalize"
+              />
             )
           )}
         </div>
@@ -327,40 +352,37 @@ export default function LobbyConfigForm({
         <div className="grid grid-cols-2 gap-3">
           {(["pawn", "knight", "bishop", "rook", "queen", "king"] as const).map(
             (piece) => (
-              <div key={piece}>
-                <label
-                  htmlFor={`pieceFee-${piece}`}
-                  className="mb-1 block text-sm capitalize"
-                >
-                  {piece}
-                </label>
-                <input
-                  id={`pieceFee-${piece}`}
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={pieceFee[piece]}
-                  onChange={(e) =>
-                    setPieceFee({
-                      ...pieceFee,
-                      [piece]: Number(e.target.value),
-                    })
-                  }
-                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-base text-neutral-900"
-                />
-              </div>
+              <FormInput
+                key={piece}
+                id={`pieceFee-${piece}`}
+                label={piece}
+                type="number"
+                min={0}
+                value={pieceFee[piece]}
+                onChange={(e) =>
+                  setPieceFee({
+                    ...pieceFee,
+                    [piece]: Number(e.target.value),
+                  })
+                }
+                className="border-neutral-300 bg-neutral-50 px-3 py-2 text-neutral-900 capitalize"
+              />
             )
           )}
         </div>
       )}
 
-      <button
+      <Button
         type="submit"
+        variant="blue"
+        size="lg"
+        fullWidth
         disabled={!isModified}
-        className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
+        loading={configureLobbyMutation.isPending}
+        loadingText="Pending..."
       >
-        {configureLobbyMutation.isPending ? "Pending..." : (isCreate? "Create" : "Submit")}
-      </button>
+        {isCreate ? "Create" : "Submit"}
+      </Button>
     </form>
   );
 }

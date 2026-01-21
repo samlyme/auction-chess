@@ -6,6 +6,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
+import { Button, FormInput, Card } from "@/components/ui";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/home")({
   beforeLoad: async ({ context: { queryClient } }) => {
@@ -49,7 +50,7 @@ function RouteComponent() {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* Custom Lobby Card */}
-          <div className="rounded-xl border border-neutral-200 bg-neutral-800 p-8 shadow-lg">
+          <Card className="shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: "var(--color-primary-600)" }}
@@ -76,31 +77,31 @@ function RouteComponent() {
             {/* Join Lobby Form */}
             <form onSubmit={handleJoinLobby} className="flex flex-col gap-4">
               <h3 className="text-lg font-semibold">Join Lobby</h3>
-              <div>
-                <label htmlFor="lobbyCode" className="mb-2 block text-sm">
-                  Lobby Code
-                </label>
-                <input
-                  id="lobbyCode"
-                  type="text"
-                  placeholder="Enter 6-character code"
-                  value={lobbyCode}
-                  onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
-                  maxLength={6}
-                  className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-2 text-base text-neutral-900 uppercase"
-                />
-              </div>
-              <button
+              <FormInput
+                id="lobbyCode"
+                label="Lobby Code"
+                type="text"
+                placeholder="Enter 6-character code"
+                value={lobbyCode}
+                onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
+                maxLength={6}
+                className="border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-900 uppercase"
+              />
+              <Button
                 type="submit"
-                disabled={loading || lobbyCode.length !== 6}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-base text-white transition-colors hover:bg-blue-400 disabled:bg-neutral-400"
+                variant="blue"
+                size="lg"
+                fullWidth
+                loading={loading}
+                loadingText="Joining..."
+                disabled={lobbyCode.length !== 6}
               >
-                {loading ? "Joining..." : "Join Lobby"}
-              </button>
+                Join Lobby
+              </Button>
             </form>
-          </div>
+          </Card>
           {/* Casual Match Card */}
-          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
+          <Card className="cursor-not-allowed opacity-50 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: "var(--color-primary-600)" }}
@@ -114,16 +115,19 @@ function RouteComponent() {
               Jump into a relaxed game with no pressure. Perfect for practicing
               new strategies or playing for fun.
             </p>
-            <button
+            <Button
               disabled
-              className="bg-primary-500 w-full cursor-not-allowed rounded-lg px-6 py-3 text-base text-white"
+              variant="blue"
+              size="lg"
+              fullWidth
+              className="cursor-not-allowed"
             >
               Play Casual
-            </button>
-          </div>
+            </Button>
+          </Card>
 
           {/* Ranked Match Card */}
-          <div className="cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-800 p-8 opacity-50 shadow-lg">
+          <Card className="cursor-not-allowed opacity-50 shadow-lg">
             <h2
               className="mb-4 text-3xl font-bold"
               style={{ color: "var(--color-primary-600)" }}
@@ -137,13 +141,16 @@ function RouteComponent() {
               Compete against players of similar skill level. Win to climb the
               ranks and prove your mastery.
             </p>
-            <button
+            <Button
               disabled
-              className="bg-primary-500 w-full cursor-not-allowed rounded-lg px-6 py-3 text-base text-white"
+              variant="blue"
+              size="lg"
+              fullWidth
+              className="cursor-not-allowed"
             >
               Play Ranked
-            </button>
-          </div>
+            </Button>
+          </Card>
         </div>
       </div>
     </div>

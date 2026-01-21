@@ -1,6 +1,7 @@
 import supabase from "@/supabase";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
+import { Button, FormInput, Card } from "@/components/ui";
 
 export const Route = createFileRoute("/auth/")({
   beforeLoad: ({ context }) => {
@@ -61,75 +62,58 @@ function RouteComponent() {
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-(--color-background)">
-      <div className="w-full max-w-md rounded-lg border bg-neutral-800 p-8">
+      <Card className="w-120">
         <h1 className="mb-6 text-center text-3xl font-bold">
           {isSignUp ? "Sign Up" : "Sign In"}
         </h1>
 
         {/* Email/Password Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border px-3 py-2"
-              placeholder="you@example.com"
-            />
-          </div>
+          <FormInput
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
 
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded border px-3 py-2"
-              placeholder="••••••••"
-            />
-          </div>
+          <FormInput
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
 
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-400 w-full rounded-lg px-4 py-2 text-white transition-colors"
-          >
+          <Button type="submit" variant="blue" fullWidth>
             {isSignUp ? "Sign Up" : "Sign In"}
-          </button>
+          </Button>
         </form>
 
         {/* Divider */}
         <div className="my-6 flex items-center">
-          <div className="flex-1 border-t"></div>
-          <span className="px-4 text-sm text-gray-500">or</span>
-          <div className="flex-1 border-t"></div>
+          <div className="mt-4 mb-4 flex-1 border-t"></div>
+          {/* <span className="px-4 text-sm text-gray-500">or</span> */}
+          {/* <div className="flex-1 border-t"></div> */}
         </div>
 
         {/* Anonymous Sign In */}
-        <button
+        <Button
           onClick={handleAnonymousSignIn}
-          className="w-full mb-6 rounded-lg border px-4 py-2 transition-colors hover:bg-gray-50"
+          variant="outline"
+          fullWidth
+          className="mb-6"
         >
           Play as Guest.
-        </button>
+        </Button>
 
 
         {/* Google Sign In */}
-        <button
-          onClick={handleGoogleSignIn}
-          className="w-full rounded-lg border px-4 py-2 transition-colors hover:bg-gray-50"
-        >
+        <Button onClick={handleGoogleSignIn} variant="outline" fullWidth>
           Sign in with Google
-        </button>
+        </Button>
 
         {/* Toggle Sign In/Sign Up */}
         <p className="mt-6 text-center text-sm text-gray-600">
@@ -141,7 +125,7 @@ function RouteComponent() {
             {isSignUp ? "Sign In" : "Sign Up"}
           </button>
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

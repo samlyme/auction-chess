@@ -3,16 +3,25 @@ import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { AuctionChessState, Color } from "shared/types/game";
+import { Button } from "@/components/ui";
 
 interface PlayerInfoCardProps {
   username: string;
   balance: number;
   timer: UseCountdownTimerResult;
   enableTimer: boolean;
-  isTurn: boolean
+  isTurn: boolean;
+  setBid?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: PlayerInfoCardProps) {
+function PlayerInfoCard({
+  username,
+  balance,
+  timer,
+  enableTimer,
+  isTurn,
+  setBid,
+}: PlayerInfoCardProps) {
   const { remainingMs } = timer;
 
   const totalSeconds = remainingMs / 1000;
@@ -20,14 +29,15 @@ function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: Playe
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
-
   return (
-    <div className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}>
+    <div
+      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}
+    >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
             <div
-              className={`w-22 m-2 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
+              className={`m-2 w-22 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
             >
               <p className="text-2xl">
                 {minutes}:{seconds}
@@ -38,7 +48,8 @@ function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: Playe
             </div>
           </div>
         </div>
-        <div className="flex-1 rounded bg-neutral-700">
+        <div onClick={() => {if(setBid) setBid(balance)}}
+        className="flex-1 rounded bg-neutral-700">
           <p className="mt-3 text-center text-7xl">${balance}</p>
         </div>
       </div>
@@ -47,21 +58,25 @@ function PlayerInfoCard({ username, balance, timer, enableTimer, isTurn }: Playe
 }
 
 interface BidComparisonProps {
-  opponentBid: number;
-  yourBid: number;
+  prevBid: number;
+  minBid: number;
+  setBid: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function BidComparison({ opponentBid, yourBid }: BidComparisonProps) {
+function BidInfo({ prevBid, minBid, setBid }: BidComparisonProps) {
   return (
     <div className="rounded-md bg-neutral-700 p-4">
       <div className="grid grid-cols-2 gap-2">
-        <div className="flex-1 rounded-sm bg-red-500 p-2">
-          <h3 className="text-center text-sm">Opponent Bid</h3>
-          <h2 className="text-center text-4xl">${opponentBid}</h2>
-        </div>
         <div className="flex-1 rounded-sm bg-blue-500 p-2">
-          <h3 className="text-center text-sm">Your Bid</h3>
-          <h2 className="text-center text-4xl">${yourBid}</h2>
+          <h3 className="text-center text-sm">Previous Bid</h3>
+          <h2 className="text-center text-4xl">${prevBid}</h2>
+        </div>
+        <div
+          onClick={() => setBid(minBid)}
+          className="flex-1 rounded-sm bg-neutral-500 p-2"
+        >
+          <h3 className="text-center text-sm">Min Raise</h3>
+          <h2 className="text-center text-4xl">+${minBid - prevBid}</h2>
         </div>
       </div>
     </div>
@@ -134,34 +149,42 @@ function BidControls({
                 setIsValidInput(true);
               }
             }}
-            className={`placeholder:text-color-tertiary w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? "text-red-500" : "text-white"}`}
+            className={`w-full bg-transparent p-2 text-center text-5xl outline-none ${!isValidInput ? "text-red-500" : "text-white"}`}
           />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex flex-2 gap-2">
-          <button
+          <Button
             onClick={() => onBid(bid)}
             disabled={!canBid || isBidPending}
-            className="flex-1 cursor-pointer rounded bg-green-400 px-4 py-2 text-2xl hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="green"
+            className="flex-1 px-4 py-2 text-xl"
+            loading={isBidPending}
+            loadingText="Bidding..."
           >
-            {isBidPending ? "Bidding..." : "BID"}
-          </button>
-          <button
+            BID
+          </Button>
+          <Button
             onClick={onFold}
             disabled={isBidPending}
-            className="flex-1 cursor-pointer rounded bg-red-400 px-4 py-2 text-2xl hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="red"
+            className="flex-1 px-4 py-2 text-xl"
+            loading={isBidPending}
+            loadingText="Folding..."
           >
-            {isBidPending ? "Folding..." : "FOLD"}
-          </button>
+            FOLD
+          </Button>
         </div>
         {/* Technically, this is slightly sub optimal but its fine. */}
-        <button
+        <Button
           onClick={() => setBid(maxBid)}
-          className="w-full flex-1 cursor-pointer rounded bg-yellow-400 px-4 py-2 text-xl hover:bg-yellow-300"
+          variant="yellow"
+          className="flex-1 px-4 py-2 text-xl"
+          fullWidth
         >
           Max
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -216,65 +239,73 @@ function BidAdjustmentControls({
   return (
     <div className="flex flex-1">
       <div className="flex h-full w-full flex-col items-center gap-1">
-        <button
+        <Button
           onClick={incScale}
           disabled={!canIncScale}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 text-purple-700 hover:bg-purple-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="purple"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0 text-purple-700"
         >
           <span className="rotate-270">»</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={incLarge}
           disabled={!canInc}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="green"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           +{stepLarge * scale}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={incSmall}
           disabled={!canInc}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-green-400 hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="green"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           +{stepSmall * scale}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={onReset}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md border border-yellow-500 bg-yellow-300 text-yellow-700 hover:bg-yellow-200"
+          variant="yellow"
+          className="flex w-full flex-1 items-center justify-center rounded-md border border-yellow-500 bg-yellow-300 p-0 text-yellow-700 hover:bg-yellow-200"
         >
           Reset
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={decSmall}
           disabled={!canDec}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="red"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           -{stepSmall * scale}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={decLarge}
           disabled={!canDec}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-red-400 hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="red"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0"
         >
           -{stepLarge * scale}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={decScale}
           disabled={!canDecScale}
-          className="flex w-full flex-1 cursor-pointer items-center justify-center rounded-md bg-purple-400 text-purple-700 hover:bg-purple-300 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="purple"
+          className="flex w-full flex-1 items-center justify-center rounded-md p-0 text-purple-700"
         >
           <span className="rotate-90">»</span>
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
 export default function BidPanel({
+  showTurn,
   username,
   oppUsername,
   playerColor,
@@ -282,16 +313,17 @@ export default function BidPanel({
   timers,
   enableTimers,
 }: {
+  showTurn: boolean;
   username: string;
   oppUsername: string | undefined;
   playerColor: Color;
   gameState: AuctionChessState;
   timers: Record<Color, UseCountdownTimerResult>;
-  enableTimers: boolean
+  enableTimers: boolean;
 }) {
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
-    if (gameState.turn === playerColor) setBid(gameState.auctionState.minBid);
+    setBid(gameState.auctionState.minBid);
   }, [gameState.auctionState.minBid]);
   const makeBidMutation = useMutation(useMakeBidMutationOptions());
 
@@ -307,38 +339,29 @@ export default function BidPanel({
 
   // TODO: fix this jank
   const bidStack = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.at(-1) ?? { amount: 0 };
-  const secondLastBid = bidStack.at(-2) ?? { amount: 0 };
+  const lastBid = bidStack.at(-1) || { fold: true };
+  const prevBidAmount = lastBid.fold ? 0 : lastBid.amount;
 
   const isPlayerTurn = gameState.turn === playerColor;
 
-  // Extract bid amounts from the last two bids
-  let prevPlayerBidAmount = 0;
-  let prevOppBidAmount = 0;
-  if (gameState.turn !== playerColor) {
-    prevPlayerBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevOppBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
-  } else {
-    prevOppBidAmount = "amount" in lastBid ? lastBid.amount : 0;
-    prevPlayerBidAmount = "amount" in secondLastBid ? secondLastBid.amount : 0;
-  }
-
   return (
-    <div className="h-full w-full rounded-2xl bg-neutral-900 p-4">
+    <>
       <div className="flex h-full w-full flex-col gap-4">
         <PlayerInfoCard
           username={oppUsername || "waiting..."}
           balance={gameState.auctionState.balance[opponentColor]}
           timer={timers[opponentColor]}
           enableTimer={enableTimers}
-          isTurn={!isPlayerTurn}
+          isTurn={showTurn && !isPlayerTurn}
+          setBid={setBid}
         />
 
         <div className="flex-1 rounded-lg bg-neutral-800 p-4">
           <div className="flex h-full flex-col gap-4">
-            <BidComparison
-              opponentBid={prevOppBidAmount}
-              yourBid={prevPlayerBidAmount}
+            <BidInfo
+              setBid={setBid}
+              prevBid={prevBidAmount}
+              minBid={gameState.auctionState.minBid}
             />
             <div className="flex-1 rounded-md bg-neutral-700 p-4">
               <div className="flex h-full gap-2">
@@ -351,12 +374,12 @@ export default function BidPanel({
                   onFold={handleFold}
                   isBidPending={makeBidMutation.isPending}
                 />
-                <BidAdjustmentControls
+                {/* <BidAdjustmentControls
                   bid={bid}
                   setBid={setBid}
                   minBid={gameState.auctionState.minBid}
                   maxBid={gameState.auctionState.balance[playerColor]}
-                />
+                /> */}
               </div>
             </div>
           </div>
@@ -367,9 +390,9 @@ export default function BidPanel({
           balance={gameState.auctionState.balance[playerColor]}
           timer={timers[playerColor]}
           enableTimer={enableTimers}
-          isTurn={isPlayerTurn}
+          isTurn={showTurn && isPlayerTurn}
         />
       </div>
-    </div>
+    </>
   );
 }
