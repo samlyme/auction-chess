@@ -32,7 +32,7 @@ import * as AuctionChess from "shared/game/auctionChess";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
-import { GameContext } from "@/contexts/Game";
+import { LobbyContext } from "@/contexts/Lobby";
 
 function PromotionMenu({
   color,
@@ -109,7 +109,7 @@ export function AuctionChessBoard() {
     gameState: game,
     defaultGameState,
     playerColor,
-  } = useContext(GameContext);
+  } = useContext(LobbyContext);
   const gameState = game || defaultGameState;
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);

@@ -1,9 +1,9 @@
-import { GameContext } from "@/contexts/Game";
+import { LobbyContext } from "@/contexts/Lobby";
 import { useContext } from "react";
 import type { Outcome } from "shared/types/game";
 
 export function OutcomeModal() {
-  const game = useContext(GameContext);
+  const game = useContext(LobbyContext);
 
   if (!game.gameState?.outcome) return <></>;
 

@@ -1,5 +1,5 @@
 import { getRouteApi, Navigate } from "@tanstack/react-router";
-import { GameContext } from "./Game";
+import { LobbyContext } from "./Lobby";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
@@ -12,6 +12,7 @@ import {
 } from "@/hooks/useCountdownTimer";
 import { useEffect, useRef } from "react";
 import { createGame } from "shared/game/auctionChess";
+import usePrevious from "@/hooks/usePrevious";
 
 const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");
 
@@ -32,6 +33,7 @@ export default function GameContextProvider({
 
   // Bind the lobby and game to the real time updates.
   useRealtime(userId, initLobby.code);
+  const prevGameState = usePrevious(game) || null;
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
   const hostColor = lobby?.config.gameConfig.hostColor || "white";
@@ -111,17 +113,20 @@ export default function GameContextProvider({
       : { white: oppTimer, black: playerTimer };
 
   return (
-    <GameContext
+    <LobbyContext
       value={{
         gameState: game,
         defaultGameState: defaultGameState,
+        prevGameState,
         timers,
         playerColor,
         oppProfile,
         userProfile,
+        lobby,
+        userId,
       }}
     >
       {children}
-    </GameContext>
+    </LobbyContext>
   );
 }

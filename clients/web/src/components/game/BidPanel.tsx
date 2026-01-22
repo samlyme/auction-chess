@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
-import { GameContext } from "@/contexts/Game";
+import { LobbyContext } from "@/contexts/Lobby";
 import usePrevious from "@/hooks/usePrevious";
 
 interface PlayerInfoCardProps {
@@ -31,7 +31,6 @@ function PlayerInfoCard({
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
-  const prevBalance = usePrevious(balance);
   const controls = useAnimation();
   const [fallingNumber, setFallingNumber] = useState<{
     amount: number;
@@ -39,6 +38,8 @@ function PlayerInfoCard({
     xOffset: number;
     rotation: number;
   } | null>(null);
+
+  const prevBalance = usePrevious(balance);
 
   useEffect(() => {
     // Prevent flashing on the very first render
@@ -378,7 +379,7 @@ export default function BidPanel() {
     playerColor,
     userProfile,
     oppProfile,
-  } = useContext(GameContext);
+  } = useContext(LobbyContext);
   const gameState = game || defaultGameState;
 
   const showTurn = !!game;
