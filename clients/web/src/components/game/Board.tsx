@@ -105,8 +105,11 @@ function PromotionMenu({
 }
 
 export function AuctionChessBoard() {
-
-  const {gameState: game, defaultGameState, playerColor} = useContext(GameContext);
+  const {
+    gameState: game,
+    defaultGameState,
+    playerColor,
+  } = useContext(GameContext);
   const gameState = game || defaultGameState;
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -221,31 +224,35 @@ export function AuctionChessBoard() {
 
   return (
     <>
-      {promotionMove && (
-        <PromotionMenu
-          color={playerColor}
-          fileIndex={squareFile(promotionMove.to)}
-          cancel={() => setPromotionMove(null)}
-          select={playPromotion}
-        />
-      )}
       <div
-        className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}
+        className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
       >
-        <Chessboard
-          options={{
-            position: boardFen,
-            pieces: createPieces(gameState.pieceIncome, gameState.pieceFee),
-            onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
-            onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
-            onSquareClick:
-              gameState.phase === "bid" ? undefined : onSquareClick,
-            squareStyles,
-            boardOrientation: playerColor,
-            alphaNotationStyle: { fontSize: "var(--text-base)" },
-            numericNotationStyle: { fontSize: "var(--text-base)" },
-          }}
-        />
+        {promotionMove && (
+          <PromotionMenu
+            color={playerColor}
+            fileIndex={squareFile(promotionMove.to)}
+            cancel={() => setPromotionMove(null)}
+            select={playPromotion}
+          />
+        )}
+        <div
+          className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}
+        >
+          <Chessboard
+            options={{
+              position: boardFen,
+              pieces: createPieces(gameState.pieceIncome, gameState.pieceFee),
+              onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
+              onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
+              onSquareClick:
+                gameState.phase === "bid" ? undefined : onSquareClick,
+              squareStyles,
+              boardOrientation: playerColor,
+              alphaNotationStyle: { fontSize: "var(--text-base)" },
+              numericNotationStyle: { fontSize: "var(--text-base)" },
+            }}
+          />
+        </div>
       </div>
     </>
   );

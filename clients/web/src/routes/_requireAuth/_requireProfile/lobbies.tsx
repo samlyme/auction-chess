@@ -31,120 +31,32 @@ export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
 
 function RouteComponent() {
   const userId = Route.useRouteContext().auth.session.user.id;
-  const userProfile = Route.useRouteContext().profile;
 
   const { lobby: initLobby } = Route.useLoaderData();
 
   // Use TanStack Query for real-time data instead of manual state management
   const { data: lobby } = useQuery(useLobbyOptions(initLobby));
-  const { data: game } = useQuery(useGameOptions());
-  const timecheckMutation = useMutation(useTimecheckMutationOptions());
-
-  // Bind the lobby and game to the real time updates.
-  useRealtime(userId, initLobby.code);
-
-  // Calculate these values before hooks, with fallbacks for when lobby is null
-  const hostColor = lobby?.config.gameConfig.hostColor || "white";
-  const opposite = (color: Color) => (color === "white" ? "black" : "white");
-  const playerColor =
-    lobby && userId === lobby.hostUid ? hostColor : opposite(hostColor);
-
-  // TODO: Flatten this request by having the lobbies API return usernames and id.
-  const oppId =
-    (userId === lobby?.hostUid ? lobby?.guestUid : lobby?.hostUid) || null;
-  const { data, error } = useQuery({
-    ...useProfileOptions({ id: oppId || "" }),
-    enabled: !!oppId,
-  });
-  if (error) throw error;
-
-  const oppProfile = data || null;
-
-  // All hooks must be called before any early returns
-  const initPlayerTime = lobby?.config.gameConfig.timeConfig.enabled
-    ? lobby.config.gameConfig.timeConfig.initTime[playerColor]
-    : 0;
-  const playerTimer = useCountdownTimer({
-    durationMs: initPlayerTime,
-    onExpire: async () => {
-      await timecheckMutation.mutateAsync();
-    },
-  });
-
-  const initOppTime = lobby?.config.gameConfig.timeConfig.enabled
-    ? lobby.config.gameConfig.timeConfig.initTime[opposite(playerColor)]
-    : 0;
-  const oppTimer = useCountdownTimer({
-    durationMs: initOppTime,
-    onExpire: async () => {
-      await timecheckMutation.mutateAsync();
-    },
-  });
-
-  // set the timers.
-  useEffect(() => {
-    if (!lobby) return;
-
-    if (!lobby.gameStarted || !game) {
-      // The game isn't started, so use the lobby's config for time.
-      playerTimer.reset(initPlayerTime);
-      oppTimer.reset(initOppTime);
-    } else if (game && game.timeState) {
-      const prev = game.timeState.prev || Date.now();
-      const now = Date.now();
-      const elapsed = now - prev;
-
-      let playerTimeBalance = game.timeState.time[playerColor];
-      let oppTimeBalance = game.timeState.time[opposite(playerColor)];
-
-      if (game.turn === playerColor) playerTimeBalance -= elapsed;
-      else oppTimeBalance -= elapsed;
-
-      playerTimer.reset(playerTimeBalance);
-      oppTimer.reset(oppTimeBalance);
-
-      // NOTE: This is fragile. This assumes that a null prev means the game is started
-      if (game.timeState.prev !== null) {
-        if (game.turn === playerColor) playerTimer.start();
-        else oppTimer.start();
-      }
-    }
-  }, [game, lobby]);
-
-  const timers: Record<Color, UseCountdownTimerResult> =
-    playerColor === "white"
-      ? { white: playerTimer, black: oppTimer }
-      : { white: oppTimer, black: playerTimer };
 
   // NOW we can do the early return, after all hooks have been called
   if (!lobby) return <Navigate to={"/home"} />;
 
-  const defaultGameState = createGame(lobby.config.gameConfig);
   return (
     <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
-      <div className="grid grid-cols-12 gap-4 p-16">
-        <div className="col-span-3">
-          <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby} />
-        </div>
+      <GameContextProvider>
+        <div className="grid grid-cols-12 gap-4 p-16">
+          <div className="col-span-3">
+            <LobbyPanel isHost={userId === lobby.hostUid} lobby={lobby} />
+          </div>
 
-        <GameContextProvider>
           <div className={`col-span-6 flex items-center justify-center`}>
-            <div
-              className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
-            >
-              <AuctionChessBoard/>
-            </div>
+            <AuctionChessBoard />
           </div>
           <div className={`col-span-3`}>
-            <div
-              className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
-            >
-              <BidPanel/>
-            </div>
+            <BidPanel />
           </div>
-        </GameContextProvider>
-      </div>
-      {game?.outcome && <OutcomeModal outcome={game.outcome} />}
+        </div>
+        <OutcomeModal />
+      </GameContextProvider>
     </div>
   );
 }
