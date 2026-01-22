@@ -47,3 +47,13 @@ export function useUpdateProfileMutationOptions() {
     },
   });
 }
+
+export function useCreateGuestProfileMutationOptions() {
+  return mutationOptions({
+    mutationKey: ["profile", "me"],
+    mutationFn: () => parseResponse(api.profiles.guest.$post()),
+    onSuccess: (data, _variables, _onMutateResult, context) => {
+      context.client.setQueryData(["profile", "me"], data);
+    },
+  })
+}

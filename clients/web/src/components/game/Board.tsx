@@ -15,7 +15,7 @@ import {
   type PieceHandlerArgs,
   type SquareHandlerArgs,
 } from "react-chessboard";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   availableCapture,
   availableMove,
@@ -32,6 +32,7 @@ import * as AuctionChess from "shared/game/auctionChess";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
+import { LobbyContext } from "@/contexts/Lobby";
 
 function PromotionMenu({
   color,
@@ -103,57 +104,24 @@ function PromotionMenu({
   );
 }
 
-interface BoardProps {
-  gameState: AuctionChessState;
-  playerColor: Color;
-}
+export function AuctionChessBoard() {
+  const {
+    gameState: game,
+    defaultGameState,
+    playerColor,
+  } = useContext(LobbyContext);
+  const gameState = game || defaultGameState;
 
-export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
   const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
-  const prevChessStateRef = useRef<AuctionChessState | null>(null);
-  const sounds = useGameSounds();
   const [boardFen, setBoardFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
   );
   useEffect(() => {
-    setBoardFen(makeBoardFen(gameState.chessState.board));
-  }, [gameState.chessState.board]);
-  useEffect(() => {
-    // There are various sounds for various situations. If a piece is captured,
-    // a different sound plays. How can I get access to the previous gameState?
-    const currGameState = gameState;
-    const prevGameState = prevChessStateRef.current;
-    if (PseudoChess.isCheck(currGameState.chessState.board, playerColor)) {
-      console.log("in check!");
-
-      // sounds.playCheck();
-      sounds.playLowTime();
-    }
-    else if (currGameState.outcome) {
-      // These sounds are "fake". The files are actually symlinks LOL
-      // if (currGameState.outcome.winner === null) {
-      //   sounds.playDraw();
-      // }
-      // else if (currGameState.outcome.winner === playerColor) {
-      //   sounds.playVictory();
-      // }
-      // else {
-      //   sounds.playDefeat();
-      // }
-      sounds.playNotify();
-    }
-    else if (prevGameState && !prevGameState.chessState.board.occupied.xor(currGameState.chessState.board.occupied).moreThanOne()) {
-      sounds.playCapture();
-    }
-    else {
-      sounds.playMove();
-    }
-    prevChessStateRef.current = gameState;
-  }, [boardFen]);
-
+    setBoardFen(makeBoardFen((gameState || defaultGameState).chessState.board));
+  }, [gameState]);
   const moveOptions = moveFrom
     ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
     : [];
@@ -256,31 +224,35 @@ export function AuctionChessBoard({ gameState, playerColor }: BoardProps) {
 
   return (
     <>
-      {promotionMove && (
-        <PromotionMenu
-          color={playerColor}
-          fileIndex={squareFile(promotionMove.to)}
-          cancel={() => setPromotionMove(null)}
-          select={playPromotion}
-        />
-      )}
       <div
-        className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}
+        className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
       >
-        <Chessboard
-          options={{
-            position: boardFen,
-            pieces: createPieces(gameState.pieceIncome, gameState.pieceFee),
-            onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
-            onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
-            onSquareClick:
-              gameState.phase === "bid" ? undefined : onSquareClick,
-            squareStyles,
-            boardOrientation: playerColor,
-            alphaNotationStyle: { fontSize: "var(--text-base)" },
-            numericNotationStyle: { fontSize: "var(--text-base)" },
-          }}
-        />
+        {promotionMove && (
+          <PromotionMenu
+            color={playerColor}
+            fileIndex={squareFile(promotionMove.to)}
+            cancel={() => setPromotionMove(null)}
+            select={playPromotion}
+          />
+        )}
+        <div
+          className={`board-wrapper ${gameState.phase === "bid" ? "grayed-out" : ""}`}
+        >
+          <Chessboard
+            options={{
+              position: boardFen,
+              pieces: createPieces(gameState.pieceIncome, gameState.pieceFee),
+              onPieceDrag: gameState.phase === "bid" ? undefined : onPieceDrag,
+              onPieceDrop: gameState.phase === "bid" ? undefined : onPieceDrop,
+              onSquareClick:
+                gameState.phase === "bid" ? undefined : onSquareClick,
+              squareStyles,
+              boardOrientation: playerColor,
+              alphaNotationStyle: { fontSize: "var(--text-base)" },
+              numericNotationStyle: { fontSize: "var(--text-base)" },
+            }}
+          />
+        </div>
       </div>
     </>
   );

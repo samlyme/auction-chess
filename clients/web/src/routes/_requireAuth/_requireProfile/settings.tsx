@@ -1,6 +1,7 @@
 import supabase from "@/supabase";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button, FormInput, Card } from "@/components/ui";
+import { useState } from "react";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/settings")({
   component: RouteComponent,
@@ -8,6 +9,7 @@ export const Route = createFileRoute("/_requireAuth/_requireProfile/settings")({
 
 function RouteComponent() {
   const profile = Route.useRouteContext().profile;
+  const user = Route.useRouteContext().auth.session.user;
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -16,6 +18,19 @@ function RouteComponent() {
     } else {
       window.location.href = "/";
     }
+  };
+
+  const handleLinkOAuth: React.MouseEventHandler<HTMLButtonElement> = async (
+    e
+  ) => {
+    e.preventDefault();
+
+    const { data, error } = await supabase.auth.linkIdentity({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
   };
 
   return (
@@ -55,12 +70,16 @@ function RouteComponent() {
 
         <Card className="mt-8 shadow-lg">
           <h2 className="mb-4 text-2xl font-semibold">Account</h2>
-          <Button
-            onClick={handleSignOut}
-            variant="red"
-            size="lg"
-            fullWidth
-          >
+
+          {user.is_anonymous && (
+            <>
+              <h3 className="mb-4 text-xl">Link Account.</h3>
+              <Button onClick={handleLinkOAuth} className="mb-4">
+                Link with Google.
+              </Button>
+            </>
+          )}
+          <Button onClick={handleSignOut} variant="red" size="lg" fullWidth>
             Sign Out
           </Button>
         </Card>

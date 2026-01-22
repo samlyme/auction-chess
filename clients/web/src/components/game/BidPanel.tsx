@@ -1,9 +1,11 @@
 import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
 import { useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import type { AuctionChessState, Color } from "shared/types/game";
+import { useState, useEffect, useContext } from "react";
+import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
+import { LobbyContext } from "@/contexts/Lobby";
+import usePrevious from "@/hooks/usePrevious";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -29,9 +31,47 @@ function PlayerInfoCard({
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
+  const controls = useAnimation();
+  const [fallingNumber, setFallingNumber] = useState<{
+    amount: number;
+    key: number;
+    xOffset: number;
+    rotation: number;
+  } | null>(null);
+
+  const prevBalance = usePrevious(balance);
+
+  useEffect(() => {
+    // Prevent flashing on the very first render
+    if (prevBalance === null) return;
+
+    const isIncrease = balance > prevBalance;
+    const isDecrease = balance < prevBalance;
+
+    // 2. Define colors (Green for up, Red for down)
+    const flashColor = isIncrease
+      ? "#4ade80" // Emerald green
+      : "#f87171"; // Red
+
+    if (isIncrease || isDecrease) {
+      // 3. Trigger the animation sequence
+      controls.start({
+        backgroundColor: [flashColor, "#404040"],
+        transition: { duration: 0.5, ease: "easeOut" },
+      });
+
+      // Trigger falling number animation with random trajectory
+      const diff = balance - prevBalance;
+      const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
+      const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
+      setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
+      setTimeout(() => setFallingNumber(null), 1200);
+    }
+  }, [balance, prevBalance, controls]);
+
   return (
     <div
-      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} p-4`}
+      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
@@ -44,14 +84,41 @@ function PlayerInfoCard({
               </p>
             </div>
             <div className="m-2 bg-neutral-600 p-2">
-              <p className="text-2xl">{username}</p>
+              <p className="text-lg">{username}</p>
             </div>
           </div>
         </div>
-        <div onClick={() => {if(setBid) setBid(balance)}}
-        className="flex-1 rounded bg-neutral-700">
+        <motion.div
+          animate={controls}
+          onClick={() => {
+            if (setBid) setBid(balance);
+          }}
+          className="relative flex-1 rounded bg-neutral-700"
+        >
           <p className="mt-3 text-center text-7xl">${balance}</p>
-        </div>
+          {fallingNumber && (
+            <motion.div
+              key={fallingNumber.key}
+              initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
+              animate={{
+                y: 120,
+                x: fallingNumber.xOffset,
+                opacity: 0,
+                rotate: fallingNumber.rotation,
+              }}
+              transition={{
+                duration: 0.6,
+                ease: "easeIn",
+              }}
+              className={`pointer-events-none absolute top-1/2 left-3/4 -translate-x-1/2 text-3xl font-bold ${
+                fallingNumber.amount > 0 ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {fallingNumber.amount > 0 ? "+" : "-"}$
+              {Math.abs(fallingNumber.amount)}
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     </div>
   );
@@ -304,23 +371,19 @@ function BidAdjustmentControls({
   );
 }
 
-export default function BidPanel({
-  showTurn,
-  username,
-  oppUsername,
-  playerColor,
-  gameState,
-  timers,
-  enableTimers,
-}: {
-  showTurn: boolean;
-  username: string;
-  oppUsername: string | undefined;
-  playerColor: Color;
-  gameState: AuctionChessState;
-  timers: Record<Color, UseCountdownTimerResult>;
-  enableTimers: boolean;
-}) {
+export default function BidPanel() {
+  const {
+    gameState: game,
+    defaultGameState,
+    timers,
+    playerColor,
+    userProfile,
+    oppProfile,
+  } = useContext(LobbyContext);
+  const gameState = game || defaultGameState;
+
+  const showTurn = !!game;
+
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
     setBid(gameState.auctionState.minBid);
@@ -346,52 +409,56 @@ export default function BidPanel({
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-4">
-        <PlayerInfoCard
-          username={oppUsername || "waiting..."}
-          balance={gameState.auctionState.balance[opponentColor]}
-          timer={timers[opponentColor]}
-          enableTimer={enableTimers}
-          isTurn={showTurn && !isPlayerTurn}
-          setBid={setBid}
-        />
+      <div
+        className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
+      >
+        <div className="flex h-full w-full flex-col gap-4">
+          <PlayerInfoCard
+            username={oppProfile?.username || "waiting..."}
+            balance={gameState.auctionState.balance[opponentColor]}
+            timer={timers[opponentColor]}
+            enableTimer={!!game?.timeState}
+            isTurn={showTurn && !isPlayerTurn}
+            setBid={setBid}
+          />
 
-        <div className="flex-1 rounded-lg bg-neutral-800 p-4">
-          <div className="flex h-full flex-col gap-4">
-            <BidInfo
-              setBid={setBid}
-              prevBid={prevBidAmount}
-              minBid={gameState.auctionState.minBid}
-            />
-            <div className="flex-1 rounded-md bg-neutral-700 p-4">
-              <div className="flex h-full gap-2">
-                <BidControls
-                  bid={bid}
-                  setBid={setBid}
-                  minBid={gameState.auctionState.minBid}
-                  maxBid={gameState.auctionState.balance[playerColor]}
-                  onBid={handleBid}
-                  onFold={handleFold}
-                  isBidPending={makeBidMutation.isPending}
-                />
-                {/* <BidAdjustmentControls
+          <div className="flex-1 rounded-lg bg-neutral-800 p-4">
+            <div className="flex h-full flex-col gap-4">
+              <BidInfo
+                setBid={setBid}
+                prevBid={prevBidAmount}
+                minBid={gameState.auctionState.minBid}
+              />
+              <div className="flex-1 rounded-md bg-neutral-700 p-4">
+                <div className="flex h-full gap-2">
+                  <BidControls
+                    bid={bid}
+                    setBid={setBid}
+                    minBid={gameState.auctionState.minBid}
+                    maxBid={gameState.auctionState.balance[playerColor]}
+                    onBid={handleBid}
+                    onFold={handleFold}
+                    isBidPending={makeBidMutation.isPending}
+                  />
+                  {/* <BidAdjustmentControls
                   bid={bid}
                   setBid={setBid}
                   minBid={gameState.auctionState.minBid}
                   maxBid={gameState.auctionState.balance[playerColor]}
                 /> */}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <PlayerInfoCard
-          username={username}
-          balance={gameState.auctionState.balance[playerColor]}
-          timer={timers[playerColor]}
-          enableTimer={enableTimers}
-          isTurn={showTurn && isPlayerTurn}
-        />
+          <PlayerInfoCard
+            username={userProfile.username}
+            balance={gameState.auctionState.balance[playerColor]}
+            timer={timers[playerColor]}
+            enableTimer={!!gameState?.timeState}
+            isTurn={showTurn && isPlayerTurn}
+          />
+        </div>
       </div>
     </>
   );

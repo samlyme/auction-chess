@@ -2,6 +2,7 @@ import { randomUUIDv7 } from "bun";
 import type { AuctionChessState } from "shared/types/game";
 import type { Lobby, LobbyConfig } from "shared/types/lobbies";
 import {createGame} from "shared/game/auctionChess"
+import { generateUniqueCode } from "../utils/unique";
 
 const lobbies: Record<string, Lobby> = {};
 const userIdToLobbyCode: Record<string, string> = {};
@@ -16,7 +17,7 @@ export function getLobbyByUserId(userId: string): Lobby | undefined {
 }
 
 export function createLobby(userId: string, config: LobbyConfig): Lobby {
-  const code = generateUniqueCode();
+  const code = generateUniqueCode(lobbies);
   const newLobby: Lobby = {
     code,
     config,
@@ -73,16 +74,4 @@ export function updateGameState(
 ): void {
   const lobby = lobbies[lobbyCode]!;
   lobby.gameState = gameState;
-}
-
-function generateUniqueCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  for (let attempt = 0; attempt < 100; attempt++) {
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    if (!(code in lobbies)) return code;
-  }
-  throw new Error("Failed to generate unique lobby code");
 }

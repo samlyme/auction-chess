@@ -20,6 +20,7 @@
     "@hono/zod-validator": "^0.7.5",
     "hono": "^4.10.7",
     "immer": "^11.1.0",
-    "shared": "workspace:*"
+    "shared": "workspace:*",
+    "unique-username-generator": "^1.5.1"
   }
 }

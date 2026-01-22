@@ -48,7 +48,7 @@ function RouteComponent() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="grid gap-8 grid-cols-3">
           {/* Custom Lobby Card */}
           <Card className="shadow-lg">
             <h2
