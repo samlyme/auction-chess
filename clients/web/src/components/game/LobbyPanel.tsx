@@ -7,15 +7,13 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import LobbyConfigForm from "../forms/LobbyConfigForm";
 import LobbyConfigDisplay from "./LobbyConfigDisplay";
-import type { LobbyPayload } from "shared/types/lobbies";
 import { Button } from "@/components/ui";
+import { LobbyContext } from "@/contexts/Lobby";
+import { useContext } from "react";
 
-interface LobbyPanelProps {
-  isHost: boolean;
-  lobby: LobbyPayload;
-}
-
-export default function LobbyPanel({ isHost, lobby }: LobbyPanelProps) {
+export default function LobbyPanel() {
+  const { lobby, userId } = useContext(LobbyContext);
+  const isHost = userId === lobby.hostUid;
   const startLobbyMutation = useMutation(useStartLobbyMutationOptions());
   const endLobbyMutation = useMutation(useEndLobbyMutationOptions());
   const deleteLobbyMutation = useMutation(useDeleteLobbyMutationOptions());

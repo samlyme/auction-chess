@@ -5,6 +5,7 @@ import { getProfile, validateProfile } from "../middleware/profiles";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { HTTPException } from "hono/http-exception";
+import { generateUsername } from "unique-username-generator";
 
 const route = new Hono<MaybeProfileEnv>()
 
@@ -87,6 +88,33 @@ const route = new Hono<MaybeProfileEnv>()
     const res = Profile.parse(data);
 
     return c.json(res);
+  })
+
+  .post("/guest", async (c) => {
+    const profile = c.get("profile");
+    if (profile)
+      throw new HTTPException(400, { message: "profile already created" });
+
+    const user = c.get("user");
+    const username = generateUsername("-", 4);
+    const supabase = c.get("supabase");
+
+    for (let i = 0; i < 10; i++) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          username,
+        })
+        .select()
+        .single();
+
+      const res = Profile.parse(data);
+      return c.json(res);
+    }
+    throw new HTTPException(500, {
+      message: "Failed to pick a unique Username.",
+    });
   })
 
   .put("/", validateProfile, zValidator("json", ProfileUpdate), async (c) => {
