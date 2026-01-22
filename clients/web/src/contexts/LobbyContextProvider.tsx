@@ -16,7 +16,7 @@ import usePrevious from "@/hooks/usePrevious";
 
 const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");
 
-export default function GameContextProvider({
+export default function LobbyContextProvider({
   children,
 }: {
   children: React.ReactNode;

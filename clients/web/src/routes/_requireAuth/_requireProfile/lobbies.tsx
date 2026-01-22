@@ -5,7 +5,7 @@ import { OutcomeModal } from "@/components/game/OutcomeModal";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import GameContextProvider from "@/contexts/GameContextProvider";
+import LobbyContextProvider from "@/contexts/LobbyContextProvider";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
   loader: async ({ context }) => {
@@ -30,7 +30,7 @@ function RouteComponent() {
 
   return (
     <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
-      <GameContextProvider>
+      <LobbyContextProvider>
         <div className="grid grid-cols-12 gap-4 p-16">
           <div className="col-span-3">
             <LobbyPanel />
@@ -44,7 +44,7 @@ function RouteComponent() {
           </div>
         </div>
         <OutcomeModal />
-      </GameContextProvider>
+      </LobbyContextProvider>
     </div>
   );
 }
