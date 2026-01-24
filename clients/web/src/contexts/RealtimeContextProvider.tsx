@@ -2,13 +2,10 @@ import { useEffect } from "react";
 import supabase from "@/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { LobbyEventType, LobbyPayload } from "shared/types/lobbies";
-import { AuctionChessStateSchema } from "shared/types/game";
+import { AuctionChessStateSchema, type AuctionChessState } from "shared/types/game";
+import { RealtimeContext } from "./Realtime";
 
-// provide all initial values. Thus, this hook's only responsibility is to
-// list for updates. However, that means it still does the logic for fetching
-// initial gameState.
-// This route sets lobby to null when a DELETE message is received.
-export default function useRealtime(userId: string, lobbyCode: string) {
+export default function RealtimeContextProvder({userId, lobbyCode, children}: {userId: string; lobbyCode: string, children: React.ReactNode}) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -55,7 +52,10 @@ export default function useRealtime(userId: string, lobbyCode: string) {
 
           case LobbyEventType.GameUpdate: {
             const newGameState = AuctionChessStateSchema.parse(update.payload);
-            queryClient.setQueryData(["game"], newGameState);
+            queryClient.setQueryData(["game"], (prevGameState: AuctionChessState | undefined) => {
+              if (prevGameState) queryClient.setQueryData(["game", "prev"], prevGameState);
+              return newGameState;
+            });
             break;
           }
         }
@@ -68,4 +68,5 @@ export default function useRealtime(userId: string, lobbyCode: string) {
       channel.unsubscribe();
     };
   }, []);
+  return <RealtimeContext value={{enabled: true}}>{children}</RealtimeContext>;
 }

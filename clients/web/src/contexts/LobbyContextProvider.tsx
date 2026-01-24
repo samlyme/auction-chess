@@ -3,7 +3,7 @@ import { LobbyContext, type LobbyContextType } from "./Lobby";
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
-import useRealtime from "@/hooks/useRealtime";
+// import useRealtime from "@/hooks/useRealtime";
 import type { AuctionChessState, Color } from "shared/types/game";
 import { useProfileOptions } from "@/queries/profiles";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/hooks/useCountdownTimer";
 import { useEffect, useRef } from "react";
 import { createGame } from "shared/game/auctionChess";
+import { opposite } from "@/utils";
 
 const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");
 
@@ -28,83 +29,19 @@ export default function LobbyContextProvider({
   // Use TanStack Query for real-time data instead of manual state management
   const { data: lobby } = useSuspenseQuery(useLobbyOptions(initLobby));
   const { data: game } = useSuspenseQuery(useGameOptions());
-  const timecheckMutation = useMutation(useTimecheckMutationOptions());
 
   // Bind the lobby and game to the real time updates.
-  useRealtime(userId, initLobby.code);
+  // useRealtime(userId, initLobby.code);
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
   const hostColor = lobby?.config.gameConfig.hostColor || "white";
-  const opposite = (color: Color) => (color === "white" ? "black" : "white");
   const playerColor =
     lobby && userId === lobby.hostUid ? hostColor : opposite(hostColor);
 
-  // All hooks must be called before any early returns
-  const initPlayerTime = lobby?.config.gameConfig.timeConfig.enabled
-    ? lobby.config.gameConfig.timeConfig.initTime[playerColor]
-    : 0;
-  const playerTimer = useCountdownTimer({
-    durationMs: initPlayerTime,
-    onExpire: async () => {
-      await timecheckMutation.mutateAsync();
-    },
-  });
-
-  const initOppTime = lobby?.config.gameConfig.timeConfig.enabled
-    ? lobby.config.gameConfig.timeConfig.initTime[opposite(playerColor)]
-    : 0;
-  const oppTimer = useCountdownTimer({
-    durationMs: initOppTime,
-    onExpire: async () => {
-      await timecheckMutation.mutateAsync();
-    },
-  });
-
-  // set the timers.
-  useEffect(() => {
-    if (!lobby) return;
-
-    if (!lobby.gameStarted || !game) {
-      // The game isn't started, so use the lobby's config for time.
-      playerTimer.reset(initPlayerTime);
-      oppTimer.reset(initOppTime);
-    } else if (game && game.timeState) {
-      const prev = game.timeState.prev || Date.now();
-      const now = Date.now();
-      const elapsed = now - prev;
-
-      let playerTimeBalance = game.timeState.time[playerColor];
-      let oppTimeBalance = game.timeState.time[opposite(playerColor)];
-
-      if (game.turn === playerColor) playerTimeBalance -= elapsed;
-      else oppTimeBalance -= elapsed;
-
-      playerTimer.reset(playerTimeBalance);
-      oppTimer.reset(oppTimeBalance);
-
-      // NOTE: This is fragile. This assumes that a null prev means the game is started
-      if (game.timeState.prev !== null) {
-        if (game.turn === playerColor) playerTimer.start();
-        else oppTimer.start();
-      }
-    }
-  }, [game, lobby]);
 
   if (!lobby) return <Navigate to={"/home"} />;
 
-  const timers: Record<Color, UseCountdownTimerResult> =
-    playerColor === "white"
-      ? { white: playerTimer, black: oppTimer }
-      : { white: oppTimer, black: playerTimer };
-
   // 1. Prepare the partial data based on your conditions
-  const gamePart = lobby.gameStarted
-    ? { game: { gameState: game, prevGameState: null } }
-    : { game: undefined };
-
-  const timerPart = lobby.config.gameConfig.timeConfig.enabled
-    ? { timers }
-    : { timers: undefined };
 
   // 2. Construct the single object
   // We cast 'as LobbyContextType' because we trust our logic above
@@ -113,9 +50,7 @@ export default function LobbyContextProvider({
     playerColor, // Don't forget the base fields!
     lobby,
     isHost,
-    ...gamePart,
-    ...timerPart,
-  } as LobbyContextType;
+  };
 
   console.log({ lobbyContextValue: contextValue });
   return <LobbyContext value={contextValue}>{children}</LobbyContext>;

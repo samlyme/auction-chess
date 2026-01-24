@@ -1,7 +1,7 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
 import { api } from "@/queries/api";
 import { parseResponse } from "hono/client";
-import { AuctionChessStateSchema, type Bid, type NormalMove } from "shared/types/game";
+import { AuctionChessStateSchema, type AuctionChessState, type Bid, type NormalMove } from "shared/types/game";
 
 export function useGameOptions() {
   return queryOptions({
@@ -17,6 +17,15 @@ export function useGameOptions() {
       return chessState;
     },
   });
+}
+
+export function usePrevGameOptions() {
+  return queryOptions({
+    queryKey: ["game", "prev"],
+    // This is a "fake" query! Only exists on client.
+    queryFn: (): null | AuctionChessState => null,
+    staleTime: Infinity,
+  })
 }
 
 // TODO: Optimistic updates here!

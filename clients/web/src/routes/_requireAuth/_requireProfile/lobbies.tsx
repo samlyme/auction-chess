@@ -4,8 +4,9 @@ import LobbyPanel from "@/components/game/LobbyPanel";
 import { OutcomeModal } from "@/components/game/OutcomeModal";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import LobbyContextProvider from "@/contexts/LobbyContextProvider";
+import GameContextProvider from "@/contexts/GameContextProvider";
+import RealtimeContextProvder from "@/contexts/RealtimeContextProvider";
 
 export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
   loader: async ({ context }) => {
@@ -20,31 +21,31 @@ export const Route = createFileRoute("/_requireAuth/_requireProfile/lobbies")({
 });
 
 function RouteComponent() {
-  const { lobby: initLobby } = Route.useLoaderData();
-
-  // Use TanStack Query for real-time data instead of manual state management
-  const { data: lobby } = useSuspenseQuery(useLobbyOptions(initLobby));
-
-  // NOW we can do the early return, after all hooks have been called
-  if (!lobby) return <Navigate to={"/home"} />;
+  const { lobby } = Route.useLoaderData();
+  const userId = Route.useRouteContext().auth.session.user.id;
 
   return (
     <div className="flex w-full justify-center overflow-auto border bg-(--color-background) p-8">
-      <LobbyContextProvider>
-        <div className="grid grid-cols-12 gap-4 p-16">
-          <div className="col-span-3">
-            <LobbyPanel />
-          </div>
+      {/* This is dependent on routing! When leaving lobbies, take care to leave /lobbies */}
+      <RealtimeContextProvder userId={userId} lobbyCode={lobby.code}>
+        <LobbyContextProvider>
+          <GameContextProvider>
+            <div className="grid grid-cols-12 gap-4 p-16">
+              <div className="col-span-3">
+                <LobbyPanel />
+              </div>
 
-          <div className={`col-span-6 flex items-center justify-center`}>
-            <AuctionChessBoard />
-          </div>
-          <div className={`col-span-3`}>
-            <BidPanel />
-          </div>
-        </div>
-        <OutcomeModal />
-      </LobbyContextProvider>
+              <div className={`col-span-6 flex items-center justify-center`}>
+                <AuctionChessBoard />
+              </div>
+              <div className={`col-span-3`}>
+                <BidPanel />
+              </div>
+            </div>
+            <OutcomeModal />
+          </GameContextProvider>
+        </LobbyContextProvider>
+      </RealtimeContextProvder>
     </div>
   );
 }

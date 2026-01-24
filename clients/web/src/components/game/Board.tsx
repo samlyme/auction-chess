@@ -33,6 +33,7 @@ import * as AuctionChess from "shared/game/auctionChess";
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
 import { LobbyContext } from "@/contexts/Lobby";
+import { GameContext } from "@/contexts/Game";
 
 function PromotionMenu({
   color,
@@ -106,11 +107,11 @@ function PromotionMenu({
 
 export function AuctionChessBoard() {
   const {
-    game,
     playerColor,
     lobby,
   } = useContext(LobbyContext);
-  const gameState = game ? game.gameState : AuctionChess.createGame(lobby.config.gameConfig);
+  const { gameData } = useContext(GameContext);
+  const gameState = gameData ? gameData.gameState : AuctionChess.createGame(lobby.config.gameConfig);
 
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -226,7 +227,7 @@ export function AuctionChessBoard() {
   return (
     <>
       <div
-        className={`w-full rounded-2xl ${game && gameState.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
+        className={`w-full rounded-2xl ${gameData && gameState.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
       >
         {promotionMove && (
           <PromotionMenu

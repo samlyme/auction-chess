@@ -8,8 +8,9 @@ import { LobbyContext } from "@/contexts/Lobby";
 import usePrevious from "@/hooks/usePrevious";
 import { createGame } from "shared/game/auctionChess";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
-import type { Color } from "shared/types/game";
+import { GameConfig, type Color } from "shared/types/game";
 import { getPiece } from "shared/game/pureBoard";
+import { GameContext } from "@/contexts/Game";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -18,7 +19,7 @@ interface PlayerInfoCardProps {
 }
 
 function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
-  const { game, timers } = useContext(LobbyContext);
+  const { gameData, timers } = useContext(GameContext);
 
   // Stuff for timers
   const remainingMs = timers ? timers[color].remainingMs : 0;
@@ -35,7 +36,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
   } | null>(null);
 
   const [displayBalance, setDisplayBalance] = useState(
-    game?.gameState.auctionState.balance[color] || 0
+    gameData?.gameState.auctionState.balance[color] || 0
   );
 
   const green = "#4ade80";
@@ -62,58 +63,58 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
 
   useEffect(() => {
     // TODO: maybe switch to a "delta-based" messaging system. would be easier for stuff like this!
-    if (!game) return;
-    if (!game.prevGameState) {
-      setDisplayBalance(game.gameState.auctionState.balance[color]);
+    if (!gameData) return;
+    if (!gameData.prevGameState) {
+      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
       return;
     }
 
-    if (displayBalance !== game.prevGameState.auctionState.balance[color]) {
-      throw new Error(
-        "Invalid State! The display balance and prev Balance are desynced."
-      );
-    }
+    // if (displayBalance !== gameData.prevGameState.auctionState.balance[color]) {
+    //   throw new Error(
+    //     "Invalid State! The display balance and prev Balance are desynced."
+    //   );
+    // }
 
     const animationQueue: (() => Promise<[any, void]>)[] = [];
     if (
-      game.prevGameState.phase === "move" ||
-      game.prevGameState.turn === color
+      gameData.prevGameState.phase === "move"
     ) {
-      const board = game.gameState.chessState.board;
-      const prevBoard = game.prevGameState.chessState.board;
+      const board = gameData.gameState.chessState.board;
+      const prevBoard = gameData.prevGameState.chessState.board;
       // We just made a move! Time to deduct piece fee and earn piece Income!
-      if (game.prevGameState.pieceFee) {
+      if (gameData.prevGameState.pieceFee) {
         // Calculate fee. We use prevGameState because the fee is
         // based on its value when the piece was selected.
         const diffSquares = board[color].xor(prevBoard[color]);
         const moveTo = board[color].intersect(diffSquares);
         const movedPiece = getPiece(board, moveTo.first()!)!; // If this fails, idk.
-        const fee = game.prevGameState.pieceFee[movedPiece.role];
+        const fee = gameData.prevGameState.pieceFee[movedPiece.role];
 
-        animationQueue.push(() => animateBalanceChange(-fee));
+        if (fee > 0) animationQueue.push(() => animateBalanceChange(-fee));
       }
-      if (game.gameState.pieceIncome) {
+      if (gameData.gameState.pieceIncome) {
         // Calculate income. We use current gameState because
         // income happens "now."
         let income = 0;
         for (const square of board[color]) {
           const piece = getPiece(board, square)!;
-          income += game.gameState.pieceIncome[piece.role];
+          income += gameData.gameState.pieceIncome[piece.role];
         }
         animationQueue.push(() => animateBalanceChange(income));
       }
     }
+
 
     (async () => {
       for (const startAnimation of animationQueue) {
         await startAnimation();
       }
     })()
-  }, [game, controls]);
+  }, [gameData, controls]);
 
   return (
     <div
-      className={`rounded-lg ${game?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
+      className={`rounded-lg ${gameData?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
@@ -134,12 +135,12 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
           animate={controls}
           onClick={() => {
             if (setBid)
-              setBid(game?.gameState.auctionState.balance[color] || 0);
+              setBid(gameData?.gameState.auctionState.balance[color] || 0);
           }}
           className="relative flex-1 rounded bg-neutral-700"
         >
           <p className="mt-3 text-center text-7xl">
-            ${game?.gameState.auctionState.balance[color] || 0}
+            ${gameData?.gameState.auctionState.balance[color] || 0}
           </p>
           {fallingNumber && (
             <motion.div
@@ -174,13 +175,13 @@ interface BidComparisonProps {
 }
 
 function BidInfo({ setBid }: BidComparisonProps) {
-  const { game } = useContext(LobbyContext);
-  const bidHistory = game?.gameState.auctionState.bidHistory || [];
+  const { gameData } = useContext(GameContext);
+  const bidHistory = gameData?.gameState.auctionState.bidHistory || [];
   // TODO: fix this jank
   const bidStack = bidHistory[bidHistory.length - 1] ?? [];
   const lastBid = bidStack.at(-1) || { fold: true };
   const prevBid = lastBid.fold ? 0 : lastBid.amount;
-  const minBid = game?.gameState.auctionState.minBid || 0;
+  const minBid = gameData?.gameState.auctionState.minBid || 0;
   return (
     <div className="rounded-md bg-neutral-700 p-4">
       <div className="grid grid-cols-2 gap-2">
@@ -423,14 +424,15 @@ function BidAdjustmentControls({
 
 export default function BidPanel() {
   const {
-    game,
     // whatever, forgot the naming convention. either playerColor or userColor works.
     playerColor: userColor,
     lobby,
     isHost,
   } = useContext(LobbyContext);
 
-  const gameState = game ? game.gameState : createGame(lobby.config.gameConfig);
+  const { gameData } = useContext(GameContext);
+
+  const gameState = gameData ? gameData.gameState : createGame(lobby.config.gameConfig);
 
   const { data: userProfile } = useSuspenseQuery(useMyProfileOptions());
   if (!userProfile) throw new Error("failed to get my profile!");
@@ -459,7 +461,7 @@ export default function BidPanel() {
   return (
     <>
       <div
-        className={`h-full w-full rounded-2xl ${game && game.gameState.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
+        className={`h-full w-full rounded-2xl ${gameData && gameData.gameState.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
       >
         <div className="flex h-full w-full flex-col gap-4">
           <PlayerInfoCard
