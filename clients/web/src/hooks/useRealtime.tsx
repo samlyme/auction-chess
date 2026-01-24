@@ -28,17 +28,28 @@ export default function useRealtime(userId: string, lobbyCode: string) {
               console.log("update lobby");
 
               queryClient.setQueryData(["lobby"], newLobby);
-              if (!newLobby.gameStarted)
+              if (!newLobby.gameStarted) {
+                // The host can end the game, and there wont be a game update.
+                // That counts as a lobby update, but the game state implicitly
+                // changed.
                 queryClient.setQueryData(["game"], null);
+              } else {
+                // The lobby's game as now started. The game state cache
+                // is no longer valid. This query is not invalidated during
+                // game updates though, so it is still efficient.
+                queryClient.invalidateQueries({ queryKey: ["game"] });
+              }
             } else {
               console.log("left lobby");
               queryClient.setQueryData(["lobby"], null);
+              queryClient.setQueryData(["game"], null);
             }
             break;
           }
 
           case LobbyEventType.LobbyDelete:
             queryClient.setQueryData(["lobby"], null);
+            queryClient.setQueryData(["game"], null);
             console.log("lobby deleted");
             break;
 
