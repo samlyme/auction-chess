@@ -12,7 +12,7 @@ export function useGameOptions() {
     queryFn: async () => {
       const res = await parseResponse(api.lobbies.game.$get());
       console.log("get game!", res);
-      const chessState = AuctionChessStateSchema.parse(res);
+      const chessState = AuctionChessStateSchema.nullable().parse(res);
       console.log("parse game!", chessState);
       return chessState;
     },

@@ -1,6 +1,6 @@
 import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
-import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
+import { skipToken, useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState, useEffect, useContext } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
@@ -9,6 +9,7 @@ import usePrevious from "@/hooks/usePrevious";
 import { createGame } from "shared/game/auctionChess";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
 import type { Color } from "shared/types/game";
+import { getPiece } from "shared/game/pureBoard";
 
 interface PlayerInfoCardProps {
   username: string;
@@ -25,10 +26,6 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
-  // Stuff for balance
-  const balance = game?.gameState.auctionState.balance[color] || 0;
-  const prevBalance = game?.prevGameState?.auctionState.balance[color] || 0;
-
   const controls = useAnimation();
   const [fallingNumber, setFallingNumber] = useState<{
     amount: number;
@@ -37,33 +34,82 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
     rotation: number;
   } | null>(null);
 
+  const [displayBalance, setDisplayBalance] = useState(
+    game?.gameState.auctionState.balance[color] || 0
+  );
+
+  const green = "#4ade80";
+  const red = "#f87171";
+  const flashColor = (color: string) =>
+    controls.start({
+      backgroundColor: [color, "#404040"],
+      transition: { duration: 0.5, ease: "easeOut" },
+    });
+  const dropNumber = async (diff: number) => {
+    const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
+    const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
+    setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
+    await setTimeout(() => setFallingNumber(null), 1200);
+  };
+
+  const animateBalanceChange = (amount: number) => {
+    setDisplayBalance((prev) => prev + amount);
+    return Promise.all([
+      flashColor(amount > 0 ? green : red),
+      dropNumber(amount),
+    ]);
+  };
+
   useEffect(() => {
-    // Prevent flashing on the very first render
-    if (prevBalance === null) return;
-
-    const isIncrease = balance > prevBalance;
-    const isDecrease = balance < prevBalance;
-
-    // 2. Define colors (Green for up, Red for down)
-    const flashColor = isIncrease
-      ? "#4ade80" // Emerald green
-      : "#f87171"; // Red
-
-    if (isIncrease || isDecrease) {
-      // 3. Trigger the animation sequence
-      controls.start({
-        backgroundColor: [flashColor, "#404040"],
-        transition: { duration: 0.5, ease: "easeOut" },
-      });
-
-      // Trigger falling number animation with random trajectory
-      const diff = balance - prevBalance;
-      const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
-      const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
-      setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
-      setTimeout(() => setFallingNumber(null), 1200);
+    // TODO: maybe switch to a "delta-based" messaging system. would be easier for stuff like this!
+    if (!game) return;
+    if (!game.prevGameState) {
+      setDisplayBalance(game.gameState.auctionState.balance[color]);
+      return;
     }
-  }, [balance, prevBalance, controls]);
+
+    if (displayBalance !== game.prevGameState.auctionState.balance[color]) {
+      throw new Error(
+        "Invalid State! The display balance and prev Balance are desynced."
+      );
+    }
+
+    const animationQueue: (() => Promise<[any, void]>)[] = [];
+    if (
+      game.prevGameState.phase === "move" ||
+      game.prevGameState.turn === color
+    ) {
+      const board = game.gameState.chessState.board;
+      const prevBoard = game.prevGameState.chessState.board;
+      // We just made a move! Time to deduct piece fee and earn piece Income!
+      if (game.prevGameState.pieceFee) {
+        // Calculate fee. We use prevGameState because the fee is
+        // based on its value when the piece was selected.
+        const diffSquares = board[color].xor(prevBoard[color]);
+        const moveTo = board[color].intersect(diffSquares);
+        const movedPiece = getPiece(board, moveTo.first()!)!; // If this fails, idk.
+        const fee = game.prevGameState.pieceFee[movedPiece.role];
+
+        animationQueue.push(() => animateBalanceChange(-fee));
+      }
+      if (game.gameState.pieceIncome) {
+        // Calculate income. We use current gameState because
+        // income happens "now."
+        let income = 0;
+        for (const square of board[color]) {
+          const piece = getPiece(board, square)!;
+          income += game.gameState.pieceIncome[piece.role];
+        }
+        animationQueue.push(() => animateBalanceChange(income));
+      }
+    }
+
+    (async () => {
+      for (const startAnimation of animationQueue) {
+        await startAnimation();
+      }
+    })()
+  }, [game, controls]);
 
   return (
     <div
@@ -87,11 +133,14 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
         <motion.div
           animate={controls}
           onClick={() => {
-            if (setBid) setBid(balance);
+            if (setBid)
+              setBid(game?.gameState.auctionState.balance[color] || 0);
           }}
           className="relative flex-1 rounded bg-neutral-700"
         >
-          <p className="mt-3 text-center text-7xl">${balance}</p>
+          <p className="mt-3 text-center text-7xl">
+            ${game?.gameState.auctionState.balance[color] || 0}
+          </p>
           {fallingNumber && (
             <motion.div
               key={fallingNumber.key}
@@ -383,7 +432,7 @@ export default function BidPanel() {
 
   const gameState = game ? game.gameState : createGame(lobby.config.gameConfig);
 
-  const { data: userProfile } = useQuery(useMyProfileOptions());
+  const { data: userProfile } = useSuspenseQuery(useMyProfileOptions());
   if (!userProfile) throw new Error("failed to get my profile!");
 
   const oppId = isHost ? lobby.guestUid : lobby.hostUid;
@@ -421,9 +470,7 @@ export default function BidPanel() {
 
           <div className="flex-1 rounded-lg bg-neutral-800 p-4">
             <div className="flex h-full flex-col gap-4">
-              <BidInfo
-                setBid={setBid}
-              />
+              <BidInfo setBid={setBid} />
               <div className="flex-1 rounded-md bg-neutral-700 p-4">
                 <div className="flex h-full gap-2">
                   <BidControls
@@ -446,10 +493,7 @@ export default function BidPanel() {
             </div>
           </div>
 
-          <PlayerInfoCard
-            color={userColor}
-            username={userProfile.username}
-          />
+          <PlayerInfoCard color={userColor} username={userProfile.username} />
         </div>
       </div>
     </>
