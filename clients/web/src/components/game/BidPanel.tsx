@@ -8,29 +8,26 @@ import { LobbyContext } from "@/contexts/Lobby";
 import usePrevious from "@/hooks/usePrevious";
 import { createGame } from "shared/game/auctionChess";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
+import type { Color } from "shared/types/game";
 
 interface PlayerInfoCardProps {
   username: string;
-  balance: number;
-  timer?: UseCountdownTimerResult | undefined;
-  isTurn: boolean;
+  color: Color;
   setBid?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function PlayerInfoCard({
-  username,
-  balance,
-  timer,
-  isTurn,
-  setBid,
-}: PlayerInfoCardProps) {
-  const enableTimer = !!timer;
-  const remainingMs = timer ? timer.remainingMs : 0;
+function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
+  const { game, timers } = useContext(LobbyContext);
 
+  // Stuff for timers
+  const remainingMs = timers ? timers[color].remainingMs : 0;
   const totalSeconds = remainingMs / 1000;
-
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
+
+  // Stuff for balance
+  const balance = game?.gameState.auctionState.balance[color] || 0;
+  const prevBalance = game?.prevGameState?.auctionState.balance[color] || 0;
 
   const controls = useAnimation();
   const [fallingNumber, setFallingNumber] = useState<{
@@ -39,9 +36,6 @@ function PlayerInfoCard({
     xOffset: number;
     rotation: number;
   } | null>(null);
-
-  const { game } = useContext(LobbyContext);
-  const prevBalance = usePrevious(balance);
 
   useEffect(() => {
     // Prevent flashing on the very first render
@@ -73,13 +67,13 @@ function PlayerInfoCard({
 
   return (
     <div
-      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
+      className={`rounded-lg ${game?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
             <div
-              className={`m-2 w-22 p-2 ${enableTimer && timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
+              className={`m-2 w-22 p-2 ${timers && timers[color].isRunning ? "bg-green-600" : "bg-neutral-600"} ${timers || "opacity-30"}`}
             >
               <p className="text-2xl">
                 {minutes}:{seconds}
@@ -374,7 +368,13 @@ function BidAdjustmentControls({
 }
 
 export default function BidPanel() {
-  const { game, timers, playerColor, lobby, isHost } = useContext(LobbyContext);
+  const {
+    game,
+    timers,
+    playerColor: userColor,
+    lobby,
+    isHost,
+  } = useContext(LobbyContext);
 
   const gameState = game ? game.gameState : createGame(lobby.config.gameConfig);
   const showTurn = !!game;
@@ -403,13 +403,11 @@ export default function BidPanel() {
   };
 
   const { bidHistory } = gameState.auctionState;
-  const opponentColor = playerColor === "white" ? "black" : "white";
+  const oppColor = userColor === "white" ? "black" : "white";
   // TODO: fix this jank
   const bidStack = bidHistory[bidHistory.length - 1] ?? [];
   const lastBid = bidStack.at(-1) || { fold: true };
   const prevBidAmount = lastBid.fold ? 0 : lastBid.amount;
-
-  const isPlayerTurn = gameState.turn === playerColor;
 
   return (
     <>
@@ -418,10 +416,8 @@ export default function BidPanel() {
       >
         <div className="flex h-full w-full flex-col gap-4">
           <PlayerInfoCard
+            color={oppColor}
             username={oppProfile?.username || "waiting..."}
-            balance={gameState.auctionState.balance[opponentColor]}
-            timer={timers && timers[opponentColor]}
-            isTurn={showTurn && !isPlayerTurn}
             setBid={setBid}
           />
 
@@ -438,7 +434,7 @@ export default function BidPanel() {
                     bid={bid}
                     setBid={setBid}
                     minBid={gameState.auctionState.minBid}
-                    maxBid={gameState.auctionState.balance[playerColor]}
+                    maxBid={gameState.auctionState.balance[userColor]}
                     onBid={handleBid}
                     onFold={handleFold}
                     isBidPending={makeBidMutation.isPending}
@@ -455,10 +451,8 @@ export default function BidPanel() {
           </div>
 
           <PlayerInfoCard
+            color={userColor}
             username={userProfile.username}
-            balance={gameState.auctionState.balance[playerColor]}
-            timer={timers && timers[playerColor]}
-            isTurn={showTurn && isPlayerTurn}
           />
         </div>
       </div>
