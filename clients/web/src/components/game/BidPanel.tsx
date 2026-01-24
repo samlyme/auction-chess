@@ -121,12 +121,17 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
 }
 
 interface BidComparisonProps {
-  prevBid: number;
-  minBid: number;
   setBid: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function BidInfo({ prevBid, minBid, setBid }: BidComparisonProps) {
+function BidInfo({ setBid }: BidComparisonProps) {
+  const { game } = useContext(LobbyContext);
+  const bidHistory = game?.gameState.auctionState.bidHistory || [];
+  // TODO: fix this jank
+  const bidStack = bidHistory[bidHistory.length - 1] ?? [];
+  const lastBid = bidStack.at(-1) || { fold: true };
+  const prevBid = lastBid.fold ? 0 : lastBid.amount;
+  const minBid = game?.gameState.auctionState.minBid || 0;
   return (
     <div className="rounded-md bg-neutral-700 p-4">
       <div className="grid grid-cols-2 gap-2">
@@ -370,14 +375,13 @@ function BidAdjustmentControls({
 export default function BidPanel() {
   const {
     game,
-    timers,
+    // whatever, forgot the naming convention. either playerColor or userColor works.
     playerColor: userColor,
     lobby,
     isHost,
   } = useContext(LobbyContext);
 
   const gameState = game ? game.gameState : createGame(lobby.config.gameConfig);
-  const showTurn = !!game;
 
   const { data: userProfile } = useQuery(useMyProfileOptions());
   if (!userProfile) throw new Error("failed to get my profile!");
@@ -388,6 +392,7 @@ export default function BidPanel() {
       ? useProfileOptions({ id: oppId })
       : { queryKey: [], queryFn: skipToken }
   );
+  const oppColor = userColor === "white" ? "black" : "white";
 
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
@@ -401,13 +406,6 @@ export default function BidPanel() {
   const handleFold = () => {
     makeBidMutation.mutate({ fold: true });
   };
-
-  const { bidHistory } = gameState.auctionState;
-  const oppColor = userColor === "white" ? "black" : "white";
-  // TODO: fix this jank
-  const bidStack = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.at(-1) || { fold: true };
-  const prevBidAmount = lastBid.fold ? 0 : lastBid.amount;
 
   return (
     <>
@@ -425,8 +423,6 @@ export default function BidPanel() {
             <div className="flex h-full flex-col gap-4">
               <BidInfo
                 setBid={setBid}
-                prevBid={prevBidAmount}
-                minBid={gameState.auctionState.minBid}
               />
               <div className="flex-1 rounded-md bg-neutral-700 p-4">
                 <div className="flex h-full gap-2">
