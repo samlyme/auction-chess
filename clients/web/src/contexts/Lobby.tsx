@@ -1,28 +1,48 @@
 import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { createContext } from "react";
 import type { AuctionChessState, Color } from "shared/types/game";
-import type { Profile } from "shared/types/profiles";
 import type { LobbyPayload } from "shared/types/lobbies";
 
-export interface LobbyContextType {
-  gameState?: AuctionChessState | undefined;
-  defaultGameState: AuctionChessState;
+interface GameData {
+  gameState: AuctionChessState;
   prevGameState: AuctionChessState | null;
-  timers: Record<Color, UseCountdownTimerResult>;
-  playerColor: Color;
-  oppProfile: Profile | null;
-  userProfile: Profile;
-  lobby: LobbyPayload;
-  userId: string;
 }
+type Timers = Record<Color, UseCountdownTimerResult>;
+
+type GameFeature =
+  | {
+      lobby: LobbyPayload & { gameStarted: true }; // Narrowing
+      game: GameData;
+    }
+  | {
+      lobby: LobbyPayload & { gameStarted: false };
+      game?: undefined;
+    };
+
+type TimerFeature =
+  | {
+      // We narrow the deep nested property
+      lobby: LobbyPayload & {
+        config: { gameConfig: { timeConfig: { enabled: true } } };
+      };
+      timers: Timers;
+    }
+  | {
+      lobby: LobbyPayload & {
+        config: { gameConfig: { timeConfig: { enabled: false } } };
+      };
+      timers?: undefined;
+    };
+
+export type LobbyContextType = {
+  lobby: LobbyPayload;
+  playerColor: Color;
+  isHost: boolean;
+} & GameFeature &
+  TimerFeature;
+
 export const LobbyContext = createContext<LobbyContextType>({
-  gameState: undefined,
-  defaultGameState: undefined!,
-  prevGameState: null,
-  timers: undefined!,
-  playerColor: "white",
-  oppProfile: null,
-  userProfile: undefined!,
   lobby: undefined!,
-  userId: undefined!,
+  playerColor: "white",
+  isHost: true,
 });

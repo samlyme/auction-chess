@@ -106,11 +106,12 @@ function PromotionMenu({
 
 export function AuctionChessBoard() {
   const {
-    gameState: game,
-    defaultGameState,
+    game,
     playerColor,
+    lobby,
   } = useContext(LobbyContext);
-  const gameState = game || defaultGameState;
+  const gameState = game ? game.gameState : AuctionChess.createGame(lobby.config.gameConfig);
+
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
@@ -120,7 +121,7 @@ export function AuctionChessBoard() {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
   );
   useEffect(() => {
-    setBoardFen(makeBoardFen((gameState || defaultGameState).chessState.board));
+    setBoardFen(makeBoardFen((gameState).chessState.board));
   }, [gameState]);
   const moveOptions = moveFrom
     ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
@@ -225,7 +226,7 @@ export function AuctionChessBoard() {
   return (
     <>
       <div
-        className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
+        className={`w-full rounded-2xl ${game && gameState.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
       >
         {promotionMove && (
           <PromotionMenu

@@ -3,9 +3,9 @@ import { useContext } from "react";
 import type { Outcome } from "shared/types/game";
 
 export function OutcomeModal() {
-  const game = useContext(LobbyContext);
+  const { game } = useContext(LobbyContext);
 
-  if (!game.gameState?.outcome) return <></>;
+  if (!game?.gameState.outcome) return <></>;
 
   const outcome = game.gameState.outcome;
 

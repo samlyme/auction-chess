@@ -1,5 +1,5 @@
 import { getRouteApi, Navigate } from "@tanstack/react-router";
-import { LobbyContext } from "./Lobby";
+import { LobbyContext, type LobbyContextType } from "./Lobby";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLobbyOptions } from "@/queries/lobbies";
 import { useGameOptions, useTimecheckMutationOptions } from "@/queries/game";
@@ -12,7 +12,6 @@ import {
 } from "@/hooks/useCountdownTimer";
 import { useEffect, useRef } from "react";
 import { createGame } from "shared/game/auctionChess";
-import usePrevious from "@/hooks/usePrevious";
 
 const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");
 
@@ -22,7 +21,6 @@ export default function LobbyContextProvider({
   children: React.ReactNode;
 }) {
   const userId = Route.useRouteContext().auth.session.user.id;
-  const userProfile = Route.useRouteContext().profile;
 
   const { lobby: initLobby } = Route.useLoaderData();
 
@@ -33,24 +31,12 @@ export default function LobbyContextProvider({
 
   // Bind the lobby and game to the real time updates.
   useRealtime(userId, initLobby.code);
-  const prevGameState = usePrevious(game) || null;
 
   // Calculate these values before hooks, with fallbacks for when lobby is null
   const hostColor = lobby?.config.gameConfig.hostColor || "white";
   const opposite = (color: Color) => (color === "white" ? "black" : "white");
   const playerColor =
     lobby && userId === lobby.hostUid ? hostColor : opposite(hostColor);
-
-  // TODO: Flatten this request by having the lobbies API return usernames and id.
-  const oppId =
-    (userId === lobby?.hostUid ? lobby?.guestUid : lobby?.hostUid) || null;
-  const { data, error } = useQuery({
-    ...useProfileOptions({ id: oppId || "" }),
-    enabled: !!oppId,
-  });
-  if (error) throw error;
-
-  const oppProfile = data || null;
 
   // All hooks must be called before any early returns
   const initPlayerTime = lobby?.config.gameConfig.timeConfig.enabled
@@ -105,28 +91,29 @@ export default function LobbyContextProvider({
 
   if (!lobby) return <Navigate to={"/home"} />;
 
-  const defaultGameState = createGame(lobby.config.gameConfig);
-
   const timers: Record<Color, UseCountdownTimerResult> =
     playerColor === "white"
       ? { white: playerTimer, black: oppTimer }
       : { white: oppTimer, black: playerTimer };
 
-  return (
-    <LobbyContext
-      value={{
-        gameState: game,
-        defaultGameState: defaultGameState,
-        prevGameState,
-        timers,
-        playerColor,
-        oppProfile,
-        userProfile,
-        lobby,
-        userId,
-      }}
-    >
-      {children}
-    </LobbyContext>
-  );
+  // 1. Prepare the partial data based on your conditions
+  const gamePart = lobby.gameStarted
+    ? { game: { gameState: game, prevGameState: null } }
+    : { game: undefined };
+
+  const timerPart = lobby.config.gameConfig.timeConfig.enabled
+    ? { timers }
+    : { timers: undefined };
+
+  // 2. Construct the single object
+  // We cast 'as LobbyContextType' because we trust our logic above
+  // matches the Type Guard requirements we defined.
+  const contextValue = {
+    playerColor, // Don't forget the base fields!
+    lobby,
+    ...gamePart,
+    ...timerPart,
+  } as LobbyContextType;
+
+  return <LobbyContext value={contextValue}>{children}</LobbyContext>;
 }
