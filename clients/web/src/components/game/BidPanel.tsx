@@ -1,4 +1,3 @@
-import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
 import {
   skipToken,
@@ -10,7 +9,6 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { LobbyContext } from "@/contexts/Lobby";
-import usePrevious from "@/hooks/usePrevious";
 import { createGame } from "shared/game/auctionChess";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
 import { type AuctionChessState, type Color } from "shared/types/game";
@@ -22,7 +20,7 @@ const FLASH_ANIMATION_DURATION = 0.5;
 const FALLING_NUMBER_CLEANUP_TIMEOUT = 1200;
 const FALLING_NUMBER_ANIMATION_DURATION = 0.6;
 // Total duration for balance change animations (max of flash and falling number cleanup)
-const BALANCE_CHANGE_ANIMATION_DURATION = FALLING_NUMBER_CLEANUP_TIMEOUT;
+// const BALANCE_CHANGE_ANIMATION_DURATION = FALLING_NUMBER_CLEANUP_TIMEOUT;
 
 interface PlayerInfoCardProps {
   username: string;
@@ -104,9 +102,8 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
     lastProcessedGame.current = gameData.gameState;
 
     if (displayBalance !== gameData.prevGameState.auctionState.balance[color]) {
-      throw new Error(
-        "Invalid State! The display balance and prev Balance are desynced."
-      );
+      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
+      return;
     }
 
     const animationQueue: (() => Promise<void>)[] = [];
