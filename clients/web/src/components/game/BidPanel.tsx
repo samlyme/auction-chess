@@ -62,19 +62,17 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
     const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
     const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
     setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
-    await setTimeout(() => setFallingNumber(null), FALLING_NUMBER_CLEANUP_TIMEOUT);
+    await setTimeout(
+      () => setFallingNumber(null),
+      FALLING_NUMBER_CLEANUP_TIMEOUT
+    );
   };
-  const noOp = async () => {
-    console.log("play noOp");
-    await setTimeout(() => {}, BALANCE_CHANGE_ANIMATION_DURATION);
-  }
-
   const animateBalanceChange = async (amount: number) => {
     setDisplayBalance((prev) => {
       console.log("new animated balance " + color, prev + amount);
 
-      return prev + amount
-  });
+      return prev + amount;
+    });
     await Promise.all([
       flashColor(amount > 0 ? green : red),
       dropNumber(amount),
@@ -97,7 +95,10 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
       setDisplayBalance(gameData.gameState.auctionState.balance[color]);
       return;
     }
-    if ((gameData.gameState.turn === curr.turn && gameData.gameState.phase === curr.phase)) {
+    if (
+      gameData.gameState.turn === curr.turn &&
+      gameData.gameState.phase === curr.phase
+    ) {
       return;
     }
     lastProcessedGame.current = gameData.gameState;
@@ -116,7 +117,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
       // Only apply to the player that moved though!
       if (
         gameData.prevGameState.pieceFee &&
-        color === gameData.prevGameState.turn
+        gameData.prevGameState.turn === color
       ) {
         // Calculate fee. We use prevGameState because the fee is
         // based on its value when the piece was selected.
@@ -125,9 +126,8 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
         const movedPiece = getPiece(board, moveTo.first()!)!; // If this fails, idk.
         const fee = gameData.prevGameState.pieceFee[movedPiece.role];
 
-        console.log({ color, fee});
+        console.log({ color, fee });
         if (fee > 0) animationQueue.push(() => animateBalanceChange(-fee));
-        else animationQueue.push(() => noOp());
       }
       // Everyone gets piece income.
       if (gameData.gameState.pieceIncome) {
@@ -142,9 +142,14 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
         animationQueue.push(() => animateBalanceChange(income));
       }
     }
-    if (gameData.prevGameState.phase === "bid" && gameData.gameState.phase === "move") {
+    if (
+      gameData.prevGameState.phase === "bid" &&
+      gameData.gameState.phase === "move"
+    ) {
       // Someone just folded!
-      const diff = gameData.gameState.auctionState.balance[color] - gameData.prevGameState.auctionState.balance[color];
+      const diff =
+        gameData.gameState.auctionState.balance[color] -
+        gameData.prevGameState.auctionState.balance[color];
       if (diff !== 0) animationQueue.push(() => animateBalanceChange(diff));
     }
 
