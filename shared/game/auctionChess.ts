@@ -230,8 +230,15 @@ export function makeBid(game: AuctionChessState, bid: Bid): GameResult {
   const newMinBid = game.auctionState.minBid;
 
   // If new player can't bid then autofold for them.
-  if (newTurnBalance < newMinBid || newTurnBalance === 0) {
+  if (game.phase === "bid" && (newTurnBalance < newMinBid || newTurnBalance === 0)) {
     game = recordBid(game, { fold: true });
+  } else {
+    const moves = [...legalMoves(game)]
+    if (moves.length === 0) {
+      game = produce(game, draft => {
+        draft.outcome = { winner: opposite(game.turn), message: "mate" };
+      })
+    }
   }
 
   return {
