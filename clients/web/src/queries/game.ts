@@ -19,15 +19,6 @@ export function useGameOptions() {
   });
 }
 
-export function usePrevGameOptions() {
-  return queryOptions({
-    queryKey: ["game", "prev"],
-    // This is a "fake" query! Only exists on client.
-    queryFn: (): null | AuctionChessState => null,
-    staleTime: Infinity,
-  })
-}
-
 // TODO: Optimistic updates here!
 export function useMakeBidMutationOptions() {
   return mutationOptions({

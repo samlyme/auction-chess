@@ -1,9 +1,8 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { LobbyContext } from "./Lobby";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
   useGameOptions,
-  usePrevGameOptions,
   useTimecheckMutationOptions,
 } from "@/queries/game";
 import {
@@ -12,7 +11,7 @@ import {
 } from "@/hooks/useCountdownTimer";
 import type { Color } from "shared/types/game";
 import { opposite } from "@/utils";
-import { GameContext } from "./Game";
+import { GameContext, type GameData } from "./Game";
 
 export default function GameContextProvider({
   children,
@@ -20,8 +19,20 @@ export default function GameContextProvider({
   children: React.ReactNode;
 }) {
   const { lobby, playerColor } = useContext(LobbyContext);
-  const { data: gameState } = useSuspenseQuery(useGameOptions());
-  const { data: prevGameState } = useSuspenseQuery(usePrevGameOptions());
+  const { data: gameUpdate } = useSuspenseQuery(useGameOptions());
+  // const { data: prevGameState } = useSuspenseQuery(usePrevGameOptions());
+
+  const [gameData, setGameData] = useState<GameData | null>(null);
+  useEffect(() => {
+    if (gameUpdate === null) return;
+    if (gameData === null) {
+      setGameData({ gameState: gameUpdate, prevGameState: null});
+    }
+    else {
+      const prevGameState = gameData.gameState;
+      setGameData({ gameState: gameUpdate, prevGameState });
+    }
+  }, [gameUpdate]);
 
   const timecheckMutation = useMutation(useTimecheckMutationOptions());
 
@@ -50,31 +61,31 @@ export default function GameContextProvider({
   useEffect(() => {
     if (!lobby) return;
 
-    if (!lobby.gameStarted || !gameState) {
+    if (!lobby.gameStarted || !gameUpdate) {
       // The game isn't started, so use the lobby's config for time.
       playerTimer.reset(initPlayerTime);
       oppTimer.reset(initOppTime);
-    } else if (gameState && gameState.timeState) {
-      const prev = gameState.timeState.prev || Date.now();
+    } else if (gameUpdate && gameUpdate.timeState) {
+      const prev = gameUpdate.timeState.prev || Date.now();
       const now = Date.now();
       const elapsed = now - prev;
 
-      let playerTimeBalance = gameState.timeState.time[playerColor];
-      let oppTimeBalance = gameState.timeState.time[opposite(playerColor)];
+      let playerTimeBalance = gameUpdate.timeState.time[playerColor];
+      let oppTimeBalance = gameUpdate.timeState.time[opposite(playerColor)];
 
-      if (gameState.turn === playerColor) playerTimeBalance -= elapsed;
+      if (gameUpdate.turn === playerColor) playerTimeBalance -= elapsed;
       else oppTimeBalance -= elapsed;
 
       playerTimer.reset(playerTimeBalance);
       oppTimer.reset(oppTimeBalance);
 
       // NOTE: This is fragile. This assumes that a null prev means the game is started
-      if (gameState.timeState.prev !== null) {
-        if (gameState.turn === playerColor) playerTimer.start();
+      if (gameUpdate.timeState.prev !== null) {
+        if (gameUpdate.turn === playerColor) playerTimer.start();
         else oppTimer.start();
       }
     }
-  }, [gameState, lobby]);
+  }, [gameUpdate, lobby]);
 
   const timers: Record<Color, UseCountdownTimerResult> =
     playerColor === "white"
@@ -84,7 +95,7 @@ export default function GameContextProvider({
   return (
     <GameContext
       value={{
-        gameData: gameState ? { gameState, prevGameState } : null,
+        gameData,
         timers: lobby.config.gameConfig.timeConfig.enabled ? timers : null,
       }}
     >

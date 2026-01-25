@@ -2,7 +2,7 @@ import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { createContext } from "react";
 import type { AuctionChessState, Color } from "shared/types/game";
 
-interface GameData {
+export interface GameData {
   gameState: AuctionChessState;
   prevGameState: AuctionChessState | null;
 }

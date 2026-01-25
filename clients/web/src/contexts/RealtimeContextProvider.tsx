@@ -52,10 +52,7 @@ export default function RealtimeContextProvder({userId, lobbyCode, children}: {u
 
           case LobbyEventType.GameUpdate: {
             const newGameState = AuctionChessStateSchema.parse(update.payload);
-            queryClient.setQueryData(["game"], (prevGameState: AuctionChessState | undefined) => {
-              if (prevGameState) queryClient.setQueryData(["game", "prev"], prevGameState);
-              return newGameState;
-            });
+            queryClient.setQueryData(["game"], newGameState);
             break;
           }
         }
