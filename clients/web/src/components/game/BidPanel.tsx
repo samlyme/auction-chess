@@ -17,6 +17,13 @@ import { type AuctionChessState, type Color } from "shared/types/game";
 import { getPiece } from "shared/game/pureBoard";
 import { GameContext } from "@/contexts/Game";
 
+// Animation timing constants (in seconds for framer-motion durations, milliseconds for timeouts)
+const FLASH_ANIMATION_DURATION = 0.5;
+const FALLING_NUMBER_CLEANUP_TIMEOUT = 1200;
+const FALLING_NUMBER_ANIMATION_DURATION = 0.6;
+// Total duration for balance change animations (max of flash and falling number cleanup)
+const BALANCE_CHANGE_ANIMATION_DURATION = FALLING_NUMBER_CLEANUP_TIMEOUT;
+
 interface PlayerInfoCardProps {
   username: string;
   color: Color;
@@ -49,22 +56,26 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
   const flashColor = (color: string) =>
     controls.start({
       backgroundColor: [color, "#404040"],
-      transition: { duration: 0.5, ease: "easeOut" },
+      transition: { duration: FLASH_ANIMATION_DURATION, ease: "easeOut" },
     });
   const dropNumber = async (diff: number) => {
     const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
     const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
     setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
-    await setTimeout(() => setFallingNumber(null), 1200);
+    await setTimeout(() => setFallingNumber(null), FALLING_NUMBER_CLEANUP_TIMEOUT);
   };
+  const noOp = async () => {
+    console.log("play noOp");
+    await setTimeout(() => {}, BALANCE_CHANGE_ANIMATION_DURATION);
+  }
 
-  const animateBalanceChange = (amount: number) => {
+  const animateBalanceChange = async (amount: number) => {
     setDisplayBalance((prev) => {
       console.log("new animated balance " + color, prev + amount);
 
       return prev + amount
   });
-    return Promise.all([
+    await Promise.all([
       flashColor(amount > 0 ? green : red),
       dropNumber(amount),
     ]);
@@ -97,7 +108,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
       );
     }
 
-    const animationQueue: (() => Promise<[any, void]>)[] = [];
+    const animationQueue: (() => Promise<void>)[] = [];
     if (gameData.prevGameState.phase === "move") {
       const board = gameData.gameState.chessState.board;
       const prevBoard = gameData.prevGameState.chessState.board;
@@ -116,6 +127,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
 
         console.log({ color, fee});
         if (fee > 0) animationQueue.push(() => animateBalanceChange(-fee));
+        else animationQueue.push(() => noOp());
       }
       // Everyone gets piece income.
       if (gameData.gameState.pieceIncome) {
@@ -182,7 +194,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
                 rotate: fallingNumber.rotation,
               }}
               transition={{
-                duration: 0.6,
+                duration: FALLING_NUMBER_ANIMATION_DURATION,
                 ease: "easeIn",
               }}
               className={`pointer-events-none absolute top-1/2 left-3/4 -translate-x-1/2 text-3xl font-bold ${
