@@ -1,14 +1,19 @@
 import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
-import { skipToken, useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useState, useEffect, useContext } from "react";
+import {
+  skipToken,
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { useState, useEffect, useContext, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { LobbyContext } from "@/contexts/Lobby";
 import usePrevious from "@/hooks/usePrevious";
 import { createGame } from "shared/game/auctionChess";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
-import { GameConfig, type Color } from "shared/types/game";
+import { type AuctionChessState, type Color } from "shared/types/game";
 import { getPiece } from "shared/game/pureBoard";
 import { GameContext } from "@/contexts/Game";
 
@@ -54,12 +59,18 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
   };
 
   const animateBalanceChange = (amount: number) => {
-    setDisplayBalance((prev) => prev + amount);
+    setDisplayBalance((prev) => {
+      console.log("new animated balance " + color, prev + amount);
+
+      return prev + amount
+  });
     return Promise.all([
       flashColor(amount > 0 ? green : red),
       dropNumber(amount),
     ]);
   };
+
+  const lastProcessedGame = useRef<AuctionChessState | null>(null);
 
   useEffect(() => {
     // TODO: maybe switch to a "delta-based" messaging system. would be easier for stuff like this!
@@ -69,20 +80,33 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
       return;
     }
 
-    // if (displayBalance !== gameData.prevGameState.auctionState.balance[color]) {
-    //   throw new Error(
-    //     "Invalid State! The display balance and prev Balance are desynced."
-    //   );
-    // }
+    const curr = lastProcessedGame.current;
+    if (curr === null) {
+      lastProcessedGame.current = gameData.gameState;
+      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
+      return;
+    }
+    if ((gameData.gameState.turn === curr.turn && gameData.gameState.phase === curr.phase)) {
+      return;
+    }
+    lastProcessedGame.current = gameData.gameState;
+
+    if (displayBalance !== gameData.prevGameState.auctionState.balance[color]) {
+      throw new Error(
+        "Invalid State! The display balance and prev Balance are desynced."
+      );
+    }
 
     const animationQueue: (() => Promise<[any, void]>)[] = [];
-    if (
-      gameData.prevGameState.phase === "move"
-    ) {
+    if (gameData.prevGameState.phase === "move") {
       const board = gameData.gameState.chessState.board;
       const prevBoard = gameData.prevGameState.chessState.board;
       // We just made a move! Time to deduct piece fee and earn piece Income!
-      if (gameData.prevGameState.pieceFee) {
+      // Only apply to the player that moved though!
+      if (
+        gameData.prevGameState.pieceFee &&
+        color === gameData.prevGameState.turn
+      ) {
         // Calculate fee. We use prevGameState because the fee is
         // based on its value when the piece was selected.
         const diffSquares = board[color].xor(prevBoard[color]);
@@ -90,8 +114,10 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
         const movedPiece = getPiece(board, moveTo.first()!)!; // If this fails, idk.
         const fee = gameData.prevGameState.pieceFee[movedPiece.role];
 
+        console.log({ color, fee});
         if (fee > 0) animationQueue.push(() => animateBalanceChange(-fee));
       }
+      // Everyone gets piece income.
       if (gameData.gameState.pieceIncome) {
         // Calculate income. We use current gameState because
         // income happens "now."
@@ -100,17 +126,22 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
           const piece = getPiece(board, square)!;
           income += gameData.gameState.pieceIncome[piece.role];
         }
+        console.log({ color, income });
         animationQueue.push(() => animateBalanceChange(income));
       }
     }
-
+    if (gameData.prevGameState.phase === "bid" && gameData.gameState.phase === "move") {
+      // Someone just folded!
+      const diff = gameData.gameState.auctionState.balance[color] - gameData.prevGameState.auctionState.balance[color];
+      if (diff !== 0) animationQueue.push(() => animateBalanceChange(diff));
+    }
 
     (async () => {
       for (const startAnimation of animationQueue) {
         await startAnimation();
       }
-    })()
-  }, [gameData, controls]);
+    })();
+  }, [gameData]);
 
   return (
     <div
@@ -139,9 +170,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
           }}
           className="relative flex-1 rounded bg-neutral-700"
         >
-          <p className="mt-3 text-center text-7xl">
-            ${gameData?.gameState.auctionState.balance[color] || 0}
-          </p>
+          <p className="mt-3 text-center text-7xl">${displayBalance}</p>
           {fallingNumber && (
             <motion.div
               key={fallingNumber.key}
@@ -432,7 +461,9 @@ export default function BidPanel() {
 
   const { gameData } = useContext(GameContext);
 
-  const gameState = gameData ? gameData.gameState : createGame(lobby.config.gameConfig);
+  const gameState = gameData
+    ? gameData.gameState
+    : createGame(lobby.config.gameConfig);
 
   const { data: userProfile } = useSuspenseQuery(useMyProfileOptions());
   if (!userProfile) throw new Error("failed to get my profile!");
