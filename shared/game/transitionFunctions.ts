@@ -1,6 +1,6 @@
 import { opposite, type Color, type NormalMove } from "chessops";
 import * as PseudoChess from "./pseudoChess";
-import type { AuctionChessState, Bid, GameTransient } from "../types/game";
+import type { AuctionChessState, Bid, GameTransient, Outcome } from "../types/game";
 import { getPiece } from "./boardOps";
 import { legalMoves } from "./rules";
 
@@ -69,7 +69,7 @@ export function enterMove(context: GameContext, color: Color) {
   if (moves.length > 0) {
     game.phase = "move";
   } else {
-    game.outcome = { winner: opposite(color), message: "mate" };
+    enterOutcome(context, { winner: opposite(color), message: "mate" })
   }
 }
 
@@ -101,7 +101,7 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
   const board = game.chessState.board;
   if (!board.king.moreThanOne()) {
     // You captured the king! you win!
-    game.outcome = { winner: game.turn, message: "mate" };
+    enterOutcome(context, { winner: game.turn, message: "mate" });
   } else {
     // normal move. carry along.
     // earn interest!
@@ -124,4 +124,9 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
     }
     enterBid(context, opposite(color));
   }
+}
+
+export function enterOutcome(context: GameContext, outcome: Outcome) {
+  const { game, log } = context;
+  game.outcome = outcome;
 }

@@ -142,8 +142,12 @@ export type GameUpdate = z.infer<typeof GameUpdate>;
 export const DeductFeeTransient = z.object({ amount: z.number() });
 export type DeductFeeTransient = z.infer<typeof DeductFeeTransient>;
 
+export const AddIncomeTransient = z.object({ amount: z.number() });
+export type AddIncomeTransient = z.infer<typeof AddIncomeTransient>;
+
 export const GameTransient = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("DEDUCT_FEE"), data: DeductFeeTransient })
+  z.object({ type: z.literal("deductFee"), data: DeductFeeTransient }),
+  z.object({ type: z.literal("addIncome"), data: AddIncomeTransient }),
 ])
 export type GameTransient = z.infer<typeof GameTransient>;
 
