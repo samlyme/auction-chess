@@ -1,27 +1,38 @@
 import { SquareSet } from "chessops";
-import type { AuctionChessState, Board, ChessState, Color, Role, Square } from "../types/game"
+import type { AuctionChessState, Board, ChessState, Color, PieceValue, Square } from "../types/game"
 import { getPiece } from "./boardOps";
 import * as PseudoChess from "./pseudoChess";
 
-export const defaultPieceValue: Record<Role, number> = {
+// These should be factory functions because otherwise its state gets touched
+// by the FSM.
+export const defaultPieceIncome = (): PieceValue => ({
   "pawn": 1,
   "knight": 3,
   "bishop": 3,
   "rook": 5,
   "queen": 9,
-  "king": 20,
-}
+  "king": 11,
+});
 
-export const nonePieceValue: Record<Role, number> = {
+export const defaultPieceFee = (): PieceValue => ({
+  "pawn": 1,
+  "knight": 9,
+  "bishop": 9,
+  "rook": 25,
+  "queen": 81,
+  "king": 111,
+});
+
+export const nonePieceValue = (): PieceValue => ({
   "pawn": 0,
   "knight": 0,
   "bishop": 0,
   "rook": 0,
   "queen": 0,
   "king": 0
-}
+});
 
-export const defaultBoard: Board = {
+export const defaultBoard = (): Board => ({
   occupied: new SquareSet(0xffff, 0xffff_0000),
   promoted: new SquareSet(0, 0),
   white: new SquareSet(0xffff, 0),
@@ -32,14 +43,14 @@ export const defaultBoard: Board = {
   rook: new SquareSet(0x81, 0x8100_0000),
   queen: new SquareSet(0x8, 0x0800_0000),
   king: new SquareSet(0x10, 0x1000_0000),
-};
+});
 
 
-export const defaultChessState: ChessState = {
-  board: defaultBoard,
+export const defaultChessState = (): ChessState => ({
+  board: defaultBoard(),
   castlingRights: SquareSet.corners(),
   epSquare: undefined,
-};
+})
 
 export function legalDests(game: AuctionChessState, from: Square, color: Color) {
   if (game.turn !== color) return SquareSet.empty();
