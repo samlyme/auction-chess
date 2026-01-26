@@ -11,7 +11,7 @@ import {
   type UseCountdownTimerResult,
 } from "@/hooks/useCountdownTimer";
 import { useEffect, useRef } from "react";
-import { createGame } from "shared/game/auctionChess";
+import { createGame } from "shared/game/utils";
 import { opposite } from "@/utils";
 
 const Route = getRouteApi("/_requireAuth/_requireProfile/lobbies");

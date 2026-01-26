@@ -9,10 +9,10 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { LobbyContext } from "@/contexts/Lobby";
-import { createGame } from "shared/game/auctionChess";
+import { createGame } from "shared/game/utils";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
 import { type AuctionChessState, type Color } from "shared/types/game";
-import { getPiece } from "shared/game/pureBoard";
+import { getPiece } from "shared/game/boardOps";
 import { GameContext } from "@/contexts/Game";
 
 // Animation timing constants (in seconds for framer-motion durations, milliseconds for timeouts)

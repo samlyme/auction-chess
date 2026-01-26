@@ -12,25 +12,6 @@ export interface GameContext {
 export function enterBid(context: GameContext, color: Color) {
   const { game, log } = context;
 
-  // earn interest!
-  const interestRate = game.auctionState.interestRate;
-  if (interestRate > 0) {
-    const balances = game.auctionState.balance;
-    balances.white += Math.floor(balances.white * interestRate);
-    balances.black += Math.floor(balances.black * interestRate);
-  }
-
-  // earn income!
-  const values = game.pieceIncome;
-  if (values) {
-    const board = game.chessState.board;
-    const balances = game.auctionState.balance;
-    for (const square of board.occupied) {
-      const piece = getPiece(board, square)!;
-      balances[piece.color] += values[piece.role];
-    }
-  }
-
   game.phase = "bid";
   game.turn = color;
 
@@ -68,7 +49,7 @@ export function exitBid(context: GameContext, bid: Bid, color: Color) {
     game.auctionState.bidHistory.push([]);
   }
   // update minBid
-  game.auctionState.minBid = bid.fold ? 1 : lastBidAmount + bidStack.length; // placeholder!
+  game.auctionState.minBid = bid.fold ? 1 : lastBidAmount + bidStack.length + 1; // placeholder!
 
   if (bid.fold) {
     // deduct bid and move along.
@@ -123,6 +104,24 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
     game.outcome = { winner: game.turn, message: "mate" };
   } else {
     // normal move. carry along.
+    // earn interest!
+    const interestRate = game.auctionState.interestRate;
+    if (interestRate > 0) {
+      const balances = game.auctionState.balance;
+      balances.white += Math.floor(balances.white * interestRate);
+      balances.black += Math.floor(balances.black * interestRate);
+    }
+
+    // earn income!
+    const values = game.pieceIncome;
+    if (values) {
+      const board = game.chessState.board;
+      const balances = game.auctionState.balance;
+      for (const square of board.occupied) {
+        const piece = getPiece(board, square)!;
+        balances[piece.color] += values[piece.role];
+      }
+    }
     enterBid(context, opposite(color));
   }
 }

@@ -54,9 +54,10 @@ export function attacksTo(
 }
 
 export function createGame(config: GameConfig): AuctionChessState {
-  const timeState = config.timeConfig.enabled
+  const cloned = structuredClone(config);
+  const timeState = cloned.timeConfig.enabled
     ? {
-        time: { ...config.timeConfig.initTime },
+        time: cloned.timeConfig.initTime,
         prev: null,
       }
     : undefined;
@@ -65,13 +66,13 @@ export function createGame(config: GameConfig): AuctionChessState {
     chessState: defaultChessState,
     timeState,
     auctionState: {
-      balance: {...config.auctionConfig.initBalance},
+      balance: {...cloned.auctionConfig.initBalance},
       bidHistory: [[]],
       minBid: 1,
-      interestRate: config.interestConfig.enabled ? config.interestConfig.rate : 0,
+      interestRate: cloned.interestConfig.enabled ? cloned.interestConfig.rate : 0,
     },
-    pieceIncome: config.pieceIncomeConfig.enabled ? config.pieceIncomeConfig.pieceIncome : nonePieceValue,
-    pieceFee: config.pieceFeeConfig.enabled ? config.pieceFeeConfig.pieceFee : nonePieceValue,
+    pieceIncome: cloned.pieceIncomeConfig.enabled ? cloned.pieceIncomeConfig.pieceIncome : structuredClone(nonePieceValue),
+    pieceFee: cloned.pieceFeeConfig.enabled ? cloned.pieceFeeConfig.pieceFee : structuredClone(nonePieceValue),
     turn: "white",
     phase: "bid",
   };

@@ -25,10 +25,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useMakeMoveMutationOptions } from "@/queries/game";
 import type { AuctionChessState } from "shared/types/game";
 
-import { makeBoardFen } from "shared/game/utils";
-import * as BoardOps from "shared/game/pureBoard";
-import * as PseudoChess from "shared/game/purePseudoChess";
-import * as AuctionChess from "shared/game/auctionChess";
+import { createGame, makeBoardFen } from "shared/game/utils";
+import * as BoardOps from "shared/game/boardOps";
+import * as AuctionChess from "shared/game/rules";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
@@ -111,7 +110,7 @@ export function AuctionChessBoard() {
     lobby,
   } = useContext(LobbyContext);
   const { gameData } = useContext(GameContext);
-  const gameState = gameData ? gameData.gameState : AuctionChess.createGame(lobby.config.gameConfig);
+  const gameState = gameData ? gameData.gameState : createGame(lobby.config.gameConfig);
 
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
@@ -172,14 +171,14 @@ export function AuctionChessBoard() {
     };
 
     if (
-      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) &&
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to) &&
       shouldPromote(move)
     ) {
       setPromotionMove(move);
       return false;
     }
 
-    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)) {
+    if (AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
       setPromotionMove(null);
@@ -210,12 +209,12 @@ export function AuctionChessBoard() {
 
     const move = { from: parseSquare(moveFrom)!, to: parseSquare(square)! };
     if (
-      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) &&
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to) &&
       shouldPromote(move)
     ) {
       setPromotionMove(move);
     } else if (
-      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)
     ) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
