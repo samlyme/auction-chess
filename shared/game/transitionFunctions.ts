@@ -1,0 +1,128 @@
+import { opposite, type Color, type NormalMove } from "chessops";
+import * as PseudoChess from "./pseudoChess";
+import type { AuctionChessState, Bid, GameTransient } from "../types/game";
+import { getPiece } from "./boardOps";
+import { legalMoves } from "./rules";
+
+export interface GameContext {
+  game: AuctionChessState;
+  log: GameTransient[];
+}
+
+export function enterBid(context: GameContext, color: Color) {
+  const { game, log } = context;
+
+  // earn interest!
+  const interestRate = game.auctionState.interestRate;
+  if (interestRate > 0) {
+    const balances = game.auctionState.balance;
+    balances.white += Math.floor(balances.white * interestRate);
+    balances.black += Math.floor(balances.black * interestRate);
+  }
+
+  // earn income!
+  const values = game.pieceIncome;
+  if (values) {
+    const board = game.chessState.board;
+    const balances = game.auctionState.balance;
+    for (const square of board.occupied) {
+      const piece = getPiece(board, square)!;
+      balances[piece.color] += values[piece.role];
+    }
+  }
+
+  game.phase = "bid";
+  game.turn = color;
+
+  const balance = game.auctionState.balance[game.turn];
+  // Auto fold!
+  if (balance < game.auctionState.minBid) {
+    exitBid(context, { fold: true }, game.turn);
+  }
+}
+
+// Usually the color passed in is the same as the current state.
+// This just makes the logic easier to follow.
+export function exitBid(context: GameContext, bid: Bid, color: Color) {
+  const { game, log } = context;
+  // Record bid.
+  const bidStack = game.auctionState.bidHistory.at(-1)!;
+  const lastBid = bidStack.at(-1);
+  const lastBidAmount = lastBid && "amount" in lastBid ? lastBid.amount : 0;
+
+  // Validate non-fold bids (bid has "amount" property)
+  if (!bid.fold) {
+    if (bid.amount <= 0) {
+      throw new Error("Bid amount must be positive");
+    }
+    if (bid.amount <= lastBidAmount) {
+      throw new Error("Bid must be higher than previous bid");
+    }
+    if (bid.amount > game.auctionState.balance[game.turn]) {
+      throw new Error("Insufficient balance");
+    }
+  }
+
+  bidStack.push(bid);
+  if (bid.fold) {
+    game.auctionState.bidHistory.push([]);
+  }
+  // update minBid
+  game.auctionState.minBid = bid.fold ? 1 : lastBidAmount + bidStack.length; // placeholder!
+
+  if (bid.fold) {
+    // deduct bid and move along.
+    game.auctionState.balance[opposite(color)] -= lastBidAmount;
+    enterMove(context, opposite(color));
+  } else {
+    enterBid(context, opposite(color));
+  }
+}
+
+export function enterMove(context: GameContext, color: Color) {
+  const { game, log } = context;
+
+  game.turn = color;
+  const moves = [...legalMoves(game)];
+
+  if (moves.length > 0) {
+    game.phase = "move";
+  } else {
+    game.outcome = { winner: opposite(color), message: "mate" };
+  }
+}
+
+export function exitMove(context: GameContext, move: NormalMove, color: Color) {
+  const { game, log } = context;
+
+  const piece = getPiece(game.chessState.board, move.from);
+
+  if (!piece) throw new Error("Move from empty square.");
+  if (game.turn !== piece.color)
+    throw new Error("Can't move opponent's pieces.");
+  if (
+    game.pieceFee &&
+    game.auctionState.balance[game.turn] < game.pieceFee[piece.role]
+  ) {
+    throw new Error("Piece too expensive to move.");
+  }
+
+  const res = PseudoChess.movePiece(game.chessState, move);
+  if (!res.ok) throw new Error(res.error);
+
+  // TODO: implement capture bounty.
+  const { moved, taken } = res.value;
+  // pay fee.
+  if (game.pieceFee) {
+    game.auctionState.balance[game.turn] -= game.pieceFee[moved.role];
+  }
+
+  const board = game.chessState.board;
+  if (!board.king.moreThanOne()) {
+    // You captured the king! you win!
+    game.outcome = { winner: game.turn, message: "mate" };
+  } else {
+    // normal move. carry along.
+    enterBid(context, opposite(color));
+  }
+}

@@ -133,6 +133,20 @@ export type SerialziedAuctionChessState = z.input<
   typeof AuctionChessStateSchema
 >;
 
+export const GameUpdate = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("bid"), data: Bid }),
+  z.object({ type: z.literal("move"), data: NormalMove }),
+])
+export type GameUpdate = z.infer<typeof GameUpdate>;
+
+export const DeductFeeTransient = z.object({ amount: z.number() });
+export type DeductFeeTransient = z.infer<typeof DeductFeeTransient>;
+
+export const GameTransient = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("DEDUCT_FEE"), data: DeductFeeTransient })
+])
+export type GameTransient = z.infer<typeof GameTransient>;
+
 export const TimeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
   z.object({ enabled: z.literal(true), initTime: z.record(Color, z.number()) }),
