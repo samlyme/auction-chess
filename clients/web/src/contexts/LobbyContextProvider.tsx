@@ -28,7 +28,6 @@ export default function LobbyContextProvider({
 
   // Use TanStack Query for real-time data instead of manual state management
   const { data: lobby } = useSuspenseQuery(useLobbyOptions(initLobby));
-  const { data: game } = useSuspenseQuery(useGameOptions());
 
   // Bind the lobby and game to the real time updates.
   // useRealtime(userId, initLobby.code);
