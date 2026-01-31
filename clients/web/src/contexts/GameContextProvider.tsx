@@ -19,20 +19,16 @@ export default function GameContextProvider({
   children: React.ReactNode;
 }) {
   const { lobby, playerColor } = useContext(LobbyContext);
-  const { data: gameUpdate } = useSuspenseQuery(useGameOptions());
-  // const { data: prevGameState } = useSuspenseQuery(usePrevGameOptions());
+  const { data: gameContext } = useSuspenseQuery(useGameOptions());
 
   const [gameData, setGameData] = useState<GameData | null>(null);
   useEffect(() => {
-    if (gameUpdate === null) return;
-    if (gameData === null) {
-      setGameData({ gameState: gameUpdate, prevGameState: null});
-    }
-    else {
-      const prevGameState = gameData.gameState;
-      setGameData({ gameState: gameUpdate, prevGameState });
-    }
-  }, [gameUpdate]);
+    if (gameContext === null) return;
+    setGameData({
+      gameState: gameContext.game,
+      log: gameContext.log
+    });
+  }, [gameContext]);
 
   const timecheckMutation = useMutation(useTimecheckMutationOptions());
 
@@ -61,6 +57,7 @@ export default function GameContextProvider({
   useEffect(() => {
     if (!lobby) return;
 
+    const gameUpdate = gameContext?.game;
     if (!lobby.gameStarted || !gameUpdate) {
       // The game isn't started, so use the lobby's config for time.
       playerTimer.reset(initPlayerTime);
@@ -85,7 +82,7 @@ export default function GameContextProvider({
         else oppTimer.start();
       }
     }
-  }, [gameUpdate, lobby]);
+  }, [gameContext, lobby]);
 
   const timers: Record<Color, UseCountdownTimerResult> =
     playerColor === "white"

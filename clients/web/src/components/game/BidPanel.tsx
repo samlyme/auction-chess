@@ -5,14 +5,13 @@ import {
   useQuery,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, useRef, forwardRef, useImperativeHandle } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { LobbyContext } from "@/contexts/Lobby";
 import { createGame } from "shared/game/utils";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
 import { type AuctionChessState, type Color } from "shared/types/game";
-import { getPiece } from "shared/game/boardOps";
 import { GameContext } from "@/contexts/Game";
 
 // Animation timing constants (in seconds for framer-motion durations, milliseconds for timeouts)
@@ -28,7 +27,13 @@ interface PlayerInfoCardProps {
   setBid?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
+export interface PlayerInfoCardRef {
+  animateBalanceChange: (amount: number) => Promise<void>;
+  syncBalance: () => void;
+}
+
+const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
+  ({ username, color, setBid }, ref) => {
   const { gameData, timers } = useContext(GameContext);
 
   // Stuff for timers
@@ -68,7 +73,6 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
   const animateBalanceChange = async (amount: number) => {
     setDisplayBalance((prev) => {
       console.log("new animated balance " + color, prev + amount);
-
       return prev + amount;
     });
     await Promise.all([
@@ -77,85 +81,24 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
     ]);
   };
 
-  const lastProcessedGame = useRef<AuctionChessState | null>(null);
+  const syncBalance = () => {
+    if (gameData) {
+      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
+    }
+  };
 
+  // Expose animation methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    animateBalanceChange,
+    syncBalance,
+  }));
+
+  // Initialize display balance on mount
   useEffect(() => {
-    // TODO: maybe switch to a "delta-based" messaging system. would be easier for stuff like this!
-    if (!gameData) return;
-    if (!gameData.prevGameState) {
+    if (gameData) {
       setDisplayBalance(gameData.gameState.auctionState.balance[color]);
-      return;
     }
-
-    const curr = lastProcessedGame.current;
-    if (curr === null) {
-      lastProcessedGame.current = gameData.gameState;
-      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
-      return;
-    }
-    if (
-      gameData.gameState.turn === curr.turn &&
-      gameData.gameState.phase === curr.phase
-    ) {
-      return;
-    }
-    lastProcessedGame.current = gameData.gameState;
-
-    if (displayBalance !== gameData.prevGameState.auctionState.balance[color]) {
-      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
-      return;
-    }
-
-    const animationQueue: (() => Promise<void>)[] = [];
-    if (gameData.prevGameState.phase === "move") {
-      const board = gameData.gameState.chessState.board;
-      const prevBoard = gameData.prevGameState.chessState.board;
-      // We just made a move! Time to deduct piece fee and earn piece Income!
-      // Only apply to the player that moved though!
-      if (
-        gameData.prevGameState.pieceFee &&
-        gameData.prevGameState.turn === color
-      ) {
-        // Calculate fee. We use prevGameState because the fee is
-        // based on its value when the piece was selected.
-        const diffSquares = board[color].xor(prevBoard[color]);
-        const moveTo = board[color].intersect(diffSquares);
-        const movedPiece = getPiece(board, moveTo.first()!)!; // If this fails, idk.
-        const fee = gameData.prevGameState.pieceFee[movedPiece.role];
-
-        console.log({ color, fee });
-        if (fee > 0) animationQueue.push(() => animateBalanceChange(-fee));
-      }
-      // Everyone gets piece income.
-      if (gameData.gameState.pieceIncome) {
-        // Calculate income. We use current gameState because
-        // income happens "now."
-        let income = 0;
-        for (const square of board[color]) {
-          const piece = getPiece(board, square)!;
-          income += gameData.gameState.pieceIncome[piece.role];
-        }
-        console.log({ color, income });
-        animationQueue.push(() => animateBalanceChange(income));
-      }
-    }
-    if (
-      gameData.prevGameState.phase === "bid" &&
-      gameData.gameState.phase === "move"
-    ) {
-      // Someone just folded!
-      const diff =
-        gameData.gameState.auctionState.balance[color] -
-        gameData.prevGameState.auctionState.balance[color];
-      if (diff !== 0) animationQueue.push(() => animateBalanceChange(diff));
-    }
-
-    (async () => {
-      for (const startAnimation of animationQueue) {
-        await startAnimation();
-      }
-    })();
-  }, [gameData]);
+  }, []);
 
   return (
     <div
@@ -211,7 +154,7 @@ function PlayerInfoCard({ username, color, setBid }: PlayerInfoCardProps) {
       </div>
     </div>
   );
-}
+});
 
 interface BidComparisonProps {
   setBid: React.Dispatch<React.SetStateAction<number>>;
@@ -503,6 +446,135 @@ export default function BidPanel() {
     makeBidMutation.mutate({ fold: true });
   };
 
+  // Refs for coordinating animations between player cards
+  const userCardRef = useRef<PlayerInfoCardRef>(null);
+  const oppCardRef = useRef<PlayerInfoCardRef>(null);
+  const lastProcessedGame = useRef<AuctionChessState | null>(null);
+
+  // Process transient logs and coordinate animations
+  useEffect(() => {
+    if (!gameData) return;
+
+    // Initialize on first render
+    const curr = lastProcessedGame.current;
+    if (curr === null) {
+      lastProcessedGame.current = gameData.gameState;
+      userCardRef.current?.syncBalance();
+      oppCardRef.current?.syncBalance();
+      return;
+    }
+
+    // Skip if game state hasn't actually changed
+    if (
+      gameData.gameState.turn === curr.turn &&
+      gameData.gameState.phase === curr.phase
+    ) {
+      return;
+    }
+    lastProcessedGame.current = gameData.gameState;
+
+    // If no log (e.g., from GET query or mutation), just sync balances without animation
+    if (gameData.log.length === 0) {
+      userCardRef.current?.syncBalance();
+      oppCardRef.current?.syncBalance();
+      return;
+    }
+
+    // Build animation timeline from transient logs
+    const userAnimations: { type: string; amount: number }[] = [];
+    const oppAnimations: { type: string; amount: number }[] = [];
+    let hasBidTransition = false;
+
+    for (const transient of gameData.log) {
+      switch (transient.type) {
+        case "deductFee": {
+          const userFee = transient.amounts[userColor];
+          const oppFee = transient.amounts[oppColor];
+          if (userFee && userFee > 0) {
+            userAnimations.push({ type: "fee", amount: -userFee });
+          }
+          if (oppFee && oppFee > 0) {
+            oppAnimations.push({ type: "fee", amount: -oppFee });
+          }
+          break;
+        }
+        case "addIncome": {
+          const userIncome = transient.amounts[userColor];
+          const oppIncome = transient.amounts[oppColor];
+          if (userIncome && userIncome > 0) {
+            userAnimations.push({ type: "income", amount: userIncome });
+          }
+          if (oppIncome && oppIncome > 0) {
+            oppAnimations.push({ type: "income", amount: oppIncome });
+          }
+          break;
+        }
+        case "earnInterest": {
+          const userInterest = transient.amounts[userColor];
+          const oppInterest = transient.amounts[oppColor];
+          if (userInterest && userInterest > 0) {
+            userAnimations.push({ type: "interest", amount: userInterest });
+          }
+          if (oppInterest && oppInterest > 0) {
+            oppAnimations.push({ type: "interest", amount: oppInterest });
+          }
+          break;
+        }
+        case "stateTransfer": {
+          if (transient.name === "exitBid") {
+            hasBidTransition = true;
+          }
+          break;
+        }
+      }
+    }
+
+    // Execute synchronized animation timeline
+    (async () => {
+      // Phase 1: Play all fee deductions (synchronized - wait for both to finish)
+      const userFees = userAnimations.filter(a => a.type === "fee");
+      const oppFees = oppAnimations.filter(a => a.type === "fee");
+
+      if (userFees.length > 0 || oppFees.length > 0) {
+        const feePromises: Promise<void>[] = [];
+
+        for (const fee of userFees) {
+          feePromises.push(userCardRef.current?.animateBalanceChange(fee.amount) || Promise.resolve());
+        }
+        for (const fee of oppFees) {
+          feePromises.push(oppCardRef.current?.animateBalanceChange(fee.amount) || Promise.resolve());
+        }
+
+        // Wait for ALL fee animations to complete before proceeding
+        await Promise.all(feePromises);
+      }
+
+      // Phase 2: Play all income/interest animations (synchronized - start at the same time)
+      const userIncomes = userAnimations.filter(a => a.type === "income" || a.type === "interest");
+      const oppIncomes = oppAnimations.filter(a => a.type === "income" || a.type === "interest");
+
+      if (userIncomes.length > 0 || oppIncomes.length > 0) {
+        const incomePromises: Promise<void>[] = [];
+
+        for (const income of userIncomes) {
+          incomePromises.push(userCardRef.current?.animateBalanceChange(income.amount) || Promise.resolve());
+        }
+        for (const income of oppIncomes) {
+          incomePromises.push(oppCardRef.current?.animateBalanceChange(income.amount) || Promise.resolve());
+        }
+
+        // Wait for all income animations to complete
+        await Promise.all(incomePromises);
+      }
+
+      // If this was a bid transition with no other animations, sync balances
+      if (hasBidTransition && userFees.length === 0 && oppFees.length === 0 && userIncomes.length === 0 && oppIncomes.length === 0) {
+        userCardRef.current?.syncBalance();
+        oppCardRef.current?.syncBalance();
+      }
+    })();
+  }, [gameData, userColor, oppColor]);
+
   return (
     <>
       <div
@@ -510,6 +582,7 @@ export default function BidPanel() {
       >
         <div className="flex h-full w-full flex-col gap-4">
           <PlayerInfoCard
+            ref={oppCardRef}
             color={oppColor}
             username={oppProfile?.username || "waiting..."}
             setBid={setBid}
@@ -540,7 +613,11 @@ export default function BidPanel() {
             </div>
           </div>
 
-          <PlayerInfoCard color={userColor} username={userProfile.username} />
+          <PlayerInfoCard
+            ref={userCardRef}
+            color={userColor}
+            username={userProfile.username}
+          />
         </div>
       </div>
     </>

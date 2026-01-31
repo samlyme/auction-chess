@@ -51,8 +51,8 @@ export default function RealtimeContextProvder({userId, lobbyCode, children}: {u
             break;
 
           case LobbyEventType.GameUpdate: {
-            const {game, log} = GameContext.parse(update.payload);
-            queryClient.setQueryData(["game"], game);
+            const gameContext = GameContext.parse(update.payload);
+            queryClient.setQueryData(["game"], gameContext);
             break;
           }
         }
