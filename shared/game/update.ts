@@ -16,21 +16,19 @@ export function updateGame(
   const log: GameTransient[] = [];
 
   switch (update.type) {
-    case "bid":
-      {
-        if (game.phase !== "bid") throw new Error("Not in Bid phase.");
-        const bid = update.data;
-        exitBid({ game, log }, bid, game.turn); // record and exit bid state
-      }
+    case "bid": {
+      if (game.phase !== "bid") throw new Error("Not in Bid phase.");
+      const bid = update.data;
+      exitBid({ game, log }, bid, game.turn); // record and exit bid state
       break;
+    }
 
-    case "move":
-      {
-        if (game.phase !== "move") throw new Error("Not in Move phase.");
-        const move = update.data;
-        exitMove({ game, log }, move, game.turn);
-      }
+    case "move": {
+      if (game.phase !== "move") throw new Error("Not in Move phase.");
+      const move = update.data;
+      exitMove({ game, log }, move, game.turn);
       break;
+    }
   }
 
   return log;
