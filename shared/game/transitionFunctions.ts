@@ -10,7 +10,6 @@ import type {
 import { getPiece } from "./boardOps";
 import { legalMoves } from "./rules";
 
-
 export function enterBid(context: GameContext, color: Color) {
   const { game, log } = context;
   log.push({ type: "stateTransfer", name: "enterBid", params: { color } });
@@ -58,6 +57,13 @@ export function exitBid(context: GameContext, bid: Bid, color: Color) {
 
   if (bid.fold) {
     // deduct bid and move along.
+    log.push({
+      type: "deductFee",
+      amounts: {
+        [color]: 0,
+        [opposite(color)]: lastBidAmount,
+      } as Record<Color, number>,
+    });
     game.auctionState.balance[opposite(color)] -= lastBidAmount;
     enterMove(context, opposite(color));
   } else {

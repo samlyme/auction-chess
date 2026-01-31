@@ -483,7 +483,6 @@ export default function BidPanel() {
     // Build animation timeline from transient logs
     const userAnimations: { type: string; amount: number }[] = [];
     const oppAnimations: { type: string; amount: number }[] = [];
-    let hasBidTransition = false;
 
     for (const transient of gameData.log) {
       switch (transient.type) {
@@ -520,18 +519,13 @@ export default function BidPanel() {
           }
           break;
         }
-        case "stateTransfer": {
-          if (transient.name === "exitBid") {
-            hasBidTransition = true;
-          }
-          break;
-        }
       }
     }
 
     // Execute synchronized animation timeline
     (async () => {
       // Phase 1: Play all fee deductions (synchronized - wait for both to finish)
+      // This includes bid payments, piece fees, etc - all come from server as deductFee logs
       const userFees = userAnimations.filter(a => a.type === "fee");
       const oppFees = oppAnimations.filter(a => a.type === "fee");
 
@@ -565,12 +559,6 @@ export default function BidPanel() {
 
         // Wait for all income animations to complete
         await Promise.all(incomePromises);
-      }
-
-      // If this was a bid transition with no other animations, sync balances
-      if (hasBidTransition && userFees.length === 0 && oppFees.length === 0 && userIncomes.length === 0 && oppIncomes.length === 0) {
-        userCardRef.current?.syncBalance();
-        oppCardRef.current?.syncBalance();
       }
     })();
   }, [gameData, userColor, oppColor]);
