@@ -3,16 +3,13 @@ import * as PseudoChess from "./pseudoChess";
 import type {
   AuctionChessState,
   Bid,
+  GameContext,
   GameTransient,
   Outcome,
 } from "../types/game";
 import { getPiece } from "./boardOps";
 import { legalMoves } from "./rules";
 
-export interface GameContext {
-  game: AuctionChessState;
-  log: GameTransient[];
-}
 
 export function enterBid(context: GameContext, color: Color) {
   const { game, log } = context;

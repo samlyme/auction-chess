@@ -1,5 +1,5 @@
 import type {
-  AuctionChessState,
+  GameContext,
   GameTransient,
   GameUpdate,
 } from "../types/game";
@@ -9,12 +9,10 @@ import { timecheck, deductTime} from "./transitionFunctions";
 // Conventions: keep the core game as in place mutations.
 // if statelessness is needed, wrap the actual functions here with Immer.
 export function updateGame(
-  game: AuctionChessState,
+  { game, log }: GameContext,
   update: GameUpdate,
 ): GameTransient[] {
   if (game.outcome) throw new Error("Game already over.");
-
-  const log: GameTransient[] = [];
 
   switch (update.type) {
     case "bid": {
@@ -38,18 +36,16 @@ export function updateGame(
 // These two functions should be separate from regular game logic since it
 // requires "special" logic to handle accross the client. For example, optimistic
 // updates should NOT account for time.
-export function updateTimecheck(game: AuctionChessState, timeUsed: number): GameTransient[] {
+export function updateTimecheck({ game, log}: GameContext, timeUsed: number): GameTransient[] {
   if (game.outcome) throw new Error("Game already over.");
 
-  const log: GameTransient[] = [];
   timecheck({game, log}, timeUsed);
   return log;
 }
 
-export function updateDeductTime(game: AuctionChessState, timeUsed: number): GameTransient[] {
+export function updateDeductTime({ game, log}: GameContext, timeUsed: number): GameTransient[] {
   if (game.outcome) throw new Error("Game already over.");
 
-  const log: GameTransient[] = [];
   deductTime({ game, log }, timeUsed);
   return log;
 }

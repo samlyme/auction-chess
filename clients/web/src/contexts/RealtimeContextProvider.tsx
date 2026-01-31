@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import supabase from "@/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { LobbyEventType, LobbyPayload } from "shared/types/lobbies";
-import { AuctionChessStateSchema, type AuctionChessState } from "shared/types/game";
+import { AuctionChessStateSchema, GameContext, type AuctionChessState } from "shared/types/game";
 import { RealtimeContext } from "./Realtime";
 
 export default function RealtimeContextProvder({userId, lobbyCode, children}: {userId: string; lobbyCode: string, children: React.ReactNode}) {
@@ -51,8 +51,8 @@ export default function RealtimeContextProvder({userId, lobbyCode, children}: {u
             break;
 
           case LobbyEventType.GameUpdate: {
-            const newGameState = AuctionChessStateSchema.parse(update.payload);
-            queryClient.setQueryData(["game"], newGameState);
+            const {game, log} = GameContext.parse(update.payload);
+            queryClient.setQueryData(["game"], game);
             break;
           }
         }

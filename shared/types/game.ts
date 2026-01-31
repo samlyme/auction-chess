@@ -169,6 +169,12 @@ export const GameTransient = z.discriminatedUnion("type", [
 ]);
 export type GameTransient = z.infer<typeof GameTransient>;
 
+export const GameContext = z.object({
+  game: AuctionChessStateSchema,
+  log: z.array(GameTransient),
+})
+export type GameContext = z.infer<typeof GameContext>;
+
 export const TimeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
   z.object({ enabled: z.literal(true), initTime: z.record(Color, z.number()) }),
