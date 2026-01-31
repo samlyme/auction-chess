@@ -1,6 +1,11 @@
 import { opposite, type Color, type NormalMove } from "chessops";
 import * as PseudoChess from "./pseudoChess";
-import type { AuctionChessState, Bid, GameTransient, Outcome } from "../types/game";
+import type {
+  AuctionChessState,
+  Bid,
+  GameTransient,
+  Outcome,
+} from "../types/game";
 import { getPiece } from "./boardOps";
 import { legalMoves } from "./rules";
 
@@ -11,6 +16,7 @@ export interface GameContext {
 
 export function enterBid(context: GameContext, color: Color) {
   const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "enterBid", params: { color } });
 
   game.phase = "bid";
   game.turn = color;
@@ -18,6 +24,7 @@ export function enterBid(context: GameContext, color: Color) {
   const balance = game.auctionState.balance[game.turn];
   // Auto fold!
   if (balance < game.auctionState.minBid) {
+    log.push({ type: "autoFold", color: game.turn });
     exitBid(context, { fold: true }, game.turn);
   }
 }
@@ -26,6 +33,7 @@ export function enterBid(context: GameContext, color: Color) {
 // This just makes the logic easier to follow.
 export function exitBid(context: GameContext, bid: Bid, color: Color) {
   const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "exitBid", params: { color, bid } });
   // Record bid.
   const bidStack = game.auctionState.bidHistory.at(-1)!;
   const lastBid = bidStack.at(-1);
@@ -62,6 +70,7 @@ export function exitBid(context: GameContext, bid: Bid, color: Color) {
 
 export function enterMove(context: GameContext, color: Color) {
   const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "enterMove", params: { color } });
 
   game.turn = color;
   const moves = [...legalMoves(game)];
@@ -69,12 +78,13 @@ export function enterMove(context: GameContext, color: Color) {
   if (moves.length > 0) {
     game.phase = "move";
   } else {
-    enterOutcome(context, { winner: opposite(color), message: "mate" })
+    enterOutcome(context, { winner: opposite(color), message: "mate" });
   }
 }
 
 export function exitMove(context: GameContext, move: NormalMove, color: Color) {
   const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "exitMove" });
 
   const piece = getPiece(game.chessState.board, move.from);
 
@@ -95,6 +105,13 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
   const { moved, taken } = res.value;
   // pay fee.
   if (game.pieceFee) {
+    log.push({
+      type: "deductFee",
+      amounts: {
+        [moved.color]: game.pieceFee[moved.role],
+        [opposite(moved.color)]: 0,
+      } as Record<Color, number>,
+    });
     game.auctionState.balance[game.turn] -= game.pieceFee[moved.role];
   }
 
@@ -108,19 +125,35 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
     const interestRate = game.auctionState.interestRate;
     if (interestRate > 0) {
       const balances = game.auctionState.balance;
-      balances.white += Math.floor(balances.white * interestRate);
-      balances.black += Math.floor(balances.black * interestRate);
+      const amounts = {
+        white: Math.floor(balances.white * interestRate),
+        black: Math.floor(balances.black * interestRate)
+      }
+      log.push({
+        type: "earnInterest",
+        amounts,
+      });
+      balances.white += amounts.white;
+      balances.black += amounts.black;
     }
 
     // earn income!
     const values = game.pieceIncome;
     if (values) {
+      const amounts = {
+        white: 0,
+        black: 0,
+      }
       const board = game.chessState.board;
       const balances = game.auctionState.balance;
       for (const square of board.occupied) {
         const piece = getPiece(board, square)!;
-        balances[piece.color] += values[piece.role];
+        amounts[piece.color] += values[piece.role];
       }
+
+      log.push({ type: "addIncome", amounts });
+      balances.white += amounts.white;
+      balances.black += amounts.black;
     }
     enterBid(context, opposite(color));
   }
@@ -128,5 +161,6 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
 
 export function enterOutcome(context: GameContext, outcome: Outcome) {
   const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "enterOutcome", params: { outcome }});
   game.outcome = outcome;
 }

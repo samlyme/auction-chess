@@ -136,19 +136,26 @@ export type SerialziedAuctionChessState = z.input<
 export const GameUpdate = z.discriminatedUnion("type", [
   z.object({ type: z.literal("bid"), data: Bid }),
   z.object({ type: z.literal("move"), data: NormalMove }),
-])
+]);
 export type GameUpdate = z.infer<typeof GameUpdate>;
 
-export const DeductFeeTransient = z.object({ amount: z.number() });
-export type DeductFeeTransient = z.infer<typeof DeductFeeTransient>;
-
-export const AddIncomeTransient = z.object({ amount: z.number() });
-export type AddIncomeTransient = z.infer<typeof AddIncomeTransient>;
-
 export const GameTransient = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("deductFee"), data: DeductFeeTransient }),
-  z.object({ type: z.literal("addIncome"), data: AddIncomeTransient }),
-])
+  z.object({
+    type: z.literal("stateTransfer"),
+    name: z.union([
+      z.literal("enterBid"),
+      z.literal("exitBid"),
+      z.literal("enterMove"),
+      z.literal("exitMove"),
+      z.literal("enterOutcome")
+    ]),
+    params: z.any().optional(),
+  }),
+  z.object({ type: z.literal("deductFee"), amounts: z.record(Color, z.number()) }),
+  z.object({ type: z.literal("addIncome"), amounts: z.record(Color, z.number()) }),
+  z.object({ type: z.literal("earnInterest"), amounts: z.record(Color, z.number()) }),
+  z.object({ type: z.literal("autoFold"), color: Color }),
+]);
 export type GameTransient = z.infer<typeof GameTransient>;
 
 export const TimeConfig = z.discriminatedUnion("enabled", [
