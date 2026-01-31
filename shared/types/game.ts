@@ -147,7 +147,9 @@ export const GameTransient = z.discriminatedUnion("type", [
       z.literal("exitBid"),
       z.literal("enterMove"),
       z.literal("exitMove"),
-      z.literal("enterOutcome")
+      z.literal("enterOutcome"),
+      z.literal("deductTime"),
+      z.literal("timecheck"),
     ]),
     params: z.any().optional(),
   }),

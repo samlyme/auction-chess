@@ -127,8 +127,8 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
       const balances = game.auctionState.balance;
       const amounts = {
         white: Math.floor(balances.white * interestRate),
-        black: Math.floor(balances.black * interestRate)
-      }
+        black: Math.floor(balances.black * interestRate),
+      };
       log.push({
         type: "earnInterest",
         amounts,
@@ -143,7 +143,7 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
       const amounts = {
         white: 0,
         black: 0,
-      }
+      };
       const board = game.chessState.board;
       const balances = game.auctionState.balance;
       for (const square of board.occupied) {
@@ -159,8 +159,48 @@ export function exitMove(context: GameContext, move: NormalMove, color: Color) {
   }
 }
 
+export function deductTime(context: GameContext, timeUsed: number): void {
+  const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "deductTime", params: { timeUsed } });
+  if (!game.timeState) return;
+
+  game.timeState.time[game.turn] -= timeUsed;
+
+  if (game.timeState.time[game.turn] >= 0) {
+    game.timeState.prev = Date.now();
+  } else {
+    game.timeState.time[game.turn] = 0;
+    game.timeState.prev = null;
+
+    enterOutcome(context, {
+      winner: opposite(game.turn),
+      message: "timeout",
+    });
+  }
+}
+
+export function timecheck(context: GameContext, timeUsed: number): void {
+  const { game, log } = context;
+  log.push({ type: "stateTransfer", name: "timecheck" });
+  if (!game.timeState) return;
+
+  if (game.timeState && timeUsed >= game.timeState.time[game.turn]) {
+    game.timeState.prev = null;
+    game.timeState.time[game.turn] = 0;
+
+    enterOutcome(context, {
+      winner: game.turn === "white" ? "black" : "white",
+      message: "timeout",
+    });
+  }
+}
+
 export function enterOutcome(context: GameContext, outcome: Outcome) {
   const { game, log } = context;
-  log.push({ type: "stateTransfer", name: "enterOutcome", params: { outcome }});
+  log.push({
+    type: "stateTransfer",
+    name: "enterOutcome",
+    params: { outcome },
+  });
   game.outcome = outcome;
 }
