@@ -153,9 +153,18 @@ export const GameTransient = z.discriminatedUnion("type", [
     ]),
     params: z.any().optional(),
   }),
-  z.object({ type: z.literal("deductFee"), amounts: z.record(Color, z.number()) }),
-  z.object({ type: z.literal("addIncome"), amounts: z.record(Color, z.number()) }),
-  z.object({ type: z.literal("earnInterest"), amounts: z.record(Color, z.number()) }),
+  z.object({
+    type: z.literal("deductFee"),
+    amounts: z.record(Color, z.number()),
+  }),
+  z.object({
+    type: z.literal("addIncome"),
+    amounts: z.record(Color, z.number()),
+  }),
+  z.object({
+    type: z.literal("earnInterest"),
+    amounts: z.record(Color, z.number()),
+  }),
   z.object({ type: z.literal("autoFold"), color: Color }),
 ]);
 export type GameTransient = z.infer<typeof GameTransient>;

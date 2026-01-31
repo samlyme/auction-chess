@@ -4,6 +4,7 @@ import type {
   GameUpdate,
 } from "../types/game";
 import { exitBid, exitMove } from "./transitionFunctions";
+import { timecheck, deductTime} from "./transitionFunctions";
 
 // Conventions: keep the core game as in place mutations.
 // if statelessness is needed, wrap the actual functions here with Immer.
@@ -31,5 +32,24 @@ export function updateGame(
     }
   }
 
+  return log;
+}
+
+// These two functions should be separate from regular game logic since it
+// requires "special" logic to handle accross the client. For example, optimistic
+// updates should NOT account for time.
+export function updateTimecheck(game: AuctionChessState, timeUsed: number): GameTransient[] {
+  if (game.outcome) throw new Error("Game already over.");
+
+  const log: GameTransient[] = [];
+  timecheck({game, log}, timeUsed);
+  return log;
+}
+
+export function updateDeductTime(game: AuctionChessState, timeUsed: number): GameTransient[] {
+  if (game.outcome) throw new Error("Game already over.");
+
+  const log: GameTransient[] = [];
+  deductTime({ game, log }, timeUsed);
   return log;
 }
