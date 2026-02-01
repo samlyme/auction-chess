@@ -1,33 +1,44 @@
-import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
 import { useMakeBidMutationOptions } from "@/queries/game";
-import { useMutation } from "@tanstack/react-query";
-import { useState, useEffect, useContext } from "react";
+import {
+  skipToken,
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { useState, useEffect, useContext, useRef, forwardRef, useImperativeHandle } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { LobbyContext } from "@/contexts/Lobby";
-import usePrevious from "@/hooks/usePrevious";
+import { createGame } from "shared/game/utils";
+import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
+import { type AuctionChessState, type Color } from "shared/types/game";
+import { GameContext } from "@/contexts/Game";
+
+// Animation timing constants (in seconds for framer-motion durations, milliseconds for timeouts)
+const FLASH_ANIMATION_DURATION = 0.5;
+const FALLING_NUMBER_CLEANUP_TIMEOUT = 1200;
+const FALLING_NUMBER_ANIMATION_DURATION = 0.6;
+// Total duration for balance change animations (max of flash and falling number cleanup)
+// const BALANCE_CHANGE_ANIMATION_DURATION = FALLING_NUMBER_CLEANUP_TIMEOUT;
 
 interface PlayerInfoCardProps {
   username: string;
-  balance: number;
-  timer: UseCountdownTimerResult;
-  enableTimer: boolean;
-  isTurn: boolean;
+  color: Color;
   setBid?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function PlayerInfoCard({
-  username,
-  balance,
-  timer,
-  enableTimer,
-  isTurn,
-  setBid,
-}: PlayerInfoCardProps) {
-  const { remainingMs } = timer;
+export interface PlayerInfoCardRef {
+  animateBalanceChange: (amount: number) => Promise<void>;
+  syncBalance: () => void;
+}
 
+const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
+  ({ username, color, setBid }, ref) => {
+  const { gameData, timers } = useContext(GameContext);
+
+  // Stuff for timers
+  const remainingMs = timers ? timers[color].remainingMs : 0;
   const totalSeconds = remainingMs / 1000;
-
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
   const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
@@ -39,45 +50,70 @@ function PlayerInfoCard({
     rotation: number;
   } | null>(null);
 
-  const prevBalance = usePrevious(balance);
-
+  const [displayBalance, setDisplayBalance] = useState(
+    gameData?.gameState.auctionState.balance[color] || 0
+  );
+  const { lobby } = useContext(LobbyContext);
   useEffect(() => {
-    // Prevent flashing on the very first render
-    if (prevBalance === null) return;
+    if (gameData) return;
+    setDisplayBalance(lobby.config.gameConfig.auctionConfig.initBalance[color]);
+  }, [lobby, gameData])
 
-    const isIncrease = balance > prevBalance;
-    const isDecrease = balance < prevBalance;
+  const green = "#4ade80";
+  const red = "#f87171";
+  const flashColor = (color: string) =>
+    controls.start({
+      backgroundColor: [color, "#404040"],
+      transition: { duration: FLASH_ANIMATION_DURATION, ease: "easeOut" },
+    });
+  const dropNumber = async (diff: number) => {
+    const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
+    const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
+    setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
+    await setTimeout(
+      () => setFallingNumber(null),
+      FALLING_NUMBER_CLEANUP_TIMEOUT
+    );
+  };
+  const animateBalanceChange = async (amount: number) => {
+    setDisplayBalance((prev) => {
+      console.log("new animated balance " + color, prev + amount);
+      return prev + amount;
+    });
+    await Promise.all([
+      flashColor(amount > 0 ? green : red),
+      dropNumber(amount),
+    ]);
+  };
 
-    // 2. Define colors (Green for up, Red for down)
-    const flashColor = isIncrease
-      ? "#4ade80" // Emerald green
-      : "#f87171"; // Red
-
-    if (isIncrease || isDecrease) {
-      // 3. Trigger the animation sequence
-      controls.start({
-        backgroundColor: [flashColor, "#404040"],
-        transition: { duration: 0.5, ease: "easeOut" },
-      });
-
-      // Trigger falling number animation with random trajectory
-      const diff = balance - prevBalance;
-      const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
-      const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
-      setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
-      setTimeout(() => setFallingNumber(null), 1200);
+  const syncBalance = () => {
+    if (gameData) {
+      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
     }
-  }, [balance, prevBalance, controls]);
+  };
+
+  // Expose animation methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    animateBalanceChange,
+    syncBalance,
+  }));
+
+  // Initialize display balance on mount
+  useEffect(() => {
+    if (gameData) {
+      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
+    }
+  }, []);
 
   return (
     <div
-      className={`rounded-lg ${isTurn ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
+      className={`rounded-lg ${gameData?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
           <div className="flex gap-2">
             <div
-              className={`m-2 w-22 p-2 ${timer.isRunning ? "bg-green-600" : "bg-neutral-600"} ${enableTimer || "opacity-30"}`}
+              className={`m-2 w-22 p-2 ${timers && timers[color].isRunning ? "bg-green-600" : "bg-neutral-600"} ${timers || "opacity-30"}`}
             >
               <p className="text-2xl">
                 {minutes}:{seconds}
@@ -91,11 +127,12 @@ function PlayerInfoCard({
         <motion.div
           animate={controls}
           onClick={() => {
-            if (setBid) setBid(balance);
+            if (setBid)
+              setBid(gameData?.gameState.auctionState.balance[color] || 0);
           }}
           className="relative flex-1 rounded bg-neutral-700"
         >
-          <p className="mt-3 text-center text-7xl">${balance}</p>
+          <p className="mt-3 text-center text-7xl">${displayBalance}</p>
           {fallingNumber && (
             <motion.div
               key={fallingNumber.key}
@@ -107,7 +144,7 @@ function PlayerInfoCard({
                 rotate: fallingNumber.rotation,
               }}
               transition={{
-                duration: 0.6,
+                duration: FALLING_NUMBER_ANIMATION_DURATION,
                 ease: "easeIn",
               }}
               className={`pointer-events-none absolute top-1/2 left-3/4 -translate-x-1/2 text-3xl font-bold ${
@@ -122,15 +159,20 @@ function PlayerInfoCard({
       </div>
     </div>
   );
-}
+});
 
 interface BidComparisonProps {
-  prevBid: number;
-  minBid: number;
   setBid: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function BidInfo({ prevBid, minBid, setBid }: BidComparisonProps) {
+function BidInfo({ setBid }: BidComparisonProps) {
+  const { gameData } = useContext(GameContext);
+  const bidHistory = gameData?.gameState.auctionState.bidHistory || [];
+  // TODO: fix this jank
+  const bidStack = bidHistory[bidHistory.length - 1] ?? [];
+  const lastBid = bidStack.at(-1) || { fold: true };
+  const prevBid = lastBid.fold ? 0 : lastBid.amount;
+  const minBid = gameData?.gameState.auctionState.minBid || 0;
   return (
     <div className="rounded-md bg-neutral-700 p-4">
       <div className="grid grid-cols-2 gap-2">
@@ -373,69 +415,182 @@ function BidAdjustmentControls({
 
 export default function BidPanel() {
   const {
-    gameState: game,
-    defaultGameState,
-    timers,
-    playerColor,
-    userProfile,
-    oppProfile,
+    // whatever, forgot the naming convention. either playerColor or userColor works.
+    playerColor: userColor,
+    lobby,
+    isHost,
   } = useContext(LobbyContext);
-  const gameState = game || defaultGameState;
 
-  const showTurn = !!game;
+  const { gameData } = useContext(GameContext);
+
+  const gameState = gameData
+    ? gameData.gameState
+    : createGame(lobby.config.gameConfig);
+
+  const { data: userProfile } = useSuspenseQuery(useMyProfileOptions());
+  if (!userProfile) throw new Error("failed to get my profile!");
+
+  const oppId = isHost ? lobby.guestUid : lobby.hostUid;
+  const { data: oppProfile } = useQuery(
+    oppId
+      ? useProfileOptions({ id: oppId })
+      : { queryKey: [], queryFn: skipToken }
+  );
+  const oppColor = userColor === "white" ? "black" : "white";
 
   const [bid, setBid] = useState<number>(gameState.auctionState.minBid);
   useEffect(() => {
     setBid(gameState.auctionState.minBid);
   }, [gameState.auctionState.minBid]);
-  const makeBidMutation = useMutation(useMakeBidMutationOptions());
 
+  const makeBidMutation = useMutation(useMakeBidMutationOptions());
   const handleBid = (amount: number) => {
     makeBidMutation.mutate({ amount, fold: false });
   };
-
   const handleFold = () => {
     makeBidMutation.mutate({ fold: true });
   };
-  const { bidHistory } = gameState.auctionState;
-  const opponentColor = playerColor === "white" ? "black" : "white";
 
-  // TODO: fix this jank
-  const bidStack = bidHistory[bidHistory.length - 1] ?? [];
-  const lastBid = bidStack.at(-1) || { fold: true };
-  const prevBidAmount = lastBid.fold ? 0 : lastBid.amount;
+  // Refs for coordinating animations between player cards
+  const userCardRef = useRef<PlayerInfoCardRef>(null);
+  const oppCardRef = useRef<PlayerInfoCardRef>(null);
+  const lastProcessedGame = useRef<AuctionChessState | null>(null);
 
-  const isPlayerTurn = gameState.turn === playerColor;
+  // Process transient logs and coordinate animations
+  useEffect(() => {
+    if (!gameData) return;
+
+    // Initialize on first render
+    const curr = lastProcessedGame.current;
+    if (curr === null) {
+      lastProcessedGame.current = gameData.gameState;
+      userCardRef.current?.syncBalance();
+      oppCardRef.current?.syncBalance();
+      return;
+    }
+
+    // Skip if game state hasn't actually changed
+    if (
+      gameData.gameState.turn === curr.turn &&
+      gameData.gameState.phase === curr.phase
+    ) {
+      return;
+    }
+    lastProcessedGame.current = gameData.gameState;
+
+    // If no log (e.g., from GET query or mutation), just sync balances without animation
+    if (gameData.log.length === 0) {
+      userCardRef.current?.syncBalance();
+      oppCardRef.current?.syncBalance();
+      return;
+    }
+
+    // Build animation timeline from transient logs
+    const userAnimations: { type: string; amount: number }[] = [];
+    const oppAnimations: { type: string; amount: number }[] = [];
+
+    for (const transient of gameData.log) {
+      switch (transient.type) {
+        case "deductFee": {
+          const userFee = transient.amounts[userColor];
+          const oppFee = transient.amounts[oppColor];
+          if (userFee && userFee > 0) {
+            userAnimations.push({ type: "fee", amount: -userFee });
+          }
+          if (oppFee && oppFee > 0) {
+            oppAnimations.push({ type: "fee", amount: -oppFee });
+          }
+          break;
+        }
+        case "addIncome": {
+          const userIncome = transient.amounts[userColor];
+          const oppIncome = transient.amounts[oppColor];
+          if (userIncome && userIncome > 0) {
+            userAnimations.push({ type: "income", amount: userIncome });
+          }
+          if (oppIncome && oppIncome > 0) {
+            oppAnimations.push({ type: "income", amount: oppIncome });
+          }
+          break;
+        }
+        case "earnInterest": {
+          const userInterest = transient.amounts[userColor];
+          const oppInterest = transient.amounts[oppColor];
+          if (userInterest && userInterest > 0) {
+            userAnimations.push({ type: "interest", amount: userInterest });
+          }
+          if (oppInterest && oppInterest > 0) {
+            oppAnimations.push({ type: "interest", amount: oppInterest });
+          }
+          break;
+        }
+      }
+    }
+
+    // Execute synchronized animation timeline
+    (async () => {
+      // Phase 1: Play all fee deductions (synchronized - wait for both to finish)
+      // This includes bid payments, piece fees, etc - all come from server as deductFee logs
+      const userFees = userAnimations.filter(a => a.type === "fee");
+      const oppFees = oppAnimations.filter(a => a.type === "fee");
+
+      if (userFees.length > 0 || oppFees.length > 0) {
+        const feePromises: Promise<void>[] = [];
+
+        for (const fee of userFees) {
+          feePromises.push(userCardRef.current?.animateBalanceChange(fee.amount) || Promise.resolve());
+        }
+        for (const fee of oppFees) {
+          feePromises.push(oppCardRef.current?.animateBalanceChange(fee.amount) || Promise.resolve());
+        }
+
+        // Wait for ALL fee animations to complete before proceeding
+        await Promise.all(feePromises);
+      }
+
+      // Phase 2: Play all income/interest animations (synchronized - start at the same time)
+      const userIncomes = userAnimations.filter(a => a.type === "income" || a.type === "interest");
+      const oppIncomes = oppAnimations.filter(a => a.type === "income" || a.type === "interest");
+
+      if (userIncomes.length > 0 || oppIncomes.length > 0) {
+        const incomePromises: Promise<void>[] = [];
+
+        for (const income of userIncomes) {
+          incomePromises.push(userCardRef.current?.animateBalanceChange(income.amount) || Promise.resolve());
+        }
+        for (const income of oppIncomes) {
+          incomePromises.push(oppCardRef.current?.animateBalanceChange(income.amount) || Promise.resolve());
+        }
+
+        // Wait for all income animations to complete
+        await Promise.all(incomePromises);
+      }
+    })();
+  }, [gameData, userColor, oppColor]);
 
   return (
     <>
       <div
-        className={`h-full w-full rounded-2xl ${game && game.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
+        className={`h-full w-full rounded-2xl ${gameData && gameData.gameState.phase === "bid" ? "bg-green-900" : "bg-neutral-900"} p-4`}
       >
         <div className="flex h-full w-full flex-col gap-4">
           <PlayerInfoCard
+            ref={oppCardRef}
+            color={oppColor}
             username={oppProfile?.username || "waiting..."}
-            balance={gameState.auctionState.balance[opponentColor]}
-            timer={timers[opponentColor]}
-            enableTimer={!!game?.timeState}
-            isTurn={showTurn && !isPlayerTurn}
             setBid={setBid}
           />
 
           <div className="flex-1 rounded-lg bg-neutral-800 p-4">
             <div className="flex h-full flex-col gap-4">
-              <BidInfo
-                setBid={setBid}
-                prevBid={prevBidAmount}
-                minBid={gameState.auctionState.minBid}
-              />
+              <BidInfo setBid={setBid} />
               <div className="flex-1 rounded-md bg-neutral-700 p-4">
                 <div className="flex h-full gap-2">
                   <BidControls
                     bid={bid}
                     setBid={setBid}
                     minBid={gameState.auctionState.minBid}
-                    maxBid={gameState.auctionState.balance[playerColor]}
+                    maxBid={gameState.auctionState.balance[userColor]}
                     onBid={handleBid}
                     onFold={handleFold}
                     isBidPending={makeBidMutation.isPending}
@@ -452,11 +607,9 @@ export default function BidPanel() {
           </div>
 
           <PlayerInfoCard
+            ref={userCardRef}
+            color={userColor}
             username={userProfile.username}
-            balance={gameState.auctionState.balance[playerColor]}
-            timer={timers[playerColor]}
-            enableTimer={!!gameState?.timeState}
-            isTurn={showTurn && isPlayerTurn}
           />
         </div>
       </div>

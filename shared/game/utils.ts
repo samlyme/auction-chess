@@ -1,6 +1,8 @@
 import { makePiece } from "chessops/fen";
-import {getPiece,} from "./pureBoard"
-import type { Board } from "../types/game";
+import {getPiece,} from "./boardOps"
+import type { AuctionChessState, Board, GameConfig } from "../types/game";
+import { bishopAttacks, kingAttacks, knightAttacks, opposite, pawnAttacks, rookAttacks, type Color, type Square, type SquareSet } from "chessops";
+import { nonePieceValue, defaultChessState } from "./rules";
 
 // Need to copy code here because of type mismatch. Board !== PureBoard.
 export const makeBoardFen = (board: Board): string => {
@@ -30,3 +32,49 @@ export const makeBoardFen = (board: Board): string => {
   }
   return fen;
 };
+
+export function attacksTo(
+  square: Square,
+  attacker: Color,
+  board: Board,
+): SquareSet {
+  const occupied = board.occupied;
+  return board[attacker].intersect(
+    rookAttacks(square, occupied)
+      .intersect(board.queen.union(board.rook))
+      .union(
+        bishopAttacks(square, occupied).intersect(
+          board.queen.union(board.bishop),
+        ),
+      )
+      .union(knightAttacks(square).intersect(board.knight))
+      .union(kingAttacks(square).intersect(board.king))
+      .union(pawnAttacks(opposite(attacker), square).intersect(board.pawn)),
+  );
+}
+
+export function createGame(config: GameConfig): AuctionChessState {
+  config = structuredClone(config);
+
+  const timeState = config.timeConfig.enabled
+    ? {
+        time: config.timeConfig.initTime,
+        prev: null,
+      }
+    : undefined;
+
+  return {
+    chessState: defaultChessState(),
+    timeState,
+    auctionState: {
+      balance: config.auctionConfig.initBalance,
+      bidHistory: [[]],
+      minBid: 1,
+      interestRate: config.interestConfig.enabled ? config.interestConfig.rate : 0,
+    },
+    pieceIncome: config.pieceIncomeConfig.enabled ? config.pieceIncomeConfig.pieceIncome : nonePieceValue(),
+    pieceFee: config.pieceFeeConfig.enabled ? config.pieceFeeConfig.pieceFee : nonePieceValue(),
+    turn: "white",
+    phase: "bid",
+  };
+}

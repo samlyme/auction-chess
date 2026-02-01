@@ -1,5 +1,5 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { type AuctionChessState } from "shared/types/game";
+import { GameContext, GameTransient, type AuctionChessState } from "shared/types/game";
 import {
   LobbyEventType,
   LobbyToPayload,
@@ -21,8 +21,10 @@ export function broadcastLobbyUpdate(
 
 export function broadcastGameUpdate(
   channel: RealtimeChannel,
-  gameState: AuctionChessState,
+  gamePayload: GameContext,
 ) {
   // Supabase's httpSend mutates the payload, so we clone via Zod parse
-  return channel.httpSend(LobbyEventType.GameUpdate, gameState);
+  console.log("sending realtime", gamePayload);
+
+  return channel.httpSend(LobbyEventType.GameUpdate, gamePayload);
 }

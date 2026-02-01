@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import supabase from "@/supabase";
 import { AuthContext } from "@/contexts/Auth";
-import { type User, type Session } from "@supabase/auth-js";
+import { type Session } from "@supabase/auth-js";
 
 export default function AuthContextProvider({
   children,
@@ -9,19 +9,16 @@ export default function AuthContextProvider({
   children: React.ReactNode;
 }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Wrap in auth context.
   useEffect(() => {
-    Promise.all([
-      supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
         setSession(session);
-      }),
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        setUser(user);
-      }),
-    ]).then(() => setLoading(false));
+        setLoading(false);
+      })
 
     const {
       data: { subscription },
@@ -34,7 +31,5 @@ export default function AuthContextProvider({
     return () => subscription.unsubscribe();
   }, []);
 
-  return (
-    <AuthContext value={{ session, user, loading }}>{children}</AuthContext>
-  );
+  return <AuthContext value={{ session, loading }}>{children}</AuthContext>;
 }

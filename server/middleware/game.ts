@@ -58,24 +58,3 @@ export const recordReceivedTime: MiddlewareHandler<GameEnv> = async (
   c.set("receivedTime", Date.now());
   await next();
 };
-
-// NOTE: this middleware has the potential to explode the lobby logic.
-// It mutates state in a somewhat weird way. It is responsible for catching "late moves"
-// and also marking and broadcasting a game end if one is found. There are other places
-// in the code that can also do the same, so the state must be managed very carefully.
-export const validateTime: MiddlewareHandler<GameEnv> = async (c, next) => {
-  const gameState = c.get("gameState");
-  const timeUsed = c.get("timeUsed");
-
-
-  if (
-    gameState.timeState &&
-    timeUsed > gameState.timeState.time[gameState.turn]
-  ) {
-    console.log({timeUsed, time: gameState.timeState.time});
-
-    throw new HTTPException(400, { message: "Move came after timeout." });
-  }
-
-  await next();
-};
