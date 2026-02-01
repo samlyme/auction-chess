@@ -11,9 +11,7 @@ export function useGameOptions() {
     // which is less performant than the regular game functionality.
     queryFn: async (): Promise<GameContext | null> => {
       const res = await parseResponse(api.lobbies.game.$get());
-      console.log("get game!", res);
       const chessState = AuctionChessStateSchema.nullable().parse(res);
-      console.log("parse game!", chessState);
       // Wrap the game state in a GameContext with empty log (GET doesn't provide logs)
       return chessState ? { game: chessState, log: [] } : null;
     },

@@ -50,6 +50,7 @@ export function useLeaveLobbyMutationOptions() {
     mutationFn: () => parseResponse(api.lobbies.leave.$post()),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"] });
       // Upon leaving, the realtime hook will take care of the game state.
     },
   });
@@ -60,6 +61,7 @@ export function useStartLobbyMutationOptions() {
     mutationFn: () => parseResponse(api.lobbies.start.$post()),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"]})
     },
   });
 }
@@ -69,6 +71,7 @@ export function useEndLobbyMutationOptions() {
     mutationFn: () => parseResponse(api.lobbies.end.$post()),
     onSuccess: (data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], data);
+      context.client.invalidateQueries({ queryKey: ["game"]})
     },
   });
 }
@@ -78,6 +81,7 @@ export function useDeleteLobbyMutationOptions() {
     mutationFn: () => parseResponse(api.lobbies.$delete()),
     onSuccess: (_data, _variables, _onMutateResult, context) => {
       context.client.setQueryData(["lobby"], null);
+      context.client.invalidateQueries({ queryKey: ["game"]})
     },
   });
 }

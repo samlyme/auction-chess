@@ -23,8 +23,7 @@ export default function GameContextProvider({
 
   const [gameData, setGameData] = useState<GameData | null>(null);
   useEffect(() => {
-    if (gameContext === null) return;
-    setGameData({
+    setGameData(gameContext && {
       gameState: gameContext.game,
       log: gameContext.log
     });
