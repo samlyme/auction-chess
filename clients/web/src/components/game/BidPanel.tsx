@@ -133,8 +133,8 @@ const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
                 {minutes}:{seconds}
               </p>
             </div>
-            <div className="m-2 bg-neutral-600 p-2">
-              <p className="text-lg">{username}</p>
+            <div className="m-2 flex min-w-0 flex-1 items-center bg-neutral-600 p-2">
+              <p className="truncate text-lg">{username}</p>
             </div>
           </div>
         </div>

@@ -52,6 +52,9 @@ export default function RealtimeContextProvder({userId, lobbyCode, children}: {u
 
           case LobbyEventType.GameUpdate: {
             const gameContext = GameContext.parse(update.payload);
+            // This is cursed, but requires to prevent double
+            // animations after optimistic updates.
+            gameContext.log = [];
             queryClient.setQueryData(["game"], gameContext);
             break;
           }
