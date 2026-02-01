@@ -13,11 +13,14 @@ import { createGame } from "shared/game/utils";
 import { useMyProfileOptions, useProfileOptions } from "@/queries/profiles";
 import { type AuctionChessState, type Color } from "shared/types/game";
 import { GameContext } from "@/contexts/Game";
+import bootImage from "@/assets/images/shoes.png";
 
 // Animation timing constants (in seconds for framer-motion durations, milliseconds for timeouts)
 const FLASH_ANIMATION_DURATION = 0.5;
 const FALLING_NUMBER_CLEANUP_TIMEOUT = 1200;
 const FALLING_NUMBER_ANIMATION_DURATION = 0.6;
+const BOOT_ANIMATION_DURATION = 0.8;
+const BOOT_CLEANUP_TIMEOUT = 1000;
 // Total duration for balance change animations (max of flash and falling number cleanup)
 // const BALANCE_CHANGE_ANIMATION_DURATION = FALLING_NUMBER_CLEANUP_TIMEOUT;
 
@@ -30,6 +33,7 @@ interface PlayerInfoCardProps {
 export interface PlayerInfoCardRef {
   animateBalanceChange: (amount: number) => Promise<void>;
   syncBalance: () => void;
+  animateBoot: () => Promise<void>;
 }
 
 const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
@@ -48,6 +52,10 @@ const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
     key: number;
     xOffset: number;
     rotation: number;
+  } | null>(null);
+
+  const [bootAnimation, setBootAnimation] = useState<{
+    key: number;
   } | null>(null);
 
   const [displayBalance, setDisplayBalance] = useState(
@@ -92,10 +100,16 @@ const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
     }
   };
 
+  const animateBoot = async () => {
+    setBootAnimation({ key: Date.now() });
+    await setTimeout(() => setBootAnimation(null), BOOT_CLEANUP_TIMEOUT);
+  };
+
   // Expose animation methods to parent via ref
   useImperativeHandle(ref, () => ({
     animateBalanceChange,
     syncBalance,
+    animateBoot,
   }));
 
   // Initialize display balance on mount
@@ -107,7 +121,7 @@ const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
 
   return (
     <div
-      className={`rounded-lg ${gameData?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber ? "z-50" : ""}`}
+      className={`rounded-lg ${gameData?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber || bootAnimation ? "z-50" : ""}`}
     >
       <div className="flex h-full flex-col gap-4">
         <div className="rounded bg-neutral-700">
@@ -154,6 +168,26 @@ const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
               {fallingNumber.amount > 0 ? "+" : "-"}$
               {Math.abs(fallingNumber.amount)}
             </motion.div>
+          )}
+          {bootAnimation && (
+            <motion.img
+              key={bootAnimation.key}
+              src={bootImage}
+              initial={{ x: -200, y: 20, rotate: -45, opacity: 0, scale: 0.8 }}
+              animate={{
+                x: 100,
+                y: 20,
+                rotate: 15,
+                opacity: [0, 1, 1, 0],
+                scale: 1.2,
+              }}
+              transition={{
+                duration: BOOT_ANIMATION_DURATION,
+                ease: "easeOut",
+              }}
+              className="pointer-events-none absolute top-1/2 left-0 h-24 w-24 -translate-y-1/2"
+              alt="boot"
+            />
           )}
         </motion.div>
       </div>
@@ -469,25 +503,27 @@ export default function BidPanel() {
       return;
     }
 
-    // Skip if game state hasn't actually changed
-    if (
-      gameData.gameState.turn === curr.turn &&
-      gameData.gameState.phase === curr.phase
-    ) {
-      return;
-    }
-    lastProcessedGame.current = gameData.gameState;
-
-    // If no log (e.g., from GET query or mutation), just sync balances without animation
+    // If no log (e.g., from GET query or mutation), check if we need to sync
     if (gameData.log.length === 0) {
+      // Skip if game state hasn't actually changed
+      if (
+        gameData.gameState.turn === curr.turn &&
+        gameData.gameState.phase === curr.phase
+      ) {
+        return;
+      }
+      lastProcessedGame.current = gameData.gameState;
       userCardRef.current?.syncBalance();
       oppCardRef.current?.syncBalance();
       return;
     }
 
+    // We have logs to process - update the last processed game state
+    lastProcessedGame.current = gameData.gameState;
+
     // Build animation timeline from transient logs
-    const userAnimations: { type: string; amount: number }[] = [];
-    const oppAnimations: { type: string; amount: number }[] = [];
+    const userAnimations: { type: string; amount?: number }[] = [];
+    const oppAnimations: { type: string; amount?: number }[] = [];
 
     for (const transient of gameData.log) {
       switch (transient.type) {
@@ -524,11 +560,37 @@ export default function BidPanel() {
           }
           break;
         }
+        case "autoFold": {
+          if (transient.color === userColor) {
+            userAnimations.push({ type: "boot" });
+          } else {
+            oppAnimations.push({ type: "boot" });
+          }
+          break;
+        }
       }
     }
 
     // Execute synchronized animation timeline
     (async () => {
+      // Phase 0: Boot animations (for autoFold - play first)
+      const userBoots = userAnimations.filter(a => a.type === "boot");
+      const oppBoots = oppAnimations.filter(a => a.type === "boot");
+
+      if (userBoots.length > 0 || oppBoots.length > 0) {
+        const bootPromises: Promise<void>[] = [];
+
+        for (const _boot of userBoots) {
+          bootPromises.push(userCardRef.current?.animateBoot() || Promise.resolve());
+        }
+        for (const _boot of oppBoots) {
+          bootPromises.push(oppCardRef.current?.animateBoot() || Promise.resolve());
+        }
+
+        // Wait for ALL boot animations to complete before proceeding
+        await Promise.all(bootPromises);
+      }
+
       // Phase 1: Play all fee deductions (synchronized - wait for both to finish)
       // This includes bid payments, piece fees, etc - all come from server as deductFee logs
       const userFees = userAnimations.filter(a => a.type === "fee");
@@ -538,10 +600,10 @@ export default function BidPanel() {
         const feePromises: Promise<void>[] = [];
 
         for (const fee of userFees) {
-          feePromises.push(userCardRef.current?.animateBalanceChange(fee.amount) || Promise.resolve());
+          feePromises.push(userCardRef.current?.animateBalanceChange(fee.amount!) || Promise.resolve());
         }
         for (const fee of oppFees) {
-          feePromises.push(oppCardRef.current?.animateBalanceChange(fee.amount) || Promise.resolve());
+          feePromises.push(oppCardRef.current?.animateBalanceChange(fee.amount!) || Promise.resolve());
         }
 
         // Wait for ALL fee animations to complete before proceeding
@@ -556,10 +618,10 @@ export default function BidPanel() {
         const incomePromises: Promise<void>[] = [];
 
         for (const income of userIncomes) {
-          incomePromises.push(userCardRef.current?.animateBalanceChange(income.amount) || Promise.resolve());
+          incomePromises.push(userCardRef.current?.animateBalanceChange(income.amount!) || Promise.resolve());
         }
         for (const income of oppIncomes) {
-          incomePromises.push(oppCardRef.current?.animateBalanceChange(income.amount) || Promise.resolve());
+          incomePromises.push(oppCardRef.current?.animateBalanceChange(income.amount!) || Promise.resolve());
         }
 
         // Wait for all income animations to complete

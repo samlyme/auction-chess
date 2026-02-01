@@ -24,6 +24,7 @@
     "@tanstack/react-query-devtools": "^5.91.3",
     "@tanstack/react-router": "^1.144.0",
     "hono": "^4.6.17",
+    "immer": "^11.1.3",
     "lucide-react": "^0.562.0",
     "motion": "^12.27.5",
     "prettier-plugin-tailwindcss": "^0.7.2",

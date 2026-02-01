@@ -121,8 +121,13 @@ export function AuctionChessBoard() {
     "8/8/8/8/8/8/8/8"
   );
   useEffect(() => {
-    setBoardFen(makeBoardFen((gameState).chessState.board));
+    // NOTE: the `makeBoardFen` function displays promoted pieces by  a
+    // '~' symbol to the front of the character. This breaks the board rendering.
+    // Filter it out!
+    const newFen = makeBoardFen((gameState).chessState.board).replaceAll("~", "");
+    setBoardFen(newFen);
   }, [gameState]);
+
   const moveOptions = moveFrom
     ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
     : [];
