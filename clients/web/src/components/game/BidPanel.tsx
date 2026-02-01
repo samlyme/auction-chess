@@ -53,6 +53,11 @@ const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
   const [displayBalance, setDisplayBalance] = useState(
     gameData?.gameState.auctionState.balance[color] || 0
   );
+  const { lobby } = useContext(LobbyContext);
+  useEffect(() => {
+    if (gameData) return;
+    setDisplayBalance(lobby.config.gameConfig.auctionConfig.initBalance[color]);
+  }, [lobby, gameData])
 
   const green = "#4ade80";
   const red = "#f87171";
