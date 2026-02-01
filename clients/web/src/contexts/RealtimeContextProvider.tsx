@@ -2,13 +2,10 @@ import { useEffect } from "react";
 import supabase from "@/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { LobbyEventType, LobbyPayload } from "shared/types/lobbies";
-import { AuctionChessStateSchema } from "shared/types/game";
+import { AuctionChessStateSchema, GameContext, type AuctionChessState } from "shared/types/game";
+import { RealtimeContext } from "./Realtime";
 
-// provide all initial values. Thus, this hook's only responsibility is to
-// list for updates. However, that means it still does the logic for fetching
-// initial gameState.
-// This route sets lobby to null when a DELETE message is received.
-export default function useRealtime(userId: string, lobbyCode: string) {
+export default function RealtimeContextProvder({userId, lobbyCode, children}: {userId: string; lobbyCode: string, children: React.ReactNode}) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -28,23 +25,34 @@ export default function useRealtime(userId: string, lobbyCode: string) {
               console.log("update lobby");
 
               queryClient.setQueryData(["lobby"], newLobby);
-              if (!newLobby.gameStarted)
+              if (!newLobby.gameStarted) {
+                // The host can end the game, and there wont be a game update.
+                // That counts as a lobby update, but the game state implicitly
+                // changed.
                 queryClient.setQueryData(["game"], null);
+              } else {
+                // The lobby's game as now started. The game state cache
+                // is no longer valid. This query is not invalidated during
+                // game updates though, so it is still efficient.
+                queryClient.invalidateQueries({ queryKey: ["game"] });
+              }
             } else {
               console.log("left lobby");
               queryClient.setQueryData(["lobby"], null);
+              queryClient.setQueryData(["game"], null);
             }
             break;
           }
 
           case LobbyEventType.LobbyDelete:
             queryClient.setQueryData(["lobby"], null);
+            queryClient.setQueryData(["game"], null);
             console.log("lobby deleted");
             break;
 
           case LobbyEventType.GameUpdate: {
-            const newGameState = AuctionChessStateSchema.parse(update.payload);
-            queryClient.setQueryData(["game"], newGameState);
+            const gameContext = GameContext.parse(update.payload);
+            queryClient.setQueryData(["game"], gameContext);
             break;
           }
         }
@@ -57,4 +65,5 @@ export default function useRealtime(userId: string, lobbyCode: string) {
       channel.unsubscribe();
     };
   }, []);
+  return <RealtimeContext value={{enabled: true}}>{children}</RealtimeContext>;
 }

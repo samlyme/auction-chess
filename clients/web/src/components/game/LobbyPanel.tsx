@@ -12,8 +12,7 @@ import { LobbyContext } from "@/contexts/Lobby";
 import { useContext } from "react";
 
 export default function LobbyPanel() {
-  const { lobby, userId } = useContext(LobbyContext);
-  const isHost = userId === lobby.hostUid;
+  const { lobby, isHost } = useContext(LobbyContext);
   const startLobbyMutation = useMutation(useStartLobbyMutationOptions());
   const endLobbyMutation = useMutation(useEndLobbyMutationOptions());
   const deleteLobbyMutation = useMutation(useDeleteLobbyMutationOptions());

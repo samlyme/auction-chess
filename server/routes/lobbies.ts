@@ -20,6 +20,7 @@ import {
   startGame,
   updateLobbyConfig,
 } from "../state/lobbies";
+import type { AuctionChessState } from "shared/types/game";
 
 // could be a perf bottleneck since we are getting their profile on each req.
 const route = new Hono<MaybeLobbyEnv>()
@@ -155,8 +156,8 @@ const route = new Hono<MaybeLobbyEnv>()
 
     const payload = broadcastLobbyUpdate(channel, lobby);
 
-    const gameState = lobby.gameState;
-    if (gameState) broadcastGameUpdate(channel, gameState);
+    const gameState = lobby.gameState as AuctionChessState | null;
+    if (gameState) broadcastGameUpdate(channel, { game: gameState, log: [] });
     return c.json(payload);
   })
 

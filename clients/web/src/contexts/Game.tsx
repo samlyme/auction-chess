@@ -1,0 +1,19 @@
+import type { UseCountdownTimerResult } from "@/hooks/useCountdownTimer";
+import { createContext } from "react";
+import type { AuctionChessState, Color, GameTransient } from "shared/types/game";
+
+export interface GameData {
+  gameState: AuctionChessState;
+  log: GameTransient[];
+}
+type Timers = Record<Color, UseCountdownTimerResult>;
+
+export interface GameContextType {
+  gameData: GameData | null;
+  timers: Timers | null;
+}
+
+export const GameContext = createContext<GameContextType>({
+  gameData: null,
+  timers: null,
+})

@@ -25,14 +25,14 @@ import { useMutation } from "@tanstack/react-query";
 import { useMakeMoveMutationOptions } from "@/queries/game";
 import type { AuctionChessState } from "shared/types/game";
 
-import { makeBoardFen } from "shared/game/utils";
-import * as BoardOps from "shared/game/pureBoard";
-import * as PseudoChess from "shared/game/purePseudoChess";
-import * as AuctionChess from "shared/game/auctionChess";
+import { createGame, makeBoardFen } from "shared/game/utils";
+import * as BoardOps from "shared/game/boardOps";
+import * as AuctionChess from "shared/game/rules";
 
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { createPieces } from "./Pieces";
 import { LobbyContext } from "@/contexts/Lobby";
+import { GameContext } from "@/contexts/Game";
 
 function PromotionMenu({
   color,
@@ -106,21 +106,22 @@ function PromotionMenu({
 
 export function AuctionChessBoard() {
   const {
-    gameState: game,
-    defaultGameState,
     playerColor,
+    lobby,
   } = useContext(LobbyContext);
-  const gameState = game || defaultGameState;
+  const { gameData } = useContext(GameContext);
+  const gameState = gameData ? gameData.gameState : createGame(lobby.config.gameConfig);
+
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
   const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
   const [boardFen, setBoardFen] = useState(
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+    "8/8/8/8/8/8/8/8"
   );
   useEffect(() => {
-    setBoardFen(makeBoardFen((gameState || defaultGameState).chessState.board));
+    setBoardFen(makeBoardFen((gameState).chessState.board));
   }, [gameState]);
   const moveOptions = moveFrom
     ? AuctionChess.legalDests(gameState, parseSquare(moveFrom)!, playerColor)
@@ -170,14 +171,14 @@ export function AuctionChessBoard() {
     };
 
     if (
-      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) &&
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to) &&
       shouldPromote(move)
     ) {
       setPromotionMove(move);
       return false;
     }
 
-    if (PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)) {
+    if (AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
       setPromotionMove(null);
@@ -208,12 +209,12 @@ export function AuctionChessBoard() {
 
     const move = { from: parseSquare(moveFrom)!, to: parseSquare(square)! };
     if (
-      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to) &&
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to) &&
       shouldPromote(move)
     ) {
       setPromotionMove(move);
     } else if (
-      PseudoChess.legalDests(gameState.chessState, move.from).has(move.to)
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)
     ) {
       makeMoveMutation.mutate(move);
       setMoveFrom(null);
@@ -225,7 +226,7 @@ export function AuctionChessBoard() {
   return (
     <>
       <div
-        className={`w-full rounded-2xl ${game && game.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
+        className={`w-full rounded-2xl ${gameData && gameState.phase === "move" ? "bg-green-800" : "bg-neutral-900"} p-4`}
       >
         {promotionMove && (
           <PromotionMenu

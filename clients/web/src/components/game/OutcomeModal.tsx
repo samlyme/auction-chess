@@ -1,13 +1,14 @@
+import { GameContext } from "@/contexts/Game";
 import { LobbyContext } from "@/contexts/Lobby";
 import { useContext } from "react";
 import type { Outcome } from "shared/types/game";
 
 export function OutcomeModal() {
-  const game = useContext(LobbyContext);
+  const { gameData } = useContext(GameContext);
 
-  if (!game.gameState?.outcome) return <></>;
+  if (!gameData?.gameState.outcome) return <></>;
 
-  const outcome = game.gameState.outcome;
+  const outcome = gameData.gameState.outcome;
 
   const winnerText = outcome.winner
     ? `${outcome.winner.charAt(0).toUpperCase() + outcome.winner.slice(1)} wins!`

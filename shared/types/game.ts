@@ -133,6 +133,48 @@ export type SerialziedAuctionChessState = z.input<
   typeof AuctionChessStateSchema
 >;
 
+export const GameUpdate = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("bid"), data: Bid }),
+  z.object({ type: z.literal("move"), data: NormalMove }),
+]);
+export type GameUpdate = z.infer<typeof GameUpdate>;
+
+export const GameTransient = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("stateTransfer"),
+    name: z.union([
+      z.literal("enterBid"),
+      z.literal("exitBid"),
+      z.literal("enterMove"),
+      z.literal("exitMove"),
+      z.literal("enterOutcome"),
+      z.literal("deductTime"),
+      z.literal("timecheck"),
+    ]),
+    params: z.any().optional(),
+  }),
+  z.object({
+    type: z.literal("deductFee"),
+    amounts: z.record(Color, z.number()),
+  }),
+  z.object({
+    type: z.literal("addIncome"),
+    amounts: z.record(Color, z.number()),
+  }),
+  z.object({
+    type: z.literal("earnInterest"),
+    amounts: z.record(Color, z.number()),
+  }),
+  z.object({ type: z.literal("autoFold"), color: Color }),
+]);
+export type GameTransient = z.infer<typeof GameTransient>;
+
+export const GameContext = z.object({
+  game: AuctionChessStateSchema,
+  log: z.array(GameTransient),
+})
+export type GameContext = z.infer<typeof GameContext>;
+
 export const TimeConfig = z.discriminatedUnion("enabled", [
   z.object({ enabled: z.literal(false) }),
   z.object({ enabled: z.literal(true), initTime: z.record(Color, z.number()) }),

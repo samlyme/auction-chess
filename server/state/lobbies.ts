@@ -1,7 +1,7 @@
 import { randomUUIDv7 } from "bun";
 import type { AuctionChessState } from "shared/types/game";
 import type { Lobby, LobbyConfig } from "shared/types/lobbies";
-import {createGame} from "shared/game/auctionChess"
+import {createGame} from "shared/game/utils"
 import { generateUniqueCode } from "../utils/unique";
 
 const lobbies: Record<string, Lobby> = {};
@@ -68,10 +68,10 @@ export function endGame(lobbyCode: string): void {
   lobby.gameState = null;
 }
 
-export function updateGameState(
-  lobbyCode: string,
-  gameState: AuctionChessState,
-): void {
-  const lobby = lobbies[lobbyCode]!;
-  lobby.gameState = gameState;
-}
+// export function updateGameState(
+//   lobbyCode: string,
+//   gameState: AuctionChessState,
+// ): void {
+//   const lobby = lobbies[lobbyCode]!;
+//   lobby.gameState = gameState;
+// }

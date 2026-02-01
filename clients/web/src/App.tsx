@@ -5,6 +5,7 @@ import { useContext, type ReactElement } from "react";
 import { AuthContext } from "@/contexts/Auth";
 import type { RouterContext } from "@/routes/__root";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-function AspectRatioWrapper({ children }: { children: ReactElement }) {
+function AspectRatioWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
       <div
@@ -57,6 +58,7 @@ function App() {
       {/* Auth Context only really exists in the browser, don't need to use Query. */}
       <AuthContextProvider>
         <AspectRatioWrapper>
+          <ReactQueryDevtools />
           <InnerApp />
         </AspectRatioWrapper>
       </AuthContextProvider>

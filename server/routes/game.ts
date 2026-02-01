@@ -1,25 +1,18 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { Bid, NormalMove } from "shared/types/game";
-import {
-  deductTime,
-  makeBid as makeBidLogic,
-  movePiece as movePieceLogic,
-  timecheck,
-} from "shared/game/auctionChess";
+import { Bid, GameTransient, NormalMove } from "shared/types/game";
 import type { GameEnv } from "../types/honoEnvs";
 import {
   recordReceivedTime,
   validateGame,
   validatePlayer,
-  validateTime,
   validateTurn,
 } from "../middleware/game";
 import { getLobby, validateLobby } from "../middleware/lobbies";
 import { broadcastGameUpdate } from "../utils/realtime";
 import { wrapTime } from "hono/timing";
-import { updateGameState } from "../state/lobbies";
+import { updateDeductTime, updateGame, updateTimecheck } from "shared/game/update";
 
 const gameplay = new Hono<GameEnv>()
   .use(
@@ -27,7 +20,6 @@ const gameplay = new Hono<GameEnv>()
     getLobby,
     validateLobby,
     validateGame,
-    validateTime,
     validatePlayer,
     validateTurn,
   )
@@ -36,27 +28,19 @@ const gameplay = new Hono<GameEnv>()
     const gameState = c.get("gameState");
     const channel = c.get("channel");
     const bid = c.req.valid("json");
-
-    // NOTE: if time is not enabled, the deductTime function acts like a noOp
     const timeUsed = c.get("timeUsed");
-    const timeResult = deductTime(gameState, timeUsed);
-    if (!timeResult.ok) {
-      throw new HTTPException(400, { message: timeResult.error })
+    const log: GameTransient[] = [];
+
+    try {
+      updateDeductTime({ game: gameState, log }, timeUsed)
+      updateGame({ game: gameState, log }, { type: "bid", data: bid });
+    } catch (e) {
+      throw new HTTPException(400, { message: JSON.stringify(e) });
+    } finally {
+      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, { game: gameState, log }));
     }
 
-    const gameResult = makeBidLogic(timeResult.value, bid);
-    if (!gameResult.ok) {
-      throw new HTTPException(400, { message: gameResult.error });
-    }
-
-    // Lag compensation for realtime service.
-    // result.value.timeState.prev = Date.now();
-    const lobby = c.get("lobby");
-    updateGameState(lobby.code, gameResult.value);
-
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
-
-    return c.json(gameResult.value);
+    return c.json(gameState);
   })
 
   // POST /game/move - Make a chess move
@@ -64,27 +48,18 @@ const gameplay = new Hono<GameEnv>()
     const gameState = c.get("gameState");
     const channel = c.get("channel");
     const move = c.req.valid("json");
-
-    // NOTE: if time is not enabled, the deductTime function acts like a noOp
     const timeUsed = c.get("timeUsed");
-    const timeResult = deductTime(gameState, timeUsed);
-    if (!timeResult.ok) {
-      throw new HTTPException(400, { message: timeResult.error })
+
+    const log: GameTransient[] = [];
+    try {
+      updateDeductTime({ game: gameState, log }, timeUsed);
+      updateGame({ game: gameState, log }, { type: "move", data: move });
+    } catch (e) {
+      throw new HTTPException(400, { message: JSON.stringify(e) });
+    } finally {
+      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, { game: gameState, log }));
     }
-
-    const gameResult = movePieceLogic(timeResult.value, move);
-    if (!gameResult.ok) {
-      throw new HTTPException(400, { message: gameResult.error });
-    }
-
-    // Supabase Realtime Service Lag comp.
-    // result.value.timeState.prev = Date.now();
-    const lobby = c.get("lobby");
-    updateGameState(lobby.code, gameResult.value);
-
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, gameResult.value));
-
-    return c.json(gameResult.value);
+    return c.json(gameState);
   });
 
 const timecheckRoute = new Hono()
@@ -92,20 +67,16 @@ const timecheckRoute = new Hono()
   .post("/", async (c) => {
     const gameState = c.get("gameState");
     const timeUsed = c.get("timeUsed");
-    console.log("handler", {timeUsed});
 
-
-    const result = timecheck(gameState, timeUsed);
-
-    if (!result.ok) {
-      throw new HTTPException(500, { message: "timecheck failed." });
+    const log: GameTransient[] = [];
+    try {
+      updateTimecheck({ game: gameState, log }, timeUsed);
+    } catch (e) {
+      throw new HTTPException(400, { message: JSON.stringify(e) });
+    } finally {
+      const channel = c.get("channel");
+      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, { game: gameState, log }));
     }
-
-    const lobby = c.get("lobby");
-    updateGameState(lobby.code, result.value);
-
-    const channel = c.get("channel");
-    await wrapTime(c, "broadcast", broadcastGameUpdate(channel, result.value));
     return c.body(null, 204);
   });
 
