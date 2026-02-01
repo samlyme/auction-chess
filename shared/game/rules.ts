@@ -1,10 +1,14 @@
 import { SquareSet } from "chessops";
 import type { AuctionChessState, Board, ChessState, Color, PieceValue, Square } from "../types/game"
+import type { LobbyConfig } from "../types/lobbies";
 import { getPiece } from "./boardOps";
 import * as PseudoChess from "./pseudoChess";
 
 // These should be factory functions because otherwise its state gets touched
 // by the FSM.
+
+export const DEFAULT_TIME_MINUTES = 5;
+export const DEFAULT_INTEREST_RATE = 0.05;
 export const defaultPieceIncome = (): PieceValue => ({
   "pawn": 1,
   "knight": 3,
@@ -51,6 +55,30 @@ export const defaultChessState = (): ChessState => ({
   castlingRights: SquareSet.corners(),
   epSquare: undefined,
 })
+
+export const defaultLobbyConfig = (): LobbyConfig => ({
+  gameConfig: {
+    hostColor: "white",
+    auctionConfig: {
+      initBalance: {
+        white: 300,
+        black: 300,
+      },
+    },
+    timeConfig: {
+      enabled: false,
+    },
+    interestConfig: {
+      enabled: false,
+    },
+    pieceIncomeConfig: {
+      enabled: false,
+    },
+    pieceFeeConfig: {
+      enabled: false,
+    },
+  },
+});
 
 export function legalDests(game: AuctionChessState, from: Square, color: Color) {
   if (game.turn !== color) return SquareSet.empty();
