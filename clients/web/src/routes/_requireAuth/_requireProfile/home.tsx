@@ -20,17 +20,23 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
   const [lobbyCode, setLobbyCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const joinLobbyMutation = useMutation(useJoinLobbyMutationOptions());
 
   const handleJoinLobby = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    await joinLobbyMutation.mutateAsync(lobbyCode.trim());
-
-    navigate({ to: "/lobbies" });
-    setLoading(false);
+    try {
+      await joinLobbyMutation.mutateAsync(lobbyCode.trim());
+      navigate({ to: "/lobbies" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to join lobby");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,6 +104,9 @@ function RouteComponent() {
               >
                 Join Lobby
               </Button>
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
             </form>
           </Card>
           {/* Casual Match Card */}

@@ -8,6 +8,12 @@ import { useState } from "react";
 import type { Color } from "shared/types/game";
 import type { LobbyConfig } from "shared/types/lobbies";
 import { Button, FormInput } from "@/components/ui";
+import {
+  defaultPieceIncome,
+  defaultPieceFee,
+  DEFAULT_TIME_MINUTES,
+  DEFAULT_INTEREST_RATE,
+} from "shared/game/rules";
 
 // NOTE: this is currently tightly coupled to my mutations
 // TODO: decouple this from page logic LOL!!
@@ -31,8 +37,8 @@ export default function LobbyConfigForm({
       ? Math.floor(
           initConfig.gameConfig.timeConfig.initTime.white / (1000 * 60)
         )
-      : 5
-    : 5;
+      : DEFAULT_TIME_MINUTES
+    : DEFAULT_TIME_MINUTES;
   const [timeMinutes, setTimeMinutes] = useState(initTime);
 
   const [interestEnabled, setInterestEnabled] = useState(
@@ -42,28 +48,19 @@ export default function LobbyConfigForm({
   const initRate = initConfig
     ? initConfig.gameConfig.interestConfig.enabled
       ? initConfig.gameConfig.interestConfig.rate
-      : 0.05
-    : 0.05;
+      : DEFAULT_INTEREST_RATE
+    : DEFAULT_INTEREST_RATE;
   const [interestRate, setInterestRate] = useState(initRate);
 
   const [pieceIncomeEnabled, setPieceIncomeEnabled] = useState(
     initConfig ? initConfig.gameConfig.pieceIncomeConfig.enabled : false
   );
 
-  const defaultPieceIncome = {
-    pawn: 1,
-    knight: 3,
-    bishop: 3,
-    rook: 5,
-    queen: 9,
-    king: 11,
-  };
-
   const initPieceIncome = initConfig
     ? initConfig.gameConfig.pieceIncomeConfig.enabled
       ? initConfig.gameConfig.pieceIncomeConfig.pieceIncome
-      : defaultPieceIncome
-    : defaultPieceIncome;
+      : defaultPieceIncome()
+    : defaultPieceIncome();
 
   const [pieceIncome, setPieceIncome] = useState(initPieceIncome);
 
@@ -71,21 +68,11 @@ export default function LobbyConfigForm({
     initConfig ? initConfig.gameConfig.pieceFeeConfig.enabled : false
   );
 
-  // Requires balancing.
-  const defaultPieceFee = {
-    pawn: 1,
-    knight: 9,
-    bishop: 9,
-    rook: 25,
-    queen: 81,
-    king: 100,
-  };
-
   const initPieceFee = initConfig
     ? initConfig.gameConfig.pieceFeeConfig.enabled
       ? initConfig.gameConfig.pieceFeeConfig.pieceFee
-      : defaultPieceFee
-    : defaultPieceFee;
+      : defaultPieceFee()
+    : defaultPieceFee();
 
   const [pieceFee, setPieceFee] = useState(initPieceFee);
 
