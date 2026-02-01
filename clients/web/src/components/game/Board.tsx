@@ -22,7 +22,7 @@ import {
   selectedSquare,
 } from "@/components/game/BoardStyle";
 import { useMutation } from "@tanstack/react-query";
-import { useMakeMoveMutationOptions } from "@/queries/game";
+import { usePlayGameMutationOptions } from "@/queries/game";
 import type { AuctionChessState } from "shared/types/game";
 
 import { createGame, makeBoardFen } from "shared/game/utils";
@@ -105,26 +105,22 @@ function PromotionMenu({
 }
 
 export function AuctionChessBoard() {
-  const {
-    playerColor,
-    lobby,
-  } = useContext(LobbyContext);
+  const { playerColor, lobby } = useContext(LobbyContext);
   const { gameData } = useContext(GameContext);
-  const gameState = gameData ? gameData.gameState : createGame(lobby.config.gameConfig);
-
+  const gameState = gameData
+    ? gameData.gameState
+    : createGame(lobby.config.gameConfig);
 
   const [moveFrom, setMoveFrom] = useState<string | null>(null);
   const [promotionMove, setPromotionMove] = useState<NormalMove | null>(null);
-  const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
+  const playGameMutation = useMutation(usePlayGameMutationOptions());
 
-  const [boardFen, setBoardFen] = useState(
-    "8/8/8/8/8/8/8/8"
-  );
+  const [boardFen, setBoardFen] = useState("8/8/8/8/8/8/8/8");
   useEffect(() => {
     // NOTE: the `makeBoardFen` function displays promoted pieces by  a
     // '~' symbol to the front of the character. This breaks the board rendering.
     // Filter it out!
-    const newFen = makeBoardFen((gameState).chessState.board).replaceAll("~", "");
+    const newFen = makeBoardFen(gameState.chessState.board).replaceAll("~", "");
     setBoardFen(newFen);
   }, [gameState]);
 
@@ -154,7 +150,10 @@ export function AuctionChessBoard() {
 
   function playPromotion(role: Role) {
     if (!promotionMove) return;
-    makeMoveMutation.mutate({ ...promotionMove, promotion: role });
+    playGameMutation.mutate({
+      type: "move",
+      data: { ...promotionMove, promotion: role },
+    });
     setMoveFrom(null);
     setPromotionMove(null);
   }
@@ -183,8 +182,10 @@ export function AuctionChessBoard() {
       return false;
     }
 
-    if (AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)) {
-      makeMoveMutation.mutate(move);
+    if (
+      AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)
+    ) {
+      playGameMutation.mutate({ type: "move", data: move });
       setMoveFrom(null);
       setPromotionMove(null);
       return true;
@@ -221,7 +222,7 @@ export function AuctionChessBoard() {
     } else if (
       AuctionChess.legalDests(gameState, move.from, playerColor).has(move.to)
     ) {
-      makeMoveMutation.mutate(move);
+      playGameMutation.mutate({ type: "move", data: move });
       setMoveFrom(null);
     } else {
       setMoveFrom(piece === null ? null : square);

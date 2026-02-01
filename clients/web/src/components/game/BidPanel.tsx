@@ -1,11 +1,18 @@
-import { useMakeBidMutationOptions } from "@/queries/game";
+import { usePlayGameMutationOptions } from "@/queries/game";
 import {
   skipToken,
   useMutation,
   useQuery,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { useState, useEffect, useContext, useRef, forwardRef, useImperativeHandle } from "react";
+import {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui";
 import { LobbyContext } from "@/contexts/Lobby";
@@ -38,162 +45,171 @@ export interface PlayerInfoCardRef {
 
 const PlayerInfoCard = forwardRef<PlayerInfoCardRef, PlayerInfoCardProps>(
   ({ username, color, setBid }, ref) => {
-  const { gameData, timers } = useContext(GameContext);
+    const { gameData, timers } = useContext(GameContext);
 
-  // Stuff for timers
-  const remainingMs = timers ? timers[color].remainingMs : 0;
-  const totalSeconds = remainingMs / 1000;
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
+    // Stuff for timers
+    const remainingMs = timers ? timers[color].remainingMs : 0;
+    const totalSeconds = remainingMs / 1000;
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const seconds = String(Math.floor(totalSeconds % 60)).padStart(2, "0");
 
-  const controls = useAnimation();
-  const [fallingNumber, setFallingNumber] = useState<{
-    amount: number;
-    key: number;
-    xOffset: number;
-    rotation: number;
-  } | null>(null);
+    const controls = useAnimation();
+    const [fallingNumber, setFallingNumber] = useState<{
+      amount: number;
+      key: number;
+      xOffset: number;
+      rotation: number;
+    } | null>(null);
 
-  const [bootAnimation, setBootAnimation] = useState<{
-    key: number;
-  } | null>(null);
+    const [bootAnimation, setBootAnimation] = useState<{
+      key: number;
+    } | null>(null);
 
-  const [displayBalance, setDisplayBalance] = useState(
-    gameData?.gameState.auctionState.balance[color] || 0
-  );
-  const { lobby } = useContext(LobbyContext);
-  useEffect(() => {
-    if (gameData) return;
-    setDisplayBalance(lobby.config.gameConfig.auctionConfig.initBalance[color]);
-  }, [lobby, gameData])
-
-  const green = "#4ade80";
-  const red = "#f87171";
-  const flashColor = (color: string) =>
-    controls.start({
-      backgroundColor: [color, "#404040"],
-      transition: { duration: FLASH_ANIMATION_DURATION, ease: "easeOut" },
-    });
-  const dropNumber = async (diff: number) => {
-    const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
-    const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
-    setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
-    await setTimeout(
-      () => setFallingNumber(null),
-      FALLING_NUMBER_CLEANUP_TIMEOUT
+    const [displayBalance, setDisplayBalance] = useState(
+      gameData?.gameState.auctionState.balance[color] || 0
     );
-  };
-  const animateBalanceChange = async (amount: number) => {
-    setDisplayBalance((prev) => {
-      console.log("new animated balance " + color, prev + amount);
-      return prev + amount;
-    });
-    await Promise.all([
-      flashColor(amount > 0 ? green : red),
-      dropNumber(amount),
-    ]);
-  };
+    const { lobby } = useContext(LobbyContext);
+    useEffect(() => {
+      if (gameData) return;
+      setDisplayBalance(
+        lobby.config.gameConfig.auctionConfig.initBalance[color]
+      );
+    }, [lobby, gameData]);
 
-  const syncBalance = () => {
-    if (gameData) {
-      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
-    }
-  };
+    const green = "#4ade80";
+    const red = "#f87171";
+    const flashColor = (color: string) =>
+      controls.start({
+        backgroundColor: [color, "#404040"],
+        transition: { duration: FLASH_ANIMATION_DURATION, ease: "easeOut" },
+      });
+    const dropNumber = async (diff: number) => {
+      const xOffset = Math.random() * 50 + 30; // Random horizontal offset 30 to 80 (tends right)
+      const rotation = Math.random() * 30 + 10; // Random rotation 10 to 40 degrees (tends clockwise)
+      setFallingNumber({ amount: diff, key: Date.now(), xOffset, rotation });
+      await setTimeout(
+        () => setFallingNumber(null),
+        FALLING_NUMBER_CLEANUP_TIMEOUT
+      );
+    };
+    const animateBalanceChange = async (amount: number) => {
+      setDisplayBalance((prev) => {
+        console.log("new animated balance " + color, prev + amount);
+        return prev + amount;
+      });
+      await Promise.all([
+        flashColor(amount > 0 ? green : red),
+        dropNumber(amount),
+      ]);
+    };
 
-  const animateBoot = async () => {
-    setBootAnimation({ key: Date.now() });
-    await setTimeout(() => setBootAnimation(null), BOOT_CLEANUP_TIMEOUT);
-  };
+    const syncBalance = () => {
+      if (gameData) {
+        setDisplayBalance(gameData.gameState.auctionState.balance[color]);
+      }
+    };
 
-  // Expose animation methods to parent via ref
-  useImperativeHandle(ref, () => ({
-    animateBalanceChange,
-    syncBalance,
-    animateBoot,
-  }));
+    const animateBoot = async () => {
+      setBootAnimation({ key: Date.now() });
+      await setTimeout(() => setBootAnimation(null), BOOT_CLEANUP_TIMEOUT);
+    };
 
-  // Initialize display balance on mount
-  useEffect(() => {
-    if (gameData) {
-      setDisplayBalance(gameData.gameState.auctionState.balance[color]);
-    }
-  }, []);
+    // Expose animation methods to parent via ref
+    useImperativeHandle(ref, () => ({
+      animateBalanceChange,
+      syncBalance,
+      animateBoot,
+    }));
 
-  return (
-    <div
-      className={`rounded-lg ${gameData?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber || bootAnimation ? "z-50" : ""}`}
-    >
-      <div className="flex h-full flex-col gap-4">
-        <div className="rounded bg-neutral-700">
-          <div className="flex gap-2">
-            <div
-              className={`m-2 w-22 p-2 ${timers && timers[color].isRunning ? "bg-green-600" : "bg-neutral-600"} ${timers || "opacity-30"}`}
-            >
-              <p className="text-2xl">
-                {minutes}:{seconds}
-              </p>
-            </div>
-            <div className="m-2 bg-neutral-600 p-2">
-              <p className="text-lg">{username}</p>
+    // Initialize display balance on mount
+    useEffect(() => {
+      if (gameData) {
+        setDisplayBalance(gameData.gameState.auctionState.balance[color]);
+      }
+    }, []);
+
+    return (
+      <div
+        className={`rounded-lg ${gameData?.gameState.turn === color ? "bg-green-800" : "bg-neutral-800"} relative p-4 ${fallingNumber || bootAnimation ? "z-50" : ""}`}
+      >
+        <div className="flex h-full flex-col gap-4">
+          <div className="rounded bg-neutral-700">
+            <div className="flex gap-2">
+              <div
+                className={`m-2 w-22 p-2 ${timers && timers[color].isRunning ? "bg-green-600" : "bg-neutral-600"} ${timers || "opacity-30"}`}
+              >
+                <p className="text-2xl">
+                  {minutes}:{seconds}
+                </p>
+              </div>
+              <div className="m-2 flex min-w-0 flex-1 items-center bg-neutral-600 p-2">
+                <p className="truncate text-lg">{username}</p>
+              </div>
             </div>
           </div>
+          <motion.div
+            animate={controls}
+            onClick={() => {
+              if (setBid)
+                setBid(gameData?.gameState.auctionState.balance[color] || 0);
+            }}
+            className="relative flex-1 rounded bg-neutral-700"
+          >
+            <p className="mt-3 text-center text-7xl">${displayBalance}</p>
+            {fallingNumber && (
+              <motion.div
+                key={fallingNumber.key}
+                initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
+                animate={{
+                  y: 120,
+                  x: fallingNumber.xOffset,
+                  opacity: 0,
+                  rotate: fallingNumber.rotation,
+                }}
+                transition={{
+                  duration: FALLING_NUMBER_ANIMATION_DURATION,
+                  ease: "easeIn",
+                }}
+                className={`pointer-events-none absolute top-1/2 left-3/4 -translate-x-1/2 text-3xl font-bold ${
+                  fallingNumber.amount > 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {fallingNumber.amount > 0 ? "+" : "-"}$
+                {Math.abs(fallingNumber.amount)}
+              </motion.div>
+            )}
+            {bootAnimation && (
+              <motion.img
+                key={bootAnimation.key}
+                src={bootImage}
+                initial={{
+                  x: -200,
+                  y: 20,
+                  rotate: -45,
+                  opacity: 0,
+                  scale: 0.8,
+                }}
+                animate={{
+                  x: 100,
+                  y: 20,
+                  rotate: 15,
+                  opacity: [0, 1, 1, 0],
+                  scale: 1.2,
+                }}
+                transition={{
+                  duration: BOOT_ANIMATION_DURATION,
+                  ease: "easeOut",
+                }}
+                className="pointer-events-none absolute top-1/2 left-0 h-24 w-24 -translate-y-1/2"
+                alt="boot"
+              />
+            )}
+          </motion.div>
         </div>
-        <motion.div
-          animate={controls}
-          onClick={() => {
-            if (setBid)
-              setBid(gameData?.gameState.auctionState.balance[color] || 0);
-          }}
-          className="relative flex-1 rounded bg-neutral-700"
-        >
-          <p className="mt-3 text-center text-7xl">${displayBalance}</p>
-          {fallingNumber && (
-            <motion.div
-              key={fallingNumber.key}
-              initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
-              animate={{
-                y: 120,
-                x: fallingNumber.xOffset,
-                opacity: 0,
-                rotate: fallingNumber.rotation,
-              }}
-              transition={{
-                duration: FALLING_NUMBER_ANIMATION_DURATION,
-                ease: "easeIn",
-              }}
-              className={`pointer-events-none absolute top-1/2 left-3/4 -translate-x-1/2 text-3xl font-bold ${
-                fallingNumber.amount > 0 ? "text-green-400" : "text-red-400"
-              }`}
-            >
-              {fallingNumber.amount > 0 ? "+" : "-"}$
-              {Math.abs(fallingNumber.amount)}
-            </motion.div>
-          )}
-          {bootAnimation && (
-            <motion.img
-              key={bootAnimation.key}
-              src={bootImage}
-              initial={{ x: -200, y: 20, rotate: -45, opacity: 0, scale: 0.8 }}
-              animate={{
-                x: 100,
-                y: 20,
-                rotate: 15,
-                opacity: [0, 1, 1, 0],
-                scale: 1.2,
-              }}
-              transition={{
-                duration: BOOT_ANIMATION_DURATION,
-                ease: "easeOut",
-              }}
-              className="pointer-events-none absolute top-1/2 left-0 h-24 w-24 -translate-y-1/2"
-              alt="boot"
-            />
-          )}
-        </motion.div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 interface BidComparisonProps {
   setBid: React.Dispatch<React.SetStateAction<number>>;
@@ -477,12 +493,12 @@ export default function BidPanel() {
     setBid(gameState.auctionState.minBid);
   }, [gameState.auctionState.minBid]);
 
-  const makeBidMutation = useMutation(useMakeBidMutationOptions());
+  const playGameMutation = useMutation(usePlayGameMutationOptions());
   const handleBid = (amount: number) => {
-    makeBidMutation.mutate({ amount, fold: false });
+    playGameMutation.mutate({ type: "bid", data: { amount, fold: false } });
   };
   const handleFold = () => {
-    makeBidMutation.mutate({ fold: true });
+    playGameMutation.mutate({ type: "bid", data: { fold: true } });
   };
 
   // Refs for coordinating animations between player cards
@@ -574,17 +590,21 @@ export default function BidPanel() {
     // Execute synchronized animation timeline
     (async () => {
       // Phase 0: Boot animations (for autoFold - play first)
-      const userBoots = userAnimations.filter(a => a.type === "boot");
-      const oppBoots = oppAnimations.filter(a => a.type === "boot");
+      const userBoots = userAnimations.filter((a) => a.type === "boot");
+      const oppBoots = oppAnimations.filter((a) => a.type === "boot");
 
       if (userBoots.length > 0 || oppBoots.length > 0) {
         const bootPromises: Promise<void>[] = [];
 
         for (const _boot of userBoots) {
-          bootPromises.push(userCardRef.current?.animateBoot() || Promise.resolve());
+          bootPromises.push(
+            userCardRef.current?.animateBoot() || Promise.resolve()
+          );
         }
         for (const _boot of oppBoots) {
-          bootPromises.push(oppCardRef.current?.animateBoot() || Promise.resolve());
+          bootPromises.push(
+            oppCardRef.current?.animateBoot() || Promise.resolve()
+          );
         }
 
         // Wait for ALL boot animations to complete before proceeding
@@ -593,17 +613,23 @@ export default function BidPanel() {
 
       // Phase 1: Play all fee deductions (synchronized - wait for both to finish)
       // This includes bid payments, piece fees, etc - all come from server as deductFee logs
-      const userFees = userAnimations.filter(a => a.type === "fee");
-      const oppFees = oppAnimations.filter(a => a.type === "fee");
+      const userFees = userAnimations.filter((a) => a.type === "fee");
+      const oppFees = oppAnimations.filter((a) => a.type === "fee");
 
       if (userFees.length > 0 || oppFees.length > 0) {
         const feePromises: Promise<void>[] = [];
 
         for (const fee of userFees) {
-          feePromises.push(userCardRef.current?.animateBalanceChange(fee.amount!) || Promise.resolve());
+          feePromises.push(
+            userCardRef.current?.animateBalanceChange(fee.amount!) ||
+              Promise.resolve()
+          );
         }
         for (const fee of oppFees) {
-          feePromises.push(oppCardRef.current?.animateBalanceChange(fee.amount!) || Promise.resolve());
+          feePromises.push(
+            oppCardRef.current?.animateBalanceChange(fee.amount!) ||
+              Promise.resolve()
+          );
         }
 
         // Wait for ALL fee animations to complete before proceeding
@@ -611,17 +637,27 @@ export default function BidPanel() {
       }
 
       // Phase 2: Play all income/interest animations (synchronized - start at the same time)
-      const userIncomes = userAnimations.filter(a => a.type === "income" || a.type === "interest");
-      const oppIncomes = oppAnimations.filter(a => a.type === "income" || a.type === "interest");
+      const userIncomes = userAnimations.filter(
+        (a) => a.type === "income" || a.type === "interest"
+      );
+      const oppIncomes = oppAnimations.filter(
+        (a) => a.type === "income" || a.type === "interest"
+      );
 
       if (userIncomes.length > 0 || oppIncomes.length > 0) {
         const incomePromises: Promise<void>[] = [];
 
         for (const income of userIncomes) {
-          incomePromises.push(userCardRef.current?.animateBalanceChange(income.amount!) || Promise.resolve());
+          incomePromises.push(
+            userCardRef.current?.animateBalanceChange(income.amount!) ||
+              Promise.resolve()
+          );
         }
         for (const income of oppIncomes) {
-          incomePromises.push(oppCardRef.current?.animateBalanceChange(income.amount!) || Promise.resolve());
+          incomePromises.push(
+            oppCardRef.current?.animateBalanceChange(income.amount!) ||
+              Promise.resolve()
+          );
         }
 
         // Wait for all income animations to complete
@@ -655,7 +691,7 @@ export default function BidPanel() {
                     maxBid={gameState.auctionState.balance[userColor]}
                     onBid={handleBid}
                     onFold={handleFold}
-                    isBidPending={makeBidMutation.isPending}
+                    isBidPending={playGameMutation.isPending}
                   />
                   {/* <BidAdjustmentControls
                   bid={bid}

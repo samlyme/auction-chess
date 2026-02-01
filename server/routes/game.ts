@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { HTTPException } from "hono/http-exception";
-import { Bid, GameTransient, NormalMove } from "shared/types/game";
+import { Bid, GameTransient, GameUpdate, NormalMove } from "shared/types/game";
 import type { GameEnv } from "../types/honoEnvs";
 import {
   recordReceivedTime,
@@ -23,37 +23,17 @@ const gameplay = new Hono<GameEnv>()
     validatePlayer,
     validateTurn,
   )
-  // POST /game/bid - Make a bid in the auction phase
-  .post("/bid", zValidator("json", Bid), async (c) => {
+
+  .post("/update", zValidator("json", GameUpdate), async (c) => {
     const gameState = c.get("gameState");
     const channel = c.get("channel");
-    const bid = c.req.valid("json");
-    const timeUsed = c.get("timeUsed");
-    const log: GameTransient[] = [];
-
-    try {
-      updateDeductTime({ game: gameState, log }, timeUsed)
-      updateGame({ game: gameState, log }, { type: "bid", data: bid });
-    } catch (e) {
-      throw new HTTPException(400, { message: JSON.stringify(e) });
-    } finally {
-      await wrapTime(c, "broadcast", broadcastGameUpdate(channel, { game: gameState, log }));
-    }
-
-    return c.json(gameState);
-  })
-
-  // POST /game/move - Make a chess move
-  .post("/move", zValidator("json", NormalMove), async (c) => {
-    const gameState = c.get("gameState");
-    const channel = c.get("channel");
-    const move = c.req.valid("json");
+    const update = c.req.valid("json");
     const timeUsed = c.get("timeUsed");
 
     const log: GameTransient[] = [];
     try {
       updateDeductTime({ game: gameState, log }, timeUsed);
-      updateGame({ game: gameState, log }, { type: "move", data: move });
+      updateGame({ game: gameState, log }, update);
     } catch (e) {
       throw new HTTPException(400, { message: JSON.stringify(e) });
     } finally {
