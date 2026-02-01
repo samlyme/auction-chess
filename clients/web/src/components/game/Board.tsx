@@ -118,7 +118,7 @@ export function AuctionChessBoard() {
   const makeMoveMutation = useMutation(useMakeMoveMutationOptions());
 
   const [boardFen, setBoardFen] = useState(
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+    "8/8/8/8/8/8/8/8"
   );
   useEffect(() => {
     setBoardFen(makeBoardFen((gameState).chessState.board));
