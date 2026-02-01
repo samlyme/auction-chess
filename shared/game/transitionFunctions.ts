@@ -53,7 +53,7 @@ export function exitBid(context: GameContext, bid: Bid, color: Color) {
     game.auctionState.bidHistory.push([]);
   }
   // update minBid
-  game.auctionState.minBid = bid.fold ? 1 : lastBidAmount + bidStack.length + 1; // placeholder!
+  game.auctionState.minBid = bid.fold ? 1 : bid.amount + bidStack.length + 1; // placeholder!
 
   if (bid.fold) {
     // deduct bid and move along.
