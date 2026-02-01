@@ -18,10 +18,16 @@ export function enterBid(context: GameContext, color: Color) {
   game.turn = color;
 
   const balance = game.auctionState.balance[game.turn];
+  const oppBalance = game.auctionState.balance[opposite(game.turn)];
   // Auto fold!
-  if (balance < game.auctionState.minBid) {
+  if (balance === 0 && oppBalance === 0) { // potential source of edge cases.
+    enterOutcome(context, { winner: null, message: "stalemate" });
+  } else if (balance < game.auctionState.minBid) {
     log.push({ type: "autoFold", color: game.turn });
     exitBid(context, { fold: true }, game.turn);
+  } else if (oppBalance < game.auctionState.minBid) {
+    log.push({ type: "autoBid", color: game.turn });
+    exitBid(context, { fold: false, amount: game.auctionState.minBid }, game.turn);
   }
 }
 
@@ -53,7 +59,7 @@ export function exitBid(context: GameContext, bid: Bid, color: Color) {
     game.auctionState.bidHistory.push([]);
   }
   // update minBid
-  game.auctionState.minBid = bid.fold ? 1 : lastBidAmount + bidStack.length + 1; // placeholder!
+  game.auctionState.minBid = bid.fold ? 1 : bid.amount + bidStack.length + 1; // placeholder!
 
   if (bid.fold) {
     // deduct bid and move along.

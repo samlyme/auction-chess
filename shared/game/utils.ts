@@ -18,6 +18,9 @@ export const makeBoardFen = (board: Board): string => {
           fen += empty;
           empty = 0;
         }
+
+        // NOTE: the default behavior of `makePiece` is to append a '~' in front
+        // if the piece has been promoted. This breaks the frontend.
         fen += makePiece(piece);
       }
 

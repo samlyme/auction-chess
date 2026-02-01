@@ -166,6 +166,7 @@ export const GameTransient = z.discriminatedUnion("type", [
     amounts: z.record(Color, z.number()),
   }),
   z.object({ type: z.literal("autoFold"), color: Color }),
+  z.object({ type: z.literal("autoBid"), color: Color }),
 ]);
 export type GameTransient = z.infer<typeof GameTransient>;
 
