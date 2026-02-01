@@ -503,21 +503,23 @@ export default function BidPanel() {
       return;
     }
 
-    // Skip if game state hasn't actually changed
-    if (
-      gameData.gameState.turn === curr.turn &&
-      gameData.gameState.phase === curr.phase
-    ) {
-      return;
-    }
-    lastProcessedGame.current = gameData.gameState;
-
-    // If no log (e.g., from GET query or mutation), just sync balances without animation
+    // If no log (e.g., from GET query or mutation), check if we need to sync
     if (gameData.log.length === 0) {
+      // Skip if game state hasn't actually changed
+      if (
+        gameData.gameState.turn === curr.turn &&
+        gameData.gameState.phase === curr.phase
+      ) {
+        return;
+      }
+      lastProcessedGame.current = gameData.gameState;
       userCardRef.current?.syncBalance();
       oppCardRef.current?.syncBalance();
       return;
     }
+
+    // We have logs to process - update the last processed game state
+    lastProcessedGame.current = gameData.gameState;
 
     // Build animation timeline from transient logs
     const userAnimations: { type: string; amount?: number }[] = [];
