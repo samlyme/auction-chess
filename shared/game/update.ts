@@ -3,7 +3,7 @@ import type {
   GameTransient,
   GameUpdate,
 } from "../types/game";
-import { exitBid, exitMove } from "./transitionFunctions";
+import { exitBid, exitMove, incrementMoveCounter } from "./transitionFunctions";
 import { timecheck, deductTime} from "./transitionFunctions";
 
 // Conventions: keep the core game as in place mutations.
@@ -29,6 +29,9 @@ export function updateGame(
       break;
     }
   }
+
+  // The move was a success, so we inecrement!
+  incrementMoveCounter({ game, log });
 
   return log;
 }
