@@ -126,6 +126,7 @@ export const AuctionChessStateSchema = z.object({
   turn: Color,
   phase: Phase,
   outcome: Outcome.optional(),
+  moves: z.number(),
 });
 
 export type AuctionChessState = z.output<typeof AuctionChessStateSchema>;
@@ -150,6 +151,7 @@ export const GameTransient = z.discriminatedUnion("type", [
       z.literal("enterOutcome"),
       z.literal("deductTime"),
       z.literal("timecheck"),
+      z.literal("incrementMoveCounter"),
     ]),
     params: z.any().optional(),
   }),

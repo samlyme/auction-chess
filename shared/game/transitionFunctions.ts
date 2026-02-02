@@ -213,3 +213,12 @@ export function enterOutcome(context: GameContext, outcome: Outcome) {
   });
   game.outcome = outcome;
 }
+
+export function incrementMoveCounter(context: GameContext) {
+  const { game, log } = context;
+  log.push({
+    type: "stateTransfer",
+    name: "incrementMoveCounter",
+  });
+  game.moves += 1;
+}
