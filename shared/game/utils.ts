@@ -79,5 +79,6 @@ export function createGame(config: GameConfig): AuctionChessState {
     pieceFee: config.pieceFeeConfig.enabled ? config.pieceFeeConfig.pieceFee : nonePieceValue(),
     turn: "white",
     phase: "bid",
+    moves: 0,
   };
 }

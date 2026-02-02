@@ -51,11 +51,16 @@ export default function RealtimeContextProvder({userId, lobbyCode, children}: {u
             break;
 
           case LobbyEventType.GameUpdate: {
-            const gameContext = GameContext.parse(update.payload);
-            // This is cursed, but requires to prevent double
-            // animations after optimistic updates.
-            gameContext.log = [];
-            queryClient.setQueryData(["game"], gameContext);
+            const oldGameContext = queryClient.getQueryData<GameContext>(["game"]);
+            const newGameContext = GameContext.parse(update.payload);
+
+            // Only update cache if this is a newer move (prevents duplicate animations)
+            if (oldGameContext && oldGameContext.game.moves >= newGameContext.game.moves) {
+              console.log(`Skipping stale game update (moves: ${newGameContext.game.moves})`);
+              break;
+            }
+
+            queryClient.setQueryData(["game"], newGameContext);
             break;
           }
         }
